@@ -45,7 +45,7 @@ contract Purchase {
     seller = msg.sender;
     price = _price;
     state = State.Created;
-    t = Token(0xb170f0f884937860cb4117edd5d327000db90f63);
+    t = Token(0x2492ff0373197367f8503f201cefa484df7d8351);
   }
 
   ///////////////////
@@ -72,19 +72,15 @@ contract Purchase {
     public
     notSeller
     inState(State.Created)
-    condition(t.allowance(msg.sender, this) >= price)
+    condition(t.allowance(msg.sender, this) >= price || t.balanceOf(this) >= price)
   {
     state = State.Proposed;
-    require(t.transferFrom(msg.sender, this, price));
-    if (maxTemp > 0) {
-      require(SensorLibrary.setMaxTemp(sensors, maxTemp));
+    if (t.balanceOf(this) < price) {
+      require(t.transferFrom(msg.sender, this, price));
     }
-    if (minTemp > 0) {
-      require(SensorLibrary.setMinTemp(sensors, minTemp));
-    }
-    if (acceleration > 0) {
-      require(SensorLibrary.setMaxAcceleration(sensors, acceleration));
-    }
+    require(SensorLibrary.setMaxTemp(sensors, maxTemp));
+    require(SensorLibrary.setMinTemp(sensors, minTemp));
+    require(SensorLibrary.setMaxAcceleration(sensors, acceleration));
     buyer = msg.sender;
   }
 
@@ -113,8 +109,10 @@ contract Purchase {
   ///---Locked---///
   //////////////////
 
-  function setProvider() {
-
+  function setProvider(string sensorType, string id)
+    public
+  {
+    sensors.sensors[sensorType].provider = id;
   }
 
   function transport()
@@ -128,8 +126,13 @@ contract Purchase {
   ///---Transit---///
   ///////////////////
 
-  function sensorData() {
-
+  function sensorData(string sensorType, string id, uint value)
+    public
+    inState(State.Transit)
+    condition(keccak256(sensors.sensors[sensorType].provider) == keccak256(id) &&
+    (value < sensors.sensors[sensorType].value) == sensors.sensors[sensorType].forbidLower)
+  {
+    sensors.sensors[sensorType].warning = true;
   }
 
   function deliver()
@@ -173,9 +176,9 @@ contract Purchase {
   function getSensor(string name)
     public
     constant
-    returns(uint, bool, bool, string)
+    returns(uint, bool, bool, bool, string)
   {
-    return (sensors.sensors[name].value, sensors.sensors[name].forbidGreater,
+    return (sensors.sensors[name].value, sensors.sensors[name].forbidLower, sensors.sensors[name].active,
       sensors.sensors[name].warning, sensors.sensors[name].provider);
   }
 }

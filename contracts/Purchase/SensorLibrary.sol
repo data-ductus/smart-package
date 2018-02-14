@@ -3,55 +3,53 @@ pragma solidity ^0.4.0;
 library SensorLibrary {
   struct Sensor {
     uint value;
-    bool forbidGreater;
+    bool forbidLower;
+    bool active;
     bool warning;
     string provider;
   }
   struct Sensors {
     mapping(string => Sensor) sensors;
-    string[] availableSensors;
   }
 
   function setMaxTemp(Sensors storage self, uint value)
     public
     returns(bool)
   {
-    if (self.sensors["maxTemp"].value == 0) {
-      self.availableSensors.push("maxTemp");
-      self.sensors["maxTemp"] = Sensor(value, true, false, "");
-      return true;
+    self.sensors["maxTemp"].value = value;
+    if (value == 0) {
+      self.sensors["maxTemp"].active = false;
     } else {
-      self.sensors["maxTemp"].value = value;
-      return true;
+      self.sensors["maxTemp"].active = true;
     }
+    return true;
   }
 
   function setMinTemp(Sensors storage self, uint value)
     public
     returns(bool)
   {
-    if (self.sensors["minTemp"].value == 0) {
-      self.availableSensors.push("minTemp");
-      self.sensors["minTemp"] = Sensor(value, false, false, "");
-      return true;
+    self.sensors["minTemp"].value = value;
+    self.sensors["minTemp"].forbidLower = true;
+    if (value == 0) {
+      self.sensors["minTemp"].active = false;
     } else {
-      self.sensors["minTemp"].value = value;
-      return true;
+      self.sensors["minTemp"].active = true;
     }
+    return true;
   }
 
   function setMaxAcceleration(Sensors storage self, uint value)
     public
     returns(bool)
   {
-    if (self.sensors["acceleration"].value == 0) {
-      self.availableSensors.push("acceleration");
-      self.sensors["acceleration"] = Sensor(value, true, false, "");
-      return true;
+    self.sensors["acceleration"].value = value;
+    if (value == 0) {
+      self.sensors["acceleration"].active = false;
     } else {
-      self.sensors["acceleration"].value = value;
-      return true;
+      self.sensors["acceleration"].active = true;
     }
+    return true;
   }
 
 }
