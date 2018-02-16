@@ -49,6 +49,13 @@ export class Web3Service {
 
   }
 
+  public async getContract(abi, address) {
+    const c = await new this.web3.eth.Contract(abi);
+    c.options.address = address;
+    console.log('c ', c);
+    return c;
+  }
+
   private refreshAccounts() {
     this.web3.eth.getAccounts((err, accs) => {
       console.log('Refreshing accounts');

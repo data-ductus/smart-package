@@ -3,15 +3,13 @@ pragma solidity ^0.4.0;
 library SensorLibrary {
   struct Sensor {
     uint value;
-    bool forbidLower;
-    bool active;
     bool warning;
     string provider;
   }
   struct Sensors {
     mapping(string => Sensor) sensors;
   }
-
+  /*
   function setMaxTemp(Sensors storage self, uint value)
     public
     returns(bool)
@@ -49,6 +47,16 @@ library SensorLibrary {
     } else {
       self.sensors["acceleration"].active = true;
     }
+    return true;
+  }
+  */
+  function setSensors(Sensors storage self, uint maxTemp, uint minTemp, uint acceleration)
+    public
+    returns(bool)
+  {
+    self.sensors["maxTemp"].value = maxTemp;
+    self.sensors["minTemp"].value = minTemp;
+    self.sensors["acceleration"].value = acceleration;
     return true;
   }
 

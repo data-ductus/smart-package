@@ -1,0 +1,6 @@
+<h1>Tokens</h1>
+<select name="account" (change)="clickAddress($event)">
+  <option *ngFor="let account of accounts" >{{account}}</option>
+</select>
+<h3>You have <span id="balance">{{model.balance}}</span> tokens</h3>
+<app-create-contract [account]="model.account" [token]="token"></app-create-contract>

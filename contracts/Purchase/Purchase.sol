@@ -9,8 +9,8 @@ contract Purchase {
   enum State { Created, Proposed, Locked, Transit, Confirm, Inactive }
   State public state;
   Token t;
-  address private seller;
-  address private buyer;
+  address public seller;
+  address public buyer;
 
   /////////////////////
   ///---Modifiers---///
@@ -41,8 +41,8 @@ contract Purchase {
     _;
   }
 
-  function Purchase(uint _price) {
-    seller = msg.sender;
+  function Purchase(uint _price, address _seller) {
+    seller = _seller;
     price = _price;
     state = State.Created;
     t = Token(0x2492ff0373197367f8503f201cefa484df7d8351);
@@ -60,6 +60,10 @@ contract Purchase {
     price = _price;
   }
 
+  function setSeller() {
+    seller = msg.sender;
+  }
+
   function abort()
     public
     onlySeller
@@ -68,19 +72,20 @@ contract Purchase {
     state = State.Inactive;
   }
 
+  function transferFrom() public {
+    require(t.transferFrom(msg.sender, this, price));
+  }
+
   function propose(uint maxTemp, uint minTemp, uint acceleration)
     public
     notSeller
     inState(State.Created)
-    condition(t.allowance(msg.sender, this) >= price || t.balanceOf(this) >= price)
   {
     state = State.Proposed;
-    if (t.balanceOf(this) < price) {
-      require(t.transferFrom(msg.sender, this, price));
-    }
-    require(SensorLibrary.setMaxTemp(sensors, maxTemp));
-    require(SensorLibrary.setMinTemp(sensors, minTemp));
-    require(SensorLibrary.setMaxAcceleration(sensors, acceleration));
+
+    require(t.transferFrom(msg.sender, this, price) &&
+      SensorLibrary.setSensors(sensors, maxTemp, minTemp, acceleration));
+    //t.approve(buyer, 0);
     buyer = msg.sender;
   }
 
@@ -130,7 +135,7 @@ contract Purchase {
     public
     inState(State.Transit)
     condition(keccak256(sensors.sensors[sensorType].provider) == keccak256(id) &&
-    (value < sensors.sensors[sensorType].value) == sensors.sensors[sensorType].forbidLower)
+    (value < sensors.sensors[sensorType].value) == (keccak256(sensorType) == keccak256('minTemp')))
   {
     sensors.sensors[sensorType].warning = true;
   }
@@ -176,9 +181,8 @@ contract Purchase {
   function getSensor(string name)
     public
     constant
-    returns(uint, bool, bool, bool, string)
+    returns(uint value, bool warning, string provider)
   {
-    return (sensors.sensors[name].value, sensors.sensors[name].forbidLower, sensors.sensors[name].active,
-      sensors.sensors[name].warning, sensors.sensors[name].provider);
+    return (sensors.sensors[name].value, sensors.sensors[name].warning, sensors.sensors[name].provider);
   }
 }

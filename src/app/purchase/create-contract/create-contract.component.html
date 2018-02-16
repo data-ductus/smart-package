@@ -1,0 +1,7 @@
+<br><label for="amount">Price:</label><input type="text" id="amount" placeholder="e.g., 95" [(ngModel)]="price">
+<br><br><button id="send" (click)="createContract()">Create contract</button>
+<div *ngFor="let c of contracts">
+  <h3>Contract {{c}}</h3>
+  <app-agreement [contractAddress]="c" [account]="account" [token]="token"></app-agreement>
+</div>
+

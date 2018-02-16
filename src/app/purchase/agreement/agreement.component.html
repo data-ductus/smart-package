@@ -1,0 +1,13 @@
+<h3>Agreement</h3>
+<div *ngIf="account==model.seller">
+  <br><label for="amount">Price:</label><input type="text" id="amount" placeholder="e.g., 95" [(ngModel)]="model.price">
+  <button id="send" (click)="setPrice()">Set price</button>
+  <button id="abort" (click)="abort()">Abort</button>
+</div>
+<div *ngIf="account!=model.seller">
+  <br><label for="maxT">Max temp:</label><input type="text" id="maxT" placeholder="e.g., 10" [(ngModel)]="model.maxT[0]">
+  <br><label for="minT">Min temp:</label><input type="text" id="minT" placeholder="e.g., 10" [(ngModel)]="model.minT[0]">
+  <br><label for="acc">Acceleration:</label><input type="text" id="acc" placeholder="e.g., 10" [(ngModel)]="model.acc[0]">
+  <br><button id="propose" (click)="propose()">Propose</button>
+</div>
+
