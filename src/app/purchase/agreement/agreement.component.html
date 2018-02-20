@@ -3,6 +3,8 @@
   <br><label for="amount">Price:</label><input type="text" id="amount" placeholder="e.g., 95" [(ngModel)]="model.price">
   <button id="send" (click)="setPrice()">Set price</button>
   <button id="abort" (click)="abort()">Abort</button>
+  <br> Max temp: {{model.maxT[0]}}, Min temp: {{model.minT[0]}}, Acceleration: {{model.acc[0]}}
+  <br><app-accept [account]="account" [purchase]="purchase"></app-accept>
 </div>
 <div *ngIf="account!=model.seller">
   <br><label for="maxT">Max temp:</label><input type="text" id="maxT" placeholder="e.g., 10" [(ngModel)]="model.maxT[0]">

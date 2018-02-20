@@ -8,13 +8,19 @@ import { AppComponent } from './app.component';
 import { PurchaseComponent } from './purchase/purchase.component';
 import { CreateContractComponent } from './purchase/create-contract/create-contract.component';
 import { AgreementComponent } from './purchase/agreement/agreement.component';
+import { AcceptComponent } from './purchase/accept/accept.component';
+import { SimulationComponent } from './purchase/simulation/simulation.component';
+import { ConfirmComponent } from './purchase/confirm/confirm.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     PurchaseComponent,
     CreateContractComponent,
-    AgreementComponent
+    AgreementComponent,
+    AcceptComponent,
+    SimulationComponent,
+    ConfirmComponent
   ],
   imports: [
     BrowserModule,

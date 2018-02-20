@@ -54,7 +54,7 @@ export class AgreementComponent implements OnInit {
 
   async setPrice() {
     try {
-      await this.purchase.methods.setPrice.sendTransaction(this.model.price, {from: this.account});
+      await this.purchase.methods.setPrice().send(this.model.price, {from: this.account});
       await this.getPrice();
     } catch (e) {
       console.log(e);

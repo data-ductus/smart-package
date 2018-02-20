@@ -3,5 +3,7 @@
 <div *ngFor="let c of contracts">
   <h3>Contract {{c}}</h3>
   <app-agreement [contractAddress]="c" [account]="account" [token]="token"></app-agreement>
+  <app-simulation [contractAddress]="c" [account]="account"></app-simulation>
+  <app-confirm [account]="account" [contractAddress]="c" [token]="token"></app-confirm>
 </div>
 
