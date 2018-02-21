@@ -60,20 +60,12 @@ contract Purchase {
     price = _price;
   }
 
-  function setSeller() {
-    seller = msg.sender;
-  }
-
   function abort()
     public
     onlySeller
     inState(State.Created)
   {
     state = State.Inactive;
-  }
-
-  function transferFrom() public {
-    require(t.transferFrom(msg.sender, this, price));
   }
 
   function propose(uint maxTemp, uint minTemp, uint acceleration)

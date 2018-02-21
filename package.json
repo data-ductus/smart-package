@@ -45,6 +45,7 @@
     "karma-jasmine-html-reporter": "^0.2.2",
     "protractor": "^5.2.2",
     "protractor-console-plugin": "^0.1.1",
+    "solidity-coverage": "^0.4.9",
     "truffle-contract": "^3.0.0",
     "ts-node": "^3.3.0",
     "tslint": "^5.8.0",

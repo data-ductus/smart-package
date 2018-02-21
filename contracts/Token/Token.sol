@@ -18,8 +18,8 @@ contract Token is Owned, SafeMath, ERC20 {
     name = "Token";
     decimals = 18;
     _totalSupply = 100000000000000000000000000;
-    balances[0x4e5a0425f5fa17af7a5dc94900d1253a48a9c7ea] = _totalSupply;
-    Transfer(address(0), 0x4e5a0425f5fa17af7a5dc94900d1253a48a9c7ea, _totalSupply);
+    balances[msg.sender] = _totalSupply;
+    Transfer(address(0), msg.sender, _totalSupply);
   }
 
 
