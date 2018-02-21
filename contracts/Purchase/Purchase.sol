@@ -8,6 +8,7 @@ contract Purchase {
   uint public price;
   enum State { Created, Proposed, Locked, Transit, Confirm, Inactive }
   State public state;
+  mapping(address => uint) payed;
   Token t;
   address public seller;
   address public buyer;
@@ -75,9 +76,10 @@ contract Purchase {
   {
     state = State.Proposed;
 
-    require(t.transferFrom(msg.sender, this, price) &&
+    require(t.transferFrom(msg.sender, this, price - payed[msg.sender]) &&
       SensorLibrary.setSensors(sensors, maxTemp, minTemp, acceleration));
-    //t.approve(buyer, 0);
+    payed[msg.sender] = price;
+    t.approve(buyer, 0);
     buyer = msg.sender;
   }
 
@@ -91,7 +93,7 @@ contract Purchase {
     inState(State.Proposed)
   {
     state = State.Created;
-    t.approve(buyer, price);
+    t.approve(buyer, payed[msg.sender]);
   }
 
   function accept()
@@ -108,6 +110,7 @@ contract Purchase {
 
   function setProvider(string sensorType, string id)
     public
+    inState(State.Locked)
   {
     sensors.sensors[sensorType].provider = id;
   }
