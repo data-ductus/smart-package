@@ -44,6 +44,7 @@ contract('purchase-finish', function(accounts) {
   before(async function () {
     purchase = await Purchase.new(100, accounts[1]);
     token = await Token.deployed();
+    await purchase.setTokenAddress(token.address);
   });
   it("should transfer tokens, set sensors and change state to proposed", async function() {
     let tokens_before_buyer;

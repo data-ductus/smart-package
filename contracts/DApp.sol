@@ -1,13 +1,13 @@
 pragma solidity ^0.4.0;
 
 import "./Purchase/Purchase.sol";
+import "./Token/Token.sol";
 
 contract DApp {
   mapping (address => address[]) userContracts;
   address[] public allContracts;
 
   function DApp(){
-
   }
 
   function createContract(uint price) public returns(address){

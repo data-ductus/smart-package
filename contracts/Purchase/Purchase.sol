@@ -49,6 +49,10 @@ contract Purchase {
     t = Token(0x2492ff0373197367f8503f201cefa484df7d8351);
   }
 
+  function setTokenAddress(address tokenAddress) public {
+    t = Token(tokenAddress);
+  }
+
   ///////////////////
   ///---Created---///
   ///////////////////
