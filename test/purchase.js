@@ -42,43 +42,40 @@ contract('purchase-finish', function(accounts) {
   const price = 100;
 
   before(async function () {
-    purchase = await Purchase.new(100, accounts[1]);
+    purchase = await Purchase.new(price, accounts[1]);
     token = await Token.deployed();
     await purchase.setTokenAddress(token.address);
-  });
-  it("should transfer tokens, set sensors and change state to proposed", async function() {
-
-
     await token.approve(purchase.address, price, {from: buyer});
+  });
+  it("should set sensors and change state to proposed", async function() {
     await purchase.propose(maxTemp, minTemp, acceleration);
 
-    const maxSensor = await purchase.getSensor('maxTemp');
-    const minSensor = await purchase.getSensor('minTemp');
-    const accSensor = await purchase.getSensor('acceleration');
+    const maxSensor = await purchase.getSensor.call('maxTemp');
+    const minSensor = await purchase.getSensor.call('minTemp');
+    const accSensor = await purchase.getSensor.call('acceleration');
     const state = await purchase.state();
-
 
     assert.equal(maxSensor[0], maxTemp, "The maximum temperature was not set correctly");
     assert.equal(minSensor[0], minTemp, "The minimum temperature was not set correctly");
     assert.equal(accSensor[0], acceleration, "The maximum acceleration was not set correctly");
     assert.equal(state, 1, "The state is not proposed (1)")
   });
-  it("should change state to locked", async function() {
+  it("should transfer tokens and change state to locked", async function() {
     let tokens_before_buyer;
     let tokens_before_contract;
     let tokens_after_buyer;
     let tokens_after_contract;
 
-    tokens_before_buyer = await token.balanceOf(buyer);
-    tokens_before_contract = await token.balanceOf(purchase.address);
+    tokens_before_buyer = await token.balanceOf.call(buyer);
+    tokens_before_contract = await token.balanceOf.call(purchase.address);
     await purchase.accept({from: accounts[1]});
-    tokens_after_buyer = await token.balanceOf(buyer);
-    tokens_after_contract = await token.balanceOf(purchase.address);
+    tokens_after_buyer = await token.balanceOf.call(buyer);
+    tokens_after_contract = await token.balanceOf.call(purchase.address);
 
     const state = await purchase.state();
 
-    assert.equal(tokens_after_buyer, tokens_before_buyer.toNumber()-price, "The tokens were not removed correctly from the buyer's account");
-    assert.equal(tokens_after_contract, tokens_before_contract.toNumber()+price, "The tokens were not added correctly to the contract's account");
+    assert.equal(tokens_after_buyer.toNumber(), tokens_before_buyer-price, "The tokens were not removed correctly from the buyer's account");
+    assert.equal(tokens_after_contract.toNumber(), tokens_before_contract+price, "The tokens were not added correctly to the contract's account");
     assert.equal(state, 2, "The state is not locked (2)");
   });
   it("should set providers", async function() {
@@ -89,9 +86,9 @@ contract('purchase-finish', function(accounts) {
     await purchase.setProvider("minTemp", tempProvider);
     await purchase.setProvider("acceleration", accProvider);
 
-    const maxSensor = await purchase.getSensor('maxTemp');
-    const minSensor = await purchase.getSensor('minTemp');
-    const accSensor = await purchase.getSensor('acceleration');
+    const maxSensor = await purchase.getSensor.call('maxTemp');
+    const minSensor = await purchase.getSensor.call('minTemp');
+    const accSensor = await purchase.getSensor.call('acceleration');
 
     assert.equal(maxSensor[2], tempProvider, "The provider for maximum temperature was not set correctly");
     assert.equal(minSensor[2], tempProvider, "The provider for minimum temperature was not set correctly");
@@ -138,8 +135,8 @@ contract('purchase-finish', function(accounts) {
     await purchase.sensorData("maxTemp", tempProvider, maxTemp);
     await purchase.sensorData("acceleration", accProvider, acceleration);
 
-    const maxSensor = await purchase.getSensor('maxTemp');
-    const accSensor = await purchase.getSensor('acceleration');
+    const maxSensor = await purchase.getSensor.call('maxTemp');
+    const accSensor = await purchase.getSensor.call('acceleration');
 
     assert(maxSensor[1], "Warning on maximum temperature should be true");
     assert(accSensor[1], "Warning on maximum acceleration should be true");
@@ -149,7 +146,7 @@ contract('purchase-finish', function(accounts) {
 
     await purchase.sensorData("minTemp", tempProvider, minTemp-1);
 
-    const minSensor = await purchase.getSensor('minTemp');
+    const minSensor = await purchase.getSensor.call('minTemp');
 
     assert(minSensor[1], "Warning on minimum temperature should be true");
   });
@@ -161,7 +158,7 @@ contract('purchase-finish', function(accounts) {
   });
   it("should approve tokens to dissatisfied buyer", async function() {
     await purchase.dissatisfied({from: buyer});
-    const allowance = await token.allowance(purchase.address, buyer);
+    const allowance = await token.allowance.call(purchase.address, buyer);
     const state = await purchase.state();
 
     assert.equal(allowance, price, "The buyer should be allowed to retrieve his/her tokens from the contract");
@@ -345,6 +342,8 @@ contract("purchase-revert-wrong-sender-3", function (accounts) {
 
   before(async function () {
     purchase = await Purchase.new(0, seller);
+    const token = await Token.deployed();
+    await purchase.setTokenAddress(token.address);
     await purchase.propose(0, 0, 0, {from: buyer});
     await purchase.accept({from: seller});
     await purchase.transport();

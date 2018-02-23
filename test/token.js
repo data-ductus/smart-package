@@ -56,12 +56,12 @@ contract('Token', function(accounts) {
 
     return Token.deployed().then(function(instance) {
       token = instance;
-      return token.allowance(account_one, account_two);
+      return token.allowance.call(account_one, account_two);
     }).then(function(allowance) {
       account_two_starting_allowance = allowance.toNumber();
       return token.approve(account_two, amount, {from: account_one});
     }).then(function() {
-      return token.allowance(account_one, account_two);
+      return token.allowance.call(account_one, account_two);
     }).then(function(allowance) {
       account_two_ending_allowance = allowance;
 
@@ -86,7 +86,7 @@ contract('Token', function(accounts) {
 
     return Token.deployed().then(function(instance) {
       token = instance;
-      return token.allowance(account_one, account_two);
+      return token.allowance.call(account_one, account_two);
     }).then(function(allowance) {
       account_two_starting_allowance = allowance.toNumber();
       return token.balanceOf.call(account_one);
@@ -105,7 +105,7 @@ contract('Token', function(accounts) {
       return token.balanceOf.call(account_two);
     }).then(function(balance) {
       account_two_ending_balance = balance.toNumber();
-      return token.allowance(account_one, account_two);
+      return token.allowance.call(account_one, account_two);
     }).then(function(allowance) {
       account_two_ending_allowance = allowance;
 

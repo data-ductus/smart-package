@@ -9,6 +9,7 @@ library SensorLibrary {
   struct Sensors {
     mapping(string => Sensor) sensors;
   }
+  event Threshold(uint maxTemp, uint minTemp, uint Acceleration);
   /*
   function setMaxTemp(Sensors storage self, uint value)
     public
@@ -57,6 +58,7 @@ library SensorLibrary {
     self.sensors["maxTemp"].value = maxTemp;
     self.sensors["minTemp"].value = minTemp;
     self.sensors["acceleration"].value = acceleration;
+    Threshold(self.sensors["maxTemp"].value, self.sensors["minTemp"].value, self.sensors["acceleration"].value);
     return true;
   }
 
