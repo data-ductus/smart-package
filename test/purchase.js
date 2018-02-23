@@ -1,4 +1,4 @@
-let Purchase = artifacts.require("./purchase.sol");
+let Purchase = artifacts.require("./Purchase.sol");
 let Token = artifacts.require("./Token.sol");
 
 contract('purchase-abort', function (accounts) {

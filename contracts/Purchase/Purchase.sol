@@ -79,7 +79,7 @@ contract Purchase {
     require(t.transferFrom(msg.sender, this, price - payed[msg.sender]) &&
       SensorLibrary.setSensors(sensors, maxTemp, minTemp, acceleration));
     payed[msg.sender] = price;
-    t.approve(buyer, 0);
+    t.approve(buyer, payed[msg.sender]-price);
     buyer = msg.sender;
   }
 
@@ -93,7 +93,7 @@ contract Purchase {
     inState(State.Proposed)
   {
     state = State.Created;
-    t.approve(buyer, payed[msg.sender]);
+    t.approve(buyer, payed[buyer]);
   }
 
   function accept()

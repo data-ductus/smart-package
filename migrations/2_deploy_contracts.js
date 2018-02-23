@@ -7,7 +7,7 @@ module.exports = function(deployer) {
   deployer.deploy(Token);
   deployer.deploy(Sensors);
   deployer.link(Sensors, Purchase);
-  deployer.deploy(Purchase);
+  deployer.deploy(Purchase, 0, 0x0000000000000000000000000000000000000000);
   deployer.link(Sensors, DApp);
   deployer.deploy(DApp);
 };
