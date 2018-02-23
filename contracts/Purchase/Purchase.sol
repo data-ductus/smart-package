@@ -8,7 +8,7 @@ contract Purchase {
   uint public price;
   enum State { Created, Proposed, Locked, Transit, Confirm, Inactive }
   State public state;
-  mapping(address => uint) payed;
+  //mapping(address => uint) payed;
   Token t;
   address public seller;
   address public buyer;
@@ -80,16 +80,15 @@ contract Purchase {
   {
     state = State.Proposed;
 
-    require(t.transferFrom(msg.sender, this, price - payed[msg.sender]) &&
-      SensorLibrary.setSensors(sensors, maxTemp, minTemp, acceleration));
-    payed[msg.sender] = price;
-    t.approve(buyer, payed[msg.sender]-price);
+    require(SensorLibrary.setSensors(sensors, maxTemp, minTemp, acceleration));
+
+    //t.approve(buyer, payed[msg.sender]-price);
     buyer = msg.sender;
   }
 
   ////////////////////
   ///---Proposed---///
-  ////////////////////
+  //////////////////// - payed[buyer]
 
   function decline()
     public
@@ -97,7 +96,6 @@ contract Purchase {
     inState(State.Proposed)
   {
     state = State.Created;
-    t.approve(buyer, payed[buyer]);
   }
 
   function accept()
@@ -105,6 +103,7 @@ contract Purchase {
     onlySeller
     inState(State.Proposed)
   {
+    require(t.transferFrom(buyer, this, price));
     state = State.Locked;
   }
 

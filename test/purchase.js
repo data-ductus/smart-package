@@ -47,33 +47,38 @@ contract('purchase-finish', function(accounts) {
     await purchase.setTokenAddress(token.address);
   });
   it("should transfer tokens, set sensors and change state to proposed", async function() {
-    let tokens_before_buyer;
-    let tokens_before_contract;
-    let tokens_after_buyer;
-    let tokens_after_contract;
+
 
     await token.approve(purchase.address, price, {from: buyer});
-    tokens_before_buyer = await token.balanceOf(buyer);
-    tokens_before_contract = await token.balanceOf(purchase.address);
     await purchase.propose(maxTemp, minTemp, acceleration);
-    tokens_after_buyer = await token.balanceOf(buyer);
-    tokens_after_contract = await token.balanceOf(purchase.address);
+
     const maxSensor = await purchase.getSensor('maxTemp');
     const minSensor = await purchase.getSensor('minTemp');
     const accSensor = await purchase.getSensor('acceleration');
     const state = await purchase.state();
 
-    assert.equal(tokens_after_buyer, tokens_before_buyer.toNumber()-price, "The tokens were not removed correctly from the buyer's account");
-    assert.equal(tokens_after_contract, tokens_before_contract.toNumber()+price, "The tokens were not added correctly to the contract's account");
+
     assert.equal(maxSensor[0], maxTemp, "The maximum temperature was not set correctly");
     assert.equal(minSensor[0], minTemp, "The minimum temperature was not set correctly");
     assert.equal(accSensor[0], acceleration, "The maximum acceleration was not set correctly");
     assert.equal(state, 1, "The state is not proposed (1)")
   });
   it("should change state to locked", async function() {
+    let tokens_before_buyer;
+    let tokens_before_contract;
+    let tokens_after_buyer;
+    let tokens_after_contract;
+
+    tokens_before_buyer = await token.balanceOf(buyer);
+    tokens_before_contract = await token.balanceOf(purchase.address);
     await purchase.accept({from: accounts[1]});
+    tokens_after_buyer = await token.balanceOf(buyer);
+    tokens_after_contract = await token.balanceOf(purchase.address);
+
     const state = await purchase.state();
 
+    assert.equal(tokens_after_buyer, tokens_before_buyer.toNumber()-price, "The tokens were not removed correctly from the buyer's account");
+    assert.equal(tokens_after_contract, tokens_before_contract.toNumber()+price, "The tokens were not added correctly to the contract's account");
     assert.equal(state, 2, "The state is not locked (2)");
   });
   it("should set providers", async function() {
