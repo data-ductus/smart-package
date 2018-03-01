@@ -1,5 +1,7 @@
 <script src="../../../node_modules/chart.js/src/chart.js"></script>
 <div class="container">
+  <br><label for="address">Contract address:</label><input type="text" id="address" [(ngModel)]="contractAddress">
+  <button id="send" (click)="startSimulation()">Start simulation</button>
   <div class="row">
     <agm-map [latitude]="loc.lat" [longitude]="loc.lng">
       <agm-direction *ngIf="dir" [origin]="dir.origin" [destination]="dir.destination"></agm-direction>

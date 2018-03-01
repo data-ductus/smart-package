@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { AmChartsService, AmChart } from '@amcharts/amcharts3-angular';
 import { Web3Service } from '../util/web3.service';
 import { TransportService } from './transport.service';
+import purchase_artifact from '../../../build/contracts/purchase.json';
 import {} from '@types/googlemaps';
 
 @Component({
@@ -15,6 +16,9 @@ export class TransportComponent implements OnInit {
   private pressChart: AmChart;
   private accChart: AmChart;
   private humidityChart: AmChart;
+  contract;
+  purchase;
+  contractAddress;
   account;
   time = [];
   tempData = [];
@@ -37,10 +41,20 @@ export class TransportComponent implements OnInit {
               private transportService: TransportService) { }
 
   ngOnInit() {
+    this.web3Service.artifactsToContract(purchase_artifact)
+      .then((purchaseAbstraction) => {
+        this.contract = purchaseAbstraction;
+      });
     this.getConfig();
-    this.getGeoCodeDirection();
     this.initCharts();
     this.watchAccount();
+  }
+  async startSimulation() {
+    console.log('abi', this.contract);
+    this.purchase = await this.web3Service.getContract(this.contract.abi, this.contractAddress);
+    this.transportService.setContract(this.purchase);
+    await this.transportService.getSensors();
+    await this.getGeoCodeDirection();
   }
 
   watchAccount() {
@@ -87,6 +101,7 @@ export class TransportComponent implements OnInit {
     } );
   }
   async step() {
+    await this.purchase.methods.transport().send({from: this.account});
     for (let i = 0; i < this.steps.length; i++) {
       this.AmCharts.updateChart(this.tempChart, () => {
         this.tempChart.dataProvider.push(this.transportService.randomTemp(i));
@@ -103,6 +118,7 @@ export class TransportComponent implements OnInit {
       this.dir['origin'] = this.steps[i]['end_location'];
       await this.delay(1000);
     }
+    await this.purchase.methods.deliver().send({from: this.account});
   }
 
 
@@ -111,7 +127,7 @@ export class TransportComponent implements OnInit {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  getGeoCodeDirection() {
+  async getGeoCodeDirection() {
     return this.http.get(this.directionUrl)
       .subscribe(data => {
         console.log(data);

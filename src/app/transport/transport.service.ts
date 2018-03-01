@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Web3Service } from '../util/web3.service';
 
 @Injectable()
 export class TransportService {
@@ -8,7 +9,12 @@ export class TransportService {
   pressure = 1;
   humidity = 20;
   notStdTemp = false;
-  constructor() { }
+  account;
+  contract;
+  maxTemp;
+  minTemp;
+  acc;
+  constructor(private web3Service: Web3Service) { this.watchAccount(); }
 
   randomTemp(i) {
     if (this.notStdTemp && Math.floor(Math.random() * 2) === 0) {
@@ -20,6 +26,14 @@ export class TransportService {
       this.notStdTemp = true;
     }
     this.currTemp = this.currTemp + Math.random() - 0.5;
+    if (this.currTemp > this.maxTemp[0]) {
+      this.contract.methods.sensorData('maxTemp', 'temp', this.currTemp).send({from: this.account});
+      console.log('warning max temp');
+    }
+    if (this.currTemp < this.minTemp[0]) {
+      this.contract.methods.sensorData('minTemp', 'temp', this.currTemp).send({from: this.account});
+      console.log('warning min temp');
+    }
     return{'temp': this.currTemp, 'time': i};
   }
 
@@ -29,6 +43,10 @@ export class TransportService {
       acc = Math.random() * 10 - 5;
     } else {
       acc = Math.random() * 0.01 - 0.005;
+    }
+    if (acc > this.acc[0]) {
+      this.contract.methods.sensorData('acceleration', 'acc', acc).send({from: this.account});
+      console.log('warning acceleration');
     }
     return {'acc': acc, 'time': i};
   }
@@ -52,5 +70,21 @@ export class TransportService {
       }
     }
     return {'humidity': this.humidity, 'time': i};
+  }
+  setContract(contract) {
+    this.contract = contract;
+  }
+
+  async getSensors() {
+    this.maxTemp = await this.contract.methods.getSensor('maxTemp').call();
+    this.minTemp = await this.contract.methods.getSensor('minTemp').call();
+    this.acc = await this.contract.methods.getSensor('acceleration').call();
+    console.log('sensors', this.maxTemp, this.minTemp, this.acc);
+  }
+
+  watchAccount() {
+    this.web3Service.accountsObservable.subscribe((accounts) => {
+      this.account = accounts[0];
+    });
   }
 }

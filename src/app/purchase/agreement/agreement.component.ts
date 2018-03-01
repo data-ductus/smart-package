@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {Web3Service} from "../../util/web3.service";
+import {Web3Service} from '../../util/web3.service';
 import purchase_artifact from '../../../../build/contracts/purchase.json';
 
 
@@ -28,7 +28,7 @@ export class AgreementComponent implements OnInit {
     this.web3Service.artifactsToContract(purchase_artifact)
       .then((purchaseAbstraction) => {
         this.contract = purchaseAbstraction;
-        this.getPurchase()
+        this.getPurchase();
       });
     console.log(this.account);
   }
