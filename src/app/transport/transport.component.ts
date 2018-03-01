@@ -3,31 +3,26 @@ import { HttpClient } from '@angular/common/http';
 import { AmChartsService, AmChart } from '@amcharts/amcharts3-angular';
 import {} from '@types/googlemaps';
 
-
-class SearchItem {
-  constructor(public track: string,
-              public artist: string,
-              public link: string,
-              public thumbnail: string,
-              public artistId: string) {
-  }
-}
-
-
 @Component({
   selector: 'app-transport',
   templateUrl: './transport.component.html',
   styleUrls: ['./transport.component.css']
 })
 export class TransportComponent implements OnInit {
-  private chart: AmChart;
+  private tempChart: AmChart;
+  private pressChart: AmChart;
+  private accChart: AmChart;
+  private humidityChart: AmChart;
   stdTemp = 20;
   currTemp = 20;
+  pressure = 1;
+  humidity = 20;
   notStdTemp = false;
-  tempData = [{data: [], label: 'temperature'}];
   time = [];
-  lineChartType = 'line';
-  chartData = [];
+  tempData = [];
+  accData = [];
+  pressData = [];
+  humidityData = [];
 
   loc = {
     lat: 24.799448,
@@ -37,28 +32,61 @@ export class TransportComponent implements OnInit {
   steps: any[];
   dir = undefined;
   configUrl = 'https://maps.googleapis.com/maps/api/geocode/json?address=Stockholm&key=AIzaSyCnD7Sr2wMskuqjxVGjP8EpDnd7Olf6fCg';
-  directionUrl = 'https://maps.googleapis.com/maps/api/directions/json?origin=Stockholm&destination=Skellefteå&key=AIzaSyCnD7Sr2wMskuqjxVGjP8EpDnd7Olf6fCg';
+  directionUrl = 'https://maps.googleapis.com/maps/api/directions/json?origin=Stockholm&destination=' +
+    'Skellefteå&key=AIzaSyCnD7Sr2wMskuqjxVGjP8EpDnd7Olf6fCg';
 
   constructor(private http: HttpClient, private AmCharts: AmChartsService) { }
 
   ngOnInit() {
     this.getConfig();
-    // this.mapInit();
     this.getGeoCodeDirection();
-    this.chart = this.AmCharts.makeChart( 'chartdiv', {
+    this.initCharts();
+  }
+
+  private initCharts() {
+    this.tempChart = this.AmCharts.makeChart( 'tempChartDiv', {
       'type': 'serial',
-      'dataProvider': this.chartData,
+      'dataProvider': this.tempData,
       'categoryField': 'time',
       'graphs': [ {
         'valueField': 'temp',
         'type': 'column'
       } ]
     } );
+    this.pressChart = this.AmCharts.makeChart( 'pressChartDiv', {
+      'type': 'serial',
+      'dataProvider': this.pressData,
+      'categoryField': 'time',
+      'graphs': [ {
+        'valueField': 'press',
+        'type': 'column'
+      } ]
+    } );
+    this.accChart = this.AmCharts.makeChart( 'accChartDiv', {
+      'type': 'serial',
+      'dataProvider': this.accData,
+      'categoryField': 'time',
+      'graphs': [ {
+        'valueField': 'acc',
+        'type': 'column'
+      } ]
+    } );
+    this.humidityChart = this.AmCharts.makeChart( 'humidityChartDiv', {
+      'type': 'serial',
+      'dataProvider': this.humidityData,
+      'categoryField': 'time',
+      'graphs': [ {
+        'valueField': 'humidity',
+        'type': 'column'
+      } ]
+    } );
   }
-
   async step() {
     for (let i = 0; i < this.steps.length; i++) {
       this.randomTemp(i);
+      this.randomAcceleration(i);
+      this.randomHumidity(i);
+      this.randomPressure(i);
       this.dir['origin'] = this.steps[i]['end_location'];
       await this.delay(1000);
     }
@@ -73,12 +101,47 @@ export class TransportComponent implements OnInit {
       this.currTemp = Math.random() * 80 - 40;
       this.notStdTemp = true;
     }
-    this.currTemp = this.currTemp + Math.random() * 2 - 1;
-    this.AmCharts.updateChart(this.chart, () => {
-      // Change whatever properties you want
-      this.chart.dataProvider.push({'temp': this.currTemp, 'time': i});
+    this.currTemp = this.currTemp + Math.random() - 0.5;
+    this.AmCharts.updateChart(this.tempChart, () => {
+      this.tempChart.dataProvider.push({'temp': this.currTemp, 'time': i});
     });
-    // this.tempData[0].data.push(this.currTemp);
+  }
+
+  private randomAcceleration(i) {
+    let acc = 0;
+    if (Math.floor(Math.random() * 20) === 0) {
+      acc = Math.random() * 10 - 5;
+    } else {
+      acc = Math.random() * 0.01 - 0.005;
+    }
+    this.AmCharts.updateChart(this.accChart, () => {
+      this.accChart.dataProvider.push({'acc': acc, 'time': i});
+    });
+  }
+
+  private randomPressure(i) {
+    if (Math.floor(Math.random() * 20) === 0) {
+      this.pressure = Math.random() * 100000;
+    } else {
+      this.pressure = Math.random() * 5;
+    }
+    this.AmCharts.updateChart(this.pressChart, () => {
+      this.pressChart.dataProvider.push({'press': this.pressure, 'time': i});
+    });
+  }
+
+  private randomHumidity(i) {
+    if (Math.floor(Math.random() * 20) === 0) {
+      this.humidity = Math.random() * 100;
+    } else {
+      this.humidity += Math.random() - 0.5;
+      if (this.humidity < 0) {
+        this.humidity = 0;
+      }
+    }
+    this.AmCharts.updateChart(this.humidityChart, () => {
+      this.humidityChart.dataProvider.push({'humidity': this.humidity, 'time': i});
+    });
   }
 
   delay(ms: number) {

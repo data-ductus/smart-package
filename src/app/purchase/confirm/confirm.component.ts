@@ -20,7 +20,7 @@ export class ConfirmComponent implements OnInit {
     this.web3Service.artifactsToContract(purchase_artifact)
       .then((purchaseAbstraction) => {
         this.contract = purchaseAbstraction;
-        this.getPurchase()
+        this.getPurchase();
       });
   }
 
