@@ -31,11 +31,11 @@ export class ConfirmComponent implements OnInit {
   }
 
   async satisfied() {
-    await this.purchase.methods.satisfied().send();
+    await this.purchase.methods.satisfied().send({from: this.account});
   }
 
   async dissatisfied() {
-    await this.purchase.methods.dissatisfied().send();
+    await this.purchase.methods.dissatisfied().send({from: this.account});
   }
 
   async withdraw() {

@@ -16,5 +16,9 @@
       "es2017",
       "dom"
     ]
-  }
+  },
+  "include": [
+    "src/**/*",
+    "node_modules/agm-direction/src/agm-direction.module.ts"
+  ]
 }
