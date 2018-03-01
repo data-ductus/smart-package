@@ -19,6 +19,8 @@ import { TransportComponent } from './transport/transport.component';
 import { AgmCoreModule } from '@agm/core';
 import { AgmDirectionModule } from 'agm-direction';
 
+import { TransportService } from './transport/transport.service';
+
 const appRoutes: Routes = [
   { path: 'transport', component: TransportComponent },
   { path: '', component: PurchaseComponent }
@@ -47,7 +49,7 @@ const appRoutes: Routes = [
     HttpClientModule,
     RouterModule.forRoot(appRoutes)
   ],
-  providers: [Web3Service],
+  providers: [Web3Service, TransportService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

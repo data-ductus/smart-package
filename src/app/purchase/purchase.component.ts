@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import token_artifact from '../../../build/contracts/token.json';
-import {Web3Service} from "../util/web3.service";
+import {Web3Service} from '../util/web3.service';
 
 @Component({
   selector: 'app-purchase',
