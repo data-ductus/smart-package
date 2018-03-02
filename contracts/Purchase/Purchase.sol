@@ -2,6 +2,7 @@ pragma solidity ^0.4.0;
 
 import "../Token/Token.sol";
 import "./SensorLibrary.sol";
+import "./PurchaseLibrary.sol";
 
 contract Purchase {
   SensorLibrary.Sensors sensors;
@@ -16,6 +17,13 @@ contract Purchase {
   /////////////////////
   ///---Modifiers---///
   /////////////////////
+
+  event Proposed(address from);
+  event Declined(address from);
+  event Accepted(address from);
+  event Delivered(address from);
+  event Satisfied(address from);
+  event Dissatisfied(address from);
 
   modifier condition(bool _condition) {
     require(_condition);
@@ -84,6 +92,7 @@ contract Purchase {
 
     //t.approve(buyer, payed[msg.sender]-price);
     buyer = msg.sender;
+    Proposed(msg.sender);
   }
 
   ////////////////////
@@ -96,6 +105,7 @@ contract Purchase {
     inState(State.Proposed)
   {
     state = State.Created;
+    Declined(msg.sender);
   }
 
   function accept()
@@ -105,6 +115,7 @@ contract Purchase {
   {
     require(t.transferFrom(buyer, this, price));
     state = State.Locked;
+    Accepted(msg.sender);
   }
 
   //////////////////
@@ -143,6 +154,7 @@ contract Purchase {
     inState(State.Transit)
   {
     state = State.Confirm;
+    Delivered(msg.sender);
   }
 
   ///////////////////
@@ -156,6 +168,7 @@ contract Purchase {
   {
     state = State.Inactive;
     t.approve(seller, price);
+    Satisfied(msg.sender);
   }
 
   function dissatisfied()
@@ -165,6 +178,7 @@ contract Purchase {
   {
     state = State.Inactive;
     t.approve(buyer, price);
+    Dissatisfied(msg.sender);
   }
 
   ///////////////////////////

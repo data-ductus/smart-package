@@ -35,6 +35,7 @@ export class AgreementComponent implements OnInit {
 
   async getPurchase() {
     this.purchase = await this.web3Service.getContract(this.contract.abi, this.contractAddress);
+    this.watchFunction();
     this.model.seller = await this.purchase.methods.seller().call();
     this.getSensors();
     console.log('purchase', this.purchase);
@@ -79,5 +80,14 @@ export class AgreementComponent implements OnInit {
     } catch (e) {
       console.log(e);
     }
+  }
+  watchFunction() {
+    this.purchase.once('Proposed', function (error, event) {
+      if (!error) {
+        console.log('proposed', event);
+      } else {
+        console.log('event error ', error);
+      }
+    });
   }
 }

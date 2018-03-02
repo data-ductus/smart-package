@@ -21,17 +21,17 @@ export class TransportService {
       this.currTemp = this.stdTemp + Math.random() * 3 - 1;
       this.notStdTemp = false;
     }
-    if (Math.floor(Math.random() * 100) === 99) {
-      this.currTemp = Math.random() * 80 - 40;
+    if (Math.floor(Math.random() * 15) === 0) {
+      this.currTemp = Math.random() * 80 - 30;
       this.notStdTemp = true;
     }
     this.currTemp = this.currTemp + Math.random() - 0.5;
     if (this.currTemp > this.maxTemp[0]) {
-      this.contract.methods.sensorData('maxTemp', 'temp', this.currTemp).send({from: this.account});
+      this.contract.methods.sensorData('maxTemp', 'temp', Math.floor(this.currTemp)).send({from: this.account});
       console.log('warning max temp');
     }
     if (this.currTemp < this.minTemp[0]) {
-      this.contract.methods.sensorData('minTemp', 'temp', this.currTemp).send({from: this.account});
+      this.contract.methods.sensorData('minTemp', 'temp', Math.floor(this.currTemp)).send({from: this.account});
       console.log('warning min temp');
     }
     return{'temp': this.currTemp, 'time': i};
@@ -39,13 +39,13 @@ export class TransportService {
 
   randomAcceleration(i) {
     let acc = 0;
-    if (Math.floor(Math.random() * 20) === 0) {
+    if (Math.floor(Math.random() * 15) === 0) {
       acc = Math.random() * 10 - 5;
     } else {
       acc = Math.random() * 0.01 - 0.005;
     }
-    if (acc > this.acc[0]) {
-      this.contract.methods.sensorData('acceleration', 'acc', acc).send({from: this.account});
+    if (Math.abs(acc) > this.acc[0]) {
+      this.contract.methods.sensorData('acceleration', 'acc', Math.abs(acc)).send({from: this.account});
       console.log('warning acceleration');
     }
     return {'acc': acc, 'time': i};
