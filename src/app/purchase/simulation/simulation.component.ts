@@ -42,20 +42,6 @@ export class SimulationComponent implements OnInit {
     await this.getSensor('maxTemp');
   }
 
-  add() {
-    this.simulationData.push(Object.assign({}, this.model));
-  }
-
-  async start() {
-    await this.purchase.methods.transport().send({from: this.account});
-    for (let i = 0; i < this.simulationData.length; i++) {
-      await this.purchase.methods.sensorData(this.simulationData[i].type, this.simulationData[i].id,
-        this.simulationData[i].value).send({from: this.account});
-    }
-    await this.purchase.methods.deliver().send();
-    await this.getSensor('maxTemp');
-  }
-
   private async getSensor(type: string) {
     const sensor = await this.purchase.methods.getSensor(type).call();
     console.log('sensor', sensor);

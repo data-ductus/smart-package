@@ -8,6 +8,7 @@ import {Component, Input, OnInit} from '@angular/core';
 export class AcceptComponent implements OnInit {
   @Input() account: any;
   @Input() purchase: any;
+  @Input() state: number;
 
   constructor() { }
 

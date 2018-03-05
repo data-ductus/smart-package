@@ -1,3 +1,5 @@
-<br><br><button *ngIf="seller != account" id="satisfied" (click)="satisfied()">Satisfied</button>
-<button *ngIf="seller != account" id="dissatisfied" (click)="dissatisfied()">Dissatisfied</button>
-<br><br><button id="withdraw" (click)="withdraw()">Withdraw tokens</button>
+<div *ngIf="state==4">
+  <br><br><button *ngIf="seller != account" id="satisfied" (click)="satisfied()">Satisfied</button>
+  <button *ngIf="seller != account" id="dissatisfied" (click)="dissatisfied()">Dissatisfied</button>
+</div>
+<button id="withdraw" (click)="withdraw()">Withdraw tokens</button>

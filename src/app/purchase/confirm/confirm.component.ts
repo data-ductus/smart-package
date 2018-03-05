@@ -12,6 +12,7 @@ export class ConfirmComponent implements OnInit {
   @Input() contractAddress;
   @Input() account;
   @Input() token;
+  @Input() state: number;
   contract: any;
   purchase: any;
   seller: string;

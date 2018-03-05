@@ -1,15 +1,25 @@
-<h3>Agreement</h3>
-<div *ngIf="account==model.seller">
-  <br><label for="amount">Price:</label><input type="text" id="amount" placeholder="e.g., 95" [(ngModel)]="model.price">
-  <button id="send" (click)="setPrice()">Set price</button>
-  <button id="abort" (click)="abort()">Abort</button>
-  <br> Max temp: {{model.maxT[0]}}, Min temp: {{model.minT[0]}}, Acceleration: {{model.acc[0]}}
-  <br><app-accept [account]="account" [purchase]="purchase"></app-accept>
+<div class="card-body">
+  <div *ngIf="state!=0">
+    Price: {{model.price}}
+    <br> Max temp: {{model.maxT[0]}}, Min temp: {{model.minT[0]}}, Acceleration: {{model.acc[0]}}
+  </div>
+  <div *ngIf="account==model.seller && state==0">
+    <label for="amount">Price:</label><input type="text" id="amount" placeholder="e.g., 95" [(ngModel)]="model.price">
+    <button id="send" (click)="setPrice()">Set price</button>
+    <button id="abort" (click)="abort()">Abort</button>
+    <br> Max temp: {{model.maxT[0]}}, Min temp: {{model.minT[0]}}, Acceleration: {{model.acc[0]}}
+  </div>
+  <app-accept *ngIf="account==model.seller && state==1" [account]="account" [purchase]="purchase"></app-accept>
+  <div *ngIf="account!=model.seller && state==0">
+    Price: {{model.price}}
+    <br><label for="maxT">Max temp:</label><input type="text" id="maxT" placeholder="e.g., 10" [(ngModel)]="model.maxT[0]">
+    <br><label for="minT">Min temp:</label><input type="text" id="minT" placeholder="e.g., 10" [(ngModel)]="model.minT[0]">
+    <br><label for="acc">Acceleration:</label><input type="text" id="acc" placeholder="e.g., 10" [(ngModel)]="model.acc[0]">
+    <br><button id="propose" (click)="propose()">Propose</button><br>
+  </div>
+  <app-simulation *ngIf="state==2" [contractAddress]="contractAddress" [account]="account"></app-simulation>
+  <app-confirm [state]="state" [account]="account" [contractAddress]="contractAddress" [token]="token"></app-confirm>
 </div>
-<div *ngIf="account!=model.seller">
-  <br><label for="maxT">Max temp:</label><input type="text" id="maxT" placeholder="e.g., 10" [(ngModel)]="model.maxT[0]">
-  <br><label for="minT">Min temp:</label><input type="text" id="minT" placeholder="e.g., 10" [(ngModel)]="model.minT[0]">
-  <br><label for="acc">Acceleration:</label><input type="text" id="acc" placeholder="e.g., 10" [(ngModel)]="model.acc[0]">
-  <br><button id="propose" (click)="propose()">Propose</button>
-</div>
+
+
 
