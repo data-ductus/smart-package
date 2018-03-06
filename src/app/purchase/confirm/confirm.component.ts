@@ -12,10 +12,12 @@ export class ConfirmComponent implements OnInit {
   @Input() contractAddress;
   @Input() account;
   @Input() token;
+  @Input() buyer: string;
   @Input() state: number;
   contract: any;
   purchase: any;
-  seller: string;
+  deployedToken: any;
+  allowance = 0;
   constructor(private web3Service: Web3Service, private transportService: TransportService) { }
 
   ngOnInit() {
@@ -23,13 +25,18 @@ export class ConfirmComponent implements OnInit {
       .then((purchaseAbstraction) => {
         this.contract = purchaseAbstraction;
         this.getPurchase();
+        this.getToken();
       });
+  }
+
+  async getToken() {
+    this.deployedToken = await this.token.deployed();
+    this.getAllowance();
   }
 
   async getPurchase() {
     this.purchase = await this.web3Service.getContract(this.contract.abi, this.contractAddress);
     this.purchase.options.from = this.account;
-    this.seller = await this.purchase.methods.seller().call();
   }
 
   async satisfied() {
@@ -41,14 +48,13 @@ export class ConfirmComponent implements OnInit {
     this.transportService.getSensors();
     await this.purchase.methods.dissatisfied().send({from: this.account});
   }
+  async getAllowance() {
+    this.allowance = await this.deployedToken.allowance(this.contractAddress, this.account, {from: this.account});
+  }
 
   async withdraw() {
     try {
-      this.transportService.setContract(this.purchase);
-      this.transportService.getSensors();
-      const deployedToken = await this.token.deployed();
-      const allowance = await deployedToken.allowance(this.contractAddress, this.account, {from: this.account});
-      await deployedToken.transferFrom.sendTransaction(this.contractAddress, this.account, allowance, {from: this.account});
+      await this.deployedToken.transferFrom.sendTransaction(this.contractAddress, this.account, this.allowance, {from: this.account, gas: 64461});
     } catch (e) {
       console.log(e);
     }

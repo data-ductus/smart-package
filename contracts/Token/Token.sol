@@ -3,6 +3,7 @@ pragma solidity ^0.4.0;
 import "./Owned.sol";
 import "./SafeMath.sol";
 import "./ERC20.sol";
+import "../Purchase/PurchaseLibrary.sol";
 
 contract Token is Owned, SafeMath, ERC20 {
   string public symbol;
@@ -20,6 +21,7 @@ contract Token is Owned, SafeMath, ERC20 {
     _totalSupply = 100000000000000000000000000;
     balances[msg.sender] = _totalSupply;
     Transfer(address(0), msg.sender, _totalSupply);
+    //PurchaseLibrary.setTokenAddress(this);
   }
 
 

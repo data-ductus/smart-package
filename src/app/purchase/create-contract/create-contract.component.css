@@ -2,3 +2,6 @@
   margin-top: 10px;
   width: 50%;
 }
+.card-body {
+  background-color: antiquewhite;
+}

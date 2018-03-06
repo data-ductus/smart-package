@@ -12,15 +12,19 @@ export class AgreementComponent implements OnInit {
   @Input() contractAddress: string;
   @Input() account: string;
   @Input() token: any;
-  state: number;
+  state = 0;
   contract: any;
   purchase: any;
+  maxT = ['Not set'];
+  minT = ['Not set'];
+  acc = ['Not set'];
   model = {
     price: 0,
     seller: '',
-    maxT: [0],
-    minT: [0],
-    acc: [0],
+    buyer: '',
+    maxTThreshold: '',
+    minTThreshold: '',
+    accThreshold: '',
   };
 
   constructor(private web3Service: Web3Service) { }
@@ -36,22 +40,24 @@ export class AgreementComponent implements OnInit {
 
   async getPurchase() {
     this.purchase = await this.web3Service.getContract(this.contract.abi, this.contractAddress);
-    setInterval(() => this.watchFunction(), 100);
+    setInterval(() => this.watchState(), 100);
     this.model.seller = await this.purchase.methods.seller().call();
-    this.getSensors();
-    console.log('purchase', this.purchase);
+    setInterval(() => this.getBuyer(), 1000);
+    setInterval(() => this.getSensors(), 100);
     await this.getPrice();
+  }
+  async getBuyer() {
+    this.model.buyer = await this.purchase.methods.buyer().call();
   }
 
   async getPrice() {
     this.model.price = await this.purchase.methods.price().call();
-    console.log(this.model.price);
   }
 
   async getSensors() {
-    this.model.maxT = await this.purchase.methods.getSensor('maxTemp').call();
-    this.model.minT = await this.purchase.methods.getSensor('minTemp').call();
-    this.model.acc = await this.purchase.methods.getSensor('acceleration').call();
+    this.maxT = await this.purchase.methods.getSensor('maxTemp').call();
+    this.minT = await this.purchase.methods.getSensor('minTemp').call();
+    this.acc = await this.purchase.methods.getSensor('acceleration').call();
   }
 
   async setPrice() {
@@ -75,14 +81,26 @@ export class AgreementComponent implements OnInit {
   async propose() {
     try {
       const deployedToken = await this.token.deployed();
+      let maxTThreshold = +this.model.maxTThreshold;
+      let minTThreshold = +this.model.minTThreshold;
+      let accThreshold = +this.model.accThreshold;
+      if (this.model.maxTThreshold === '') {
+        maxTThreshold = -999;
+      }
+      if (this.model.minTThreshold === '') {
+        minTThreshold = -999;
+      }
+      if (this.model.accThreshold === '') {
+        accThreshold = -999;
+      }
       await deployedToken.approve.sendTransaction(this.contractAddress, this.model.price, {from: this.account});
-      await this.purchase.methods.propose(this.model.maxT[0], this.model.minT[0], this.model.acc[0]).send(
+      await this.purchase.methods.propose(maxTThreshold, minTThreshold, accThreshold).send(
         {from: this.account});
     } catch (e) {
       console.log(e);
     }
   }
-  async watchFunction() {
+  async watchState() {
     this.state = await this.purchase.methods.state().call();
   }
 }

@@ -53,7 +53,7 @@ export class TransportComponent implements OnInit {
     console.log('abi', this.contract);
     this.purchase = await this.web3Service.getContract(this.contract.abi, this.contractAddress);
     this.transportService.setContract(this.purchase);
-    await this.transportService.getSensors();
+    setInterval(() => this.transportService.getSensors(), 100);
     await this.getGeoCodeDirection();
   }
 
@@ -103,11 +103,13 @@ export class TransportComponent implements OnInit {
   async step() {
     await this.purchase.methods.transport().send({from: this.account});
     for (let i = 0; i < this.steps.length; i++) {
+      const temp = await this.transportService.randomTemp(i);
       this.AmCharts.updateChart(this.tempChart, () => {
-        this.tempChart.dataProvider.push(this.transportService.randomTemp(i));
+        this.tempChart.dataProvider.push(temp);
       });
+      const acc = await this.transportService.randomAcceleration(i);
       this.AmCharts.updateChart(this.accChart, () => {
-        this.accChart.dataProvider.push(this.transportService.randomAcceleration(i));
+        this.accChart.dataProvider.push(acc);
       });
       this.AmCharts.updateChart(this.humidityChart, () => {
         this.humidityChart.dataProvider.push(this.transportService.randomHumidity(i));
@@ -116,7 +118,7 @@ export class TransportComponent implements OnInit {
         this.pressChart.dataProvider.push(this.transportService.randomPressure(i));
       });
       this.dir['origin'] = this.steps[i]['end_location'];
-      await this.delay(1000);
+      await this.delay(2000);
     }
     await this.purchase.methods.deliver().send({from: this.account});
   }

@@ -39,7 +39,6 @@ export class CreateContractComponent implements OnInit {
     try {
       const deployedDapp = await this.dapp.deployed();
       this.contracts = await deployedDapp.getAllContracts.call({from: this.account});
-      console.log(this.contracts)
     } catch (e) {
       console.log(e);
     }

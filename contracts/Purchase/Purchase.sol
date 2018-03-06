@@ -9,10 +9,10 @@ contract Purchase {
   uint public price;
   enum State { Created, Proposed, Locked, Transit, Confirm, Inactive }
   State public state;
-  //mapping(address => uint) payed;
   Token t;
   address public seller;
   address public buyer;
+  PurchaseLibrary.Purchase purchaseInfo;
 
   /////////////////////
   ///---Modifiers---///
@@ -144,7 +144,7 @@ contract Purchase {
     public
     inState(State.Transit)
     condition(keccak256(sensors.sensors[sensorType].provider) == keccak256(id) &&
-    (value < sensors.sensors[sensorType].value) == (keccak256(sensorType) == keccak256('minTemp')))
+    (value < sensors.sensors[sensorType].threshold) == (keccak256(sensorType) == keccak256('minTemp')))
   {
     sensors.sensors[sensorType].warning = true;
   }
@@ -193,8 +193,8 @@ contract Purchase {
   function getSensor(string name)
     public
     constant
-    returns(uint value, bool warning, string provider)
+    returns(uint threshold, bool warning, string provider, bool set)
   {
-    return (sensors.sensors[name].value, sensors.sensors[name].warning, sensors.sensors[name].provider);
+    return (sensors.sensors[name].threshold, sensors.sensors[name].warning, sensors.sensors[name].provider, sensors.sensors[name].set);
   }
 }

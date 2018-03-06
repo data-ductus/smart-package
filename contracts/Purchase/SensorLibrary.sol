@@ -1,22 +1,26 @@
 pragma solidity ^0.4.0;
 
 library SensorLibrary {
+
+  uint constant notSet = uint(-999);
+
   struct Sensor {
-    uint value;
+    uint threshold;
     bool warning;
     string provider;
+    bool set;
   }
   struct Sensors {
     mapping(string => Sensor) sensors;
   }
   event Threshold(uint maxTemp, uint minTemp, uint Acceleration);
   /*
-  function setMaxTemp(Sensors storage self, uint value)
+  function setMaxTemp(Sensors storage self, uint threshold)
     public
     returns(bool)
   {
-    self.sensors["maxTemp"].value = value;
-    if (value == 0) {
+    self.sensors["maxTemp"].threshold = threshold;
+    if (threshold == 0) {
       self.sensors["maxTemp"].active = false;
     } else {
       self.sensors["maxTemp"].active = true;
@@ -24,13 +28,13 @@ library SensorLibrary {
     return true;
   }
 
-  function setMinTemp(Sensors storage self, uint value)
+  function setMinTemp(Sensors storage self, uint threshold)
     public
     returns(bool)
   {
-    self.sensors["minTemp"].value = value;
+    self.sensors["minTemp"].threshold = threshold;
     self.sensors["minTemp"].forbidLower = true;
-    if (value == 0) {
+    if (threshold == 0) {
       self.sensors["minTemp"].active = false;
     } else {
       self.sensors["minTemp"].active = true;
@@ -38,12 +42,12 @@ library SensorLibrary {
     return true;
   }
 
-  function setMaxAcceleration(Sensors storage self, uint value)
+  function setMaxAcceleration(Sensors storage self, uint threshold)
     public
     returns(bool)
   {
-    self.sensors["acceleration"].value = value;
-    if (value == 0) {
+    self.sensors["acceleration"].threshold = threshold;
+    if (threshold == 0) {
       self.sensors["acceleration"].active = false;
     } else {
       self.sensors["acceleration"].active = true;
@@ -51,14 +55,26 @@ library SensorLibrary {
     return true;
   }
   */
+  function initSensor(Sensors storage self, string sensor, uint threshold) {
+
+  }
   function setSensors(Sensors storage self, uint maxTemp, uint minTemp, uint acceleration)
     public
     returns(bool)
   {
-    self.sensors["maxTemp"].value = maxTemp;
-    self.sensors["minTemp"].value = minTemp;
-    self.sensors["acceleration"].value = acceleration;
-    Threshold(self.sensors["maxTemp"].value, self.sensors["minTemp"].value, self.sensors["acceleration"].value);
+    if(keccak256(maxTemp) != keccak256(notSet)) {
+      self.sensors["maxTemp"].threshold = maxTemp;
+      self.sensors["maxTemp"].set = true;
+    }
+    if(keccak256(minTemp) != keccak256(notSet)) {
+      self.sensors["minTemp"].threshold = minTemp;
+      self.sensors["minTemp"].set = true;
+    }
+    if(keccak256(acceleration) != keccak256(notSet)) {
+      self.sensors["acceleration"].threshold = acceleration;
+      self.sensors["acceleration"].set = true;
+    }
+    Threshold(self.sensors["maxTemp"].threshold, self.sensors["minTemp"].threshold, self.sensors["acceleration"].threshold);
     return true;
   }
 
