@@ -11,7 +11,6 @@ export class PurchaseComponent implements OnInit {
 
   accounts: string[];
   token: any;
-
   model = {
     balance: 0,
     account: ''

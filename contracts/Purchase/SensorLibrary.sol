@@ -77,5 +77,4 @@ library SensorLibrary {
     Threshold(self.sensors["maxTemp"].threshold, self.sensors["minTemp"].threshold, self.sensors["acceleration"].threshold);
     return true;
   }
-
 }

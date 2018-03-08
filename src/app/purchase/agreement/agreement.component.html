@@ -1,11 +1,11 @@
 <div class="card-header text-white"
-     [ngClass]="{'bg-dark' : account == model.seller, 'bg-info' : account == model.buyer,
-     'bg-secondary' : account != model.seller && account != model.buyer}">
+     [ngClass]="{'bg-dark' : account == purchaseInfo.seller, 'bg-info' : account == purchaseInfo.buyer,
+     'bg-secondary' : account != purchaseInfo.seller && account != purchaseInfo.buyer}">
   Contract {{contractAddress}}
 </div>
 <div class="card-body">
-  <div *ngIf="state!=0">
-    Price: {{model.price}}
+  <div *ngIf="purchaseInfo.state!=0">
+    Price: {{purchaseInfo.price}}
     <br>
     <div *ngIf="maxT[3]">
       Max temp: {{maxT[0]}}&deg;C <i *ngIf="maxT['warning']" class="fa fa-warning"></i>
@@ -17,21 +17,23 @@
       Acceleration: {{acc[0]}}g <i *ngIf="acc['warning']" class="fa fa-warning"></i>
     </div>
   </div>
-  <div *ngIf="account==model.seller && state==0">
-    <label for="amount">Price:</label><input type="text" id="amount" placeholder="e.g., 95" [(ngModel)]="model.price">
+  <div *ngIf="account==purchaseInfo.seller && purchaseInfo.state==0">
+    <label for="amount">Price:</label><input type="text" id="amount" placeholder="e.g., 95" [(ngModel)]="price">
     <button id="send" (click)="setPrice()">Set price</button>
     <button id="abort" (click)="abort()">Abort</button>
   </div>
-  <app-accept *ngIf="account==model.seller && state==1" [account]="account" [purchase]="purchase"></app-accept>
-  <div *ngIf="account!=model.seller && state==0">
-    Price: {{model.price}}
+  <app-accept *ngIf="account==purchaseInfo.seller && purchaseInfo.state==1" [account]="account" [purchase]="purchase"
+  [contractAddress]="contractAddress"></app-accept>
+  <div *ngIf="account!=purchaseInfo.seller && purchaseInfo.state==0">
+    Price: {{purchaseInfo.price}}
     <br><label for="maxT">Max temp:</label><input type="text" id="maxT" [(ngModel)]="model.maxTThreshold">
     <br><label for="minT">Min temp:</label><input type="text" id="minT" [(ngModel)]="model.minTThreshold">
     <br><label for="acc">Acceleration:</label><input type="text" id="acc" [(ngModel)]="model.accThreshold">
     <br><button id="propose" (click)="propose()">Propose</button><br>
   </div>
-  <app-simulation *ngIf="state==2" [contractAddress]="contractAddress" [account]="account"></app-simulation>
-  <app-confirm [state]="state" [account]="account" [contractAddress]="contractAddress" [token]="token" [buyer]="buyer"></app-confirm>
+  <app-simulation *ngIf="purchaseInfo.state==2" [contractAddress]="contractAddress" [account]="account" [purchase]="purchase"></app-simulation>
+  <app-confirm [state]="purchaseInfo.state" [account]="account" [contractAddress]="contractAddress" [token]="token"
+               [buyer]="purchaseInfo.buyer" [purchase]="purchase"></app-confirm>
 </div>
 
 

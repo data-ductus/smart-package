@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { AmChartsService, AmChart } from '@amcharts/amcharts3-angular';
 import { Web3Service } from '../util/web3.service';
 import { TransportService } from './transport.service';
-import purchase_artifact from '../../../build/contracts/purchase.json';
+import purchase_artifact from '../../../build/contracts/purchase2.json';
+import dapp_artifact from '../../../build/contracts/dapp.json';
 import {} from '@types/googlemaps';
 
 @Component({
@@ -51,9 +52,12 @@ export class TransportComponent implements OnInit {
   }
   async startSimulation() {
     console.log('abi', this.contract);
-    this.purchase = await this.web3Service.getContract(this.contract.abi, this.contractAddress);
+    const dappAbstraction = await this.web3Service.artifactsToContract(dapp_artifact);
+    const deployedDapp = await dappAbstraction.deployed();
+    const purchaseAddress = await deployedDapp.purchase2();
+    this.purchase = await this.web3Service.getContract(this.contract.abi, purchaseAddress);
     this.transportService.setContract(this.purchase);
-    setInterval(() => this.transportService.getSensors(), 100);
+    setInterval(() => this.transportService.getSensors(this.contractAddress), 100);
     await this.getGeoCodeDirection();
   }
 
@@ -101,30 +105,27 @@ export class TransportComponent implements OnInit {
     } );
   }
   async step() {
-    await this.purchase.methods.transport().send({from: this.account});
+    await this.purchase.methods.transport(this.contractAddress).send({from: this.account});
     for (let i = 0; i < this.steps.length; i++) {
-      const temp = await this.transportService.randomTemp(i);
+      const temp = await this.transportService.randomTemp(this.contractAddress, i);
       this.AmCharts.updateChart(this.tempChart, () => {
         this.tempChart.dataProvider.push(temp);
       });
-      const acc = await this.transportService.randomAcceleration(i);
+      const acc = await this.transportService.randomAcceleration(this.contractAddress, i);
       this.AmCharts.updateChart(this.accChart, () => {
         this.accChart.dataProvider.push(acc);
       });
       this.AmCharts.updateChart(this.humidityChart, () => {
-        this.humidityChart.dataProvider.push(this.transportService.randomHumidity(i));
+        this.humidityChart.dataProvider.push(this.transportService.randomHumidity(this.contractAddress, i));
       });
       this.AmCharts.updateChart(this.pressChart, () => {
-        this.pressChart.dataProvider.push(this.transportService.randomPressure(i));
+        this.pressChart.dataProvider.push(this.transportService.randomPressure(this.contractAddress, i));
       });
       this.dir['origin'] = this.steps[i]['end_location'];
       await this.delay(2000);
     }
-    await this.purchase.methods.deliver().send({from: this.account});
+    await this.purchase.methods.deliver(this.contractAddress).send({from: this.account});
   }
-
-
-
   delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }

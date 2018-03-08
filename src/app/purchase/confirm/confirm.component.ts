@@ -1,7 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {Web3Service} from '../../util/web3.service';
-import { TransportService } from '../../transport/transport.service';
-import purchase_artifact from '../../../../build/contracts/purchase.json';
 
 @Component({
   selector: 'app-confirm',
@@ -14,19 +12,14 @@ export class ConfirmComponent implements OnInit {
   @Input() token;
   @Input() buyer: string;
   @Input() state: number;
+  @Input() purchase: any;
   contract: any;
-  purchase: any;
   deployedToken: any;
   allowance = 0;
-  constructor(private web3Service: Web3Service, private transportService: TransportService) { }
+  constructor(private web3Service: Web3Service) { }
 
   ngOnInit() {
-    this.web3Service.artifactsToContract(purchase_artifact)
-      .then((purchaseAbstraction) => {
-        this.contract = purchaseAbstraction;
-        this.getPurchase();
-        this.getToken();
-      });
+    this.getToken();
   }
 
   async getToken() {
@@ -40,20 +33,22 @@ export class ConfirmComponent implements OnInit {
   }
 
   async satisfied() {
-    this.transportService.getSensors();
-    await this.purchase.methods.satisfied().send({from: this.account});
+    await this.purchase.methods.satisfied(this.contractAddress).send({from: this.account});
   }
 
   async dissatisfied() {
-    this.transportService.getSensors();
-    await this.purchase.methods.dissatisfied().send({from: this.account});
+    await this.purchase.methods.dissatisfied(this.contractAddress).send({from: this.account});
   }
   async getAllowance() {
-    this.allowance = await this.deployedToken.allowance(this.contractAddress, this.account, {from: this.account});
+    this.allowance = await this.deployedToken.allowance(this.contractAddress, this.account);
   }
+
 
   async withdraw() {
     try {
+      console.log('withdraw ', this.deployedToken, this.contractAddress, this.allowance);
+      const balance = await this.deployedToken.balanceOf(this.contractAddress);
+      console.log('balance', balance);
       await this.deployedToken.transferFrom.sendTransaction(this.contractAddress, this.account, this.allowance, {from: this.account, gas: 64461});
     } catch (e) {
       console.log(e);

@@ -9,6 +9,7 @@ export class AcceptComponent implements OnInit {
   @Input() account: any;
   @Input() purchase: any;
   @Input() state: number;
+  @Input() contractAddress: any;
 
   constructor() { }
 
@@ -17,17 +18,17 @@ export class AcceptComponent implements OnInit {
 
   async acceptProposal() {
     try {
-      await this.purchase.methods.accept().send({from: this.account})
+      await this.purchase.methods.accept(this.contractAddress).send({from: this.account});
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   }
 
   async declineProposal() {
     try {
-      await this.purchase.methods.decline().send({from: this.account})
+      await this.purchase.methods.decline(this.contractAddress).send({from: this.account});
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   }
 

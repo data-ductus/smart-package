@@ -1,13 +1,15 @@
 <div class="card">
   <div class="card-body">
     <label for="amount">Price:</label><input type="text" id="amount"[(ngModel)]="price">
-    <button id="send" (click)="createContract()">Create contract</button>
+    <!--<button id="create" (click)="createContract()">Create contract</button>
+    <button id="create2" (click)="createContractUsingLibrary()">Create contract using library</button>-->
+    <button id="create3" (click)="createMinimalPurchase()">Create minimal purchase</button>
   </div>
 </div>
 <div *ngFor="let c of contracts">
   <div class="card">
 
-    <app-agreement [contractAddress]="c" [account]="account" [token]="token"></app-agreement>
+    <app-agreement [contractAddress]="c" [account]="account" [token]="token" [purchase]="purchase"></app-agreement>
   </div>
 </div>
 

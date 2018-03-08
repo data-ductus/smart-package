@@ -12,7 +12,6 @@ contract Purchase {
   Token t;
   address public seller;
   address public buyer;
-  PurchaseLibrary.Purchase purchaseInfo;
 
   /////////////////////
   ///---Modifiers---///

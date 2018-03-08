@@ -19,7 +19,7 @@ export class TransportService {
   accWarning = false;
   constructor(private web3Service: Web3Service) { this.watchAccount(); }
 
-  async randomTemp(i) {
+  async randomTemp(contractAddress, i) {
     if (this.notStdTemp && Math.floor(Math.random() * 2) === 0) {
       this.currTemp = this.stdTemp + Math.random() * 3 - 1;
       this.notStdTemp = false;
@@ -32,7 +32,7 @@ export class TransportService {
     console.log('warning', this.maxTempWarning);
     if (this.currTemp > this.maxTemp[0] && this.maxTemp['set'] && !this.maxTempWarning) {
       try {
-        await this.contract.methods.sensorData('maxTemp', 'temp', Math.floor(this.currTemp)).send({from: this.account});
+        await this.contract.methods.sensorData(contractAddress, 'maxTemp', 'temp', Math.floor(this.currTemp)).send({from: this.account});
         this.maxTempWarning = true;
       } catch (e) {
         console.log(e);
@@ -40,7 +40,7 @@ export class TransportService {
     }
     if (this.currTemp < this.minTemp[0] && this.minTemp['set'] && !this.minTempWarning) {
       try {
-        await this.contract.methods.sensorData('minTemp', 'temp', Math.floor(this.currTemp)).send({from: this.account});
+        await this.contract.methods.sensorData(contractAddress, 'minTemp', 'temp', Math.floor(this.currTemp)).send({from: this.account});
         this.minTempWarning = true;
       } catch (e) {
         console.log(e);
@@ -49,7 +49,7 @@ export class TransportService {
     return {'temp': this.currTemp, 'time': i};
   }
 
-  async randomAcceleration(i) {
+  async randomAcceleration(contractAddress, i) {
     let acc = 0;
     if (Math.floor(Math.random() * 15) === 0) {
       acc = Math.random() * 10 - 5;
@@ -58,7 +58,7 @@ export class TransportService {
     }
     if (Math.abs(acc) > this.acc[0] && this.acc['set'] && !this.accWarning) {
       try {
-        await this.contract.methods.sensorData('acceleration', 'acc', Math.ceil(Math.abs(acc))).send({from: this.account});
+        await this.contract.methods.sensorData(contractAddress, 'acceleration', 'acc', Math.ceil(Math.abs(acc))).send({from: this.account});
         this.accWarning = true;
       } catch (e) {
         console.log(e);
@@ -67,7 +67,7 @@ export class TransportService {
     return {'acc': acc, 'time': i};
   }
 
-  randomPressure(i) {
+  randomPressure(contractAddress, i) {
     if (Math.floor(Math.random() * 20) === 0) {
       this.pressure = Math.random() * 100000;
     } else {
@@ -76,7 +76,7 @@ export class TransportService {
     return {'press': this.pressure, 'time': i};
   }
 
-  randomHumidity(i) {
+  randomHumidity(contractAddress, i) {
     if (Math.floor(Math.random() * 20) === 0) {
       this.humidity = Math.random() * 100;
     } else {
@@ -91,10 +91,14 @@ export class TransportService {
     this.contract = contract;
   }
 
-  async getSensors() {
-    this.maxTemp = await this.contract.methods.getSensor('maxTemp').call();
-    this.minTemp = await this.contract.methods.getSensor('minTemp').call();
-    this.acc = await this.contract.methods.getSensor('acceleration').call();
+  async getSensors(contractAddress) {
+    try {
+      this.maxTemp = await this.contract.methods.getSensor(contractAddress, 'maxTemp').call();
+      this.minTemp = await this.contract.methods.getSensor(contractAddress, 'minTemp').call();
+      this.acc = await this.contract.methods.getSensor(contractAddress, 'acceleration').call();
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   watchAccount() {

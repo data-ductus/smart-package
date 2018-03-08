@@ -6,6 +6,7 @@ import { Web3Service } from './util/web3.service';
 import { RouterModule, Routes } from '@angular/router';
 import { ChartsModule } from 'ng2-charts';
 import { AmChartsModule } from '@amcharts/amcharts3-angular';
+import {LowerCasePipe} from '@angular/common';
 
 import { AppComponent } from './app.component';
 import { PurchaseComponent } from './purchase/purchase.component';
