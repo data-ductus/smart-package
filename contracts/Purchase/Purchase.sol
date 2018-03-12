@@ -1,3 +1,4 @@
+
 pragma solidity ^0.4.0;
 
 import "../Token/Token.sol";
@@ -5,6 +6,7 @@ import "./SensorLibrary.sol";
 import "./PurchaseLibrary.sol";
 
 contract Purchase {
+  /*
   SensorLibrary.Sensors sensors;
   uint public price;
   enum State { Created, Proposed, Locked, Transit, Confirm, Inactive }
@@ -196,4 +198,6 @@ contract Purchase {
   {
     return (sensors.sensors[name].threshold, sensors.sensors[name].warning, sensors.sensors[name].provider, sensors.sensors[name].set);
   }
+*/
 }
+

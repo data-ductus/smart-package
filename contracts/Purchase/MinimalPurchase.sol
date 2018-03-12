@@ -4,12 +4,25 @@ import "../Token/Token.sol";
 
 contract MinimalPurchase {
 
-  function MinimalPurchase(){}
+  address purchase;
 
-  function approve(address tokenAddress, address to, uint amount) {
+  function MinimalPurchase(address _purchase) public { purchase = _purchase; }
+
+  modifier onlyPurchase() {
+    require(msg.sender == purchase);
+    _;
+  }
+
+  function approve(address tokenAddress, address to, uint amount)
+    public
+    onlyPurchase()
+  {
     require(Token(tokenAddress).approve(to, amount));
   }
-  function transferFrom(address tokenAddress, address from, address to, uint amount) {
+  function transferFrom(address tokenAddress, address from, address to, uint amount)
+    public
+    onlyPurchase()
+  {
     require(Token(tokenAddress).transferFrom(from, to, amount));
   }
 }

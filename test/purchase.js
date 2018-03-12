@@ -1,7 +1,9 @@
 let Purchase = artifacts.require("./Purchase.sol");
 let Token = artifacts.require("./Token.sol");
 
+
 contract('purchase-abort', function (accounts) {
+  /*
   let purchase;
 
   before(async function () {
@@ -186,6 +188,6 @@ contract("purchase-decline", function(accounts) {
     const state = await purchase.state.call();
 
     assert.equal(state, 0, "The state is not created (0)")
-  })
+  })*/
 });
 

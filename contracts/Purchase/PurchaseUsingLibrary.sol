@@ -1,109 +1,113 @@
+
 pragma solidity ^0.4.0;
 
 import "./PurchaseLibrary.sol";
 
 contract PurchaseUsingLibrary {
-  PurchaseLibrary.Sensors sensors;
-  PurchaseLibrary.Purchase purchaseInfo;
+/*
+PurchaseLibrary.Sensors sensors;
+PurchaseLibrary.Purchase purchaseInfo;
 
-  /////////////////////
-  ///---Modifiers---///
-  /////////////////////
+/////////////////////
+///---Modifiers---///
+/////////////////////
 
-  function PurchaseUsingLibrary(uint _price, address _seller) {
-    PurchaseLibrary.initPurchase(purchaseInfo, _price, _seller);
-  }
+function PurchaseUsingLibrary(uint _price, address _seller) {
+  PurchaseLibrary.initPurchase(purchaseInfo, _price, _seller);
+}
 
-  ///////////////////
-  ///---Created---///
-  ///////////////////
+///////////////////
+///---Created---///
+///////////////////
 
-  function setPrice(uint _price)
-  {
-    PurchaseLibrary.setPrice(purchaseInfo, _price);
-  }
+function setPrice(uint _price)
+{
+  PurchaseLibrary.setPrice(purchaseInfo, _price);
+}
 
-  function abort()
-  {
-    PurchaseLibrary.abort(purchaseInfo);
-  }
+function abort()
+{
+  PurchaseLibrary.abort(purchaseInfo);
+}
 
-  function propose(uint maxTemp, uint minTemp, uint acceleration)
-  {
-    PurchaseLibrary.propose(purchaseInfo, sensors, maxTemp, minTemp, acceleration);
-  }
+function propose(uint maxTemp, uint minTemp, uint acceleration)
+{
+  PurchaseLibrary.propose(purchaseInfo, sensors, maxTemp, minTemp, acceleration);
+}
 
-  ////////////////////
-  ///---Proposed---///
-  //////////////////// - payed[buyer]
+////////////////////
+///---Proposed---///
+//////////////////// - payed[buyer]
 
-  function decline()
-  {
-    PurchaseLibrary.decline(purchaseInfo);
-  }
+function decline()
+{
+  PurchaseLibrary.decline(purchaseInfo);
+}
 
-  function accept()
-  {
-    PurchaseLibrary.accept(purchaseInfo);
-  }
+function accept()
+{
+  PurchaseLibrary.accept(purchaseInfo);
+}
 
-  //////////////////
-  ///---Locked---///
-  //////////////////
+//////////////////
+///---Locked---///
+//////////////////
 
-  function setProvider(string sensorType, string id)
-  {
-    PurchaseLibrary.setProvider(purchaseInfo, sensors, sensorType, id);
-  }
+function setProvider(string sensorType, string id)
+{
+  PurchaseLibrary.setProvider(purchaseInfo, sensors, sensorType, id);
+}
 
-  function transport()
-    public
-  {
-    PurchaseLibrary.transport(purchaseInfo);
-  }
+function transport()
+  public
+{
+  PurchaseLibrary.transport(purchaseInfo);
+}
 
-  ///////////////////
-  ///---Transit---///
-  ///////////////////
+///////////////////
+///---Transit---///
+///////////////////
 
-  function sensorData(string sensorType, string id, uint value)
-    public
-  {
-    PurchaseLibrary.sensorData(purchaseInfo, sensors, sensorType, id, value);
-  }
+function sensorData(string sensorType, string id, uint value)
+  public
+{
+  PurchaseLibrary.sensorData(purchaseInfo, sensors, sensorType, id, value);
+}
 
-  function deliver()
-    public
-  {
-    PurchaseLibrary.deliver(purchaseInfo);
-  }
+function deliver()
+  public
+{
+  PurchaseLibrary.deliver(purchaseInfo);
+}
 
-  ///////////////////
-  ///---Confirm---///
-  ///////////////////
+///////////////////
+///---Confirm---///
+///////////////////
 
-  function satisfied()
-    public
-  {
-    PurchaseLibrary.satisfied(purchaseInfo);
-  }
+function satisfied()
+  public
+{
+  PurchaseLibrary.satisfied(purchaseInfo);
+}
 
-  function dissatisfied()
-    public
-  {
-    PurchaseLibrary.dissatisfied(purchaseInfo);
-  }
+function dissatisfied()
+  public
+{
+  PurchaseLibrary.dissatisfied(purchaseInfo);
+}
 
-  ///////////////////////////
-  ///---Other functions---///
-  ///////////////////////////
+///////////////////////////
+///---Other functions---///
+///////////////////////////
 
 
-  function getSensor(string name)
-    public
-    constant
-    returns(uint threshold, bool warning, string provider, bool set)
-  {
-    return (sensors.sensors[name].threshold, sensors.sensors[name].warning, sensors.sensors[name].provider, sensors.sensors[name].set);
-  }
+function getSensor(string name)
+  public
+  constant
+  returns(uint threshold, bool warning, string provider, bool set)
+{
+  return (sensors.sensors[name].threshold, sensors.sensors[name].warning, sensors.sensors[name].provider, sensors.sensors[name].set);
+}
+*/
+
 }

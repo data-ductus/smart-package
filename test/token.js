@@ -1,4 +1,4 @@
-var Token = artifacts.require("./Token.sol");
+let Token = artifacts.require("./Token.sol");
 
 contract('Token', function(accounts) {
   it("should put 100000000000000000000000000 tokens in the first account", function() {
@@ -9,18 +9,18 @@ contract('Token', function(accounts) {
     });
   });
   it("should send tokens correctly", function() {
-    var token;
+    let token;
 
     // Get initial balances of first and second account.
-    var account_one = accounts[0];
-    var account_two = accounts[1];
+    let account_one = accounts[0];
+    let account_two = accounts[1];
 
-    var account_one_starting_balance;
-    var account_two_starting_balance;
-    var account_one_ending_balance;
-    var account_two_ending_balance;
+    let account_one_starting_balance;
+    let account_two_starting_balance;
+    let account_one_ending_balance;
+    let account_two_ending_balance;
 
-    var amount = 10;
+    let amount = 10;
 
     return Token.deployed().then(function(instance) {
       token = instance;
@@ -44,15 +44,15 @@ contract('Token', function(accounts) {
     });
   });
   it("should allow tokens correctly", function() {
-    var token;
+    let token;
 
-    var account_one = accounts[0];
-    var account_two = accounts[1];
+    let account_one = accounts[0];
+    let account_two = accounts[1];
 
-    var account_two_starting_allowance;
-    var account_two_ending_allowance;
+    let account_two_starting_allowance;
+    let account_two_ending_allowance;
 
-    var amount = 10;
+    let amount = 10;
 
     return Token.deployed().then(function(instance) {
       token = instance;
@@ -69,20 +69,20 @@ contract('Token', function(accounts) {
     })
   });
   it("should transfer tokens from an account correctly", function () {
-    var token;
+    let token;
 
-    var account_one = accounts[0];
-    var account_two = accounts[1];
+    let account_one = accounts[0];
+    let account_two = accounts[1];
 
-    var account_one_starting_balance;
-    var account_two_starting_balance;
-    var account_one_ending_balance;
-    var account_two_ending_balance;
+    let account_one_starting_balance;
+    let account_two_starting_balance;
+    let account_one_ending_balance;
+    let account_two_ending_balance;
 
-    var account_two_starting_allowance;
-    var account_two_ending_allowance;
+    let account_two_starting_allowance;
+    let account_two_ending_allowance;
 
-    var amount = 10;
+    let amount = 10;
 
     return Token.deployed().then(function(instance) {
       token = instance;

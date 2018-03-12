@@ -11,7 +11,7 @@ contract DApp {
   address[] public allContracts;
   Purchase2 public purchase2;
 
-  function DApp(){
+  function DApp() public {
     purchase2 = new Purchase2();
   }
 /*
@@ -30,7 +30,7 @@ contract DApp {
   }
 */
   function createMinimalPurchase(uint price) public returns(address) {
-    address c = new MinimalPurchase();
+    address c = new MinimalPurchase(purchase2);
     purchase2.newPurchase(c, price, msg.sender);
     allContracts.push(c);
     userContracts[msg.sender].push(c);

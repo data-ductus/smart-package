@@ -7,15 +7,18 @@ import "./MinimalPurchase.sol";
 contract Purchase2 {
 
   Token t = Token(0x2492ff0373197367f8503f201cefa484df7d8351);
-  enum State { Created, Proposed, Locked, Transit, Confirm, Inactive }
+  enum State { Created, Locked, Transit, Confirm, Inactive }
 
   struct Purchase {
-    SensorLibrary.Sensors sensors;
     uint price;
     State state;
     Token t;
     address seller;
-    address buyer;
+    address buyerAddress;
+    uint buyerIndex;
+    address[] potentialBuyers;
+    mapping(address => string) deliveryAddresses;
+    mapping(uint => SensorLibrary.Sensors) terms;
   }
 
   mapping(address => Purchase) purchases;
@@ -33,7 +36,7 @@ contract Purchase2 {
   }
 
   modifier onlyBuyer(address purchase) {
-    require(msg.sender == purchases[purchase].buyer);
+    require(msg.sender == purchases[purchase].buyerAddress);
     _;
   }
 
@@ -52,11 +55,12 @@ contract Purchase2 {
     _;
   }
 
-  function Purchase2(){}
+  function Purchase2() public {}
 
   function newPurchase(address purchase, uint _price, address _seller) {
     purchases[purchase].price = _price;
     purchases[purchase].seller = _seller;
+    purchases[purchase].buyerIndex = uint(-1);
     purchases[purchase].t = t;
   }
 
@@ -73,6 +77,7 @@ contract Purchase2 {
     onlySeller(purchase)
     inState(purchase, State.Created)
   {
+    delete purchases[purchase].potentialBuyers;
     purchases[purchase].price = _price;
   }
 
@@ -84,14 +89,15 @@ contract Purchase2 {
     purchases[purchase].state = State.Inactive;
   }
 
-  function propose(address purchase, uint maxTemp, uint minTemp, uint acceleration)
+  function propose(address purchase, string deliveryAddress, int maxTemp, int minTemp, int acceleration, int humidity, int pressure)
     public
     notSeller(purchase)
     inState(purchase, State.Created)
   {
-    purchases[purchase].state = State.Proposed;
-    require(SensorLibrary.setSensors(purchases[purchase].sensors, maxTemp, minTemp, acceleration));
-    purchases[purchase].buyer = msg.sender;
+    uint i =  purchases[purchase].potentialBuyers.length;
+    purchases[purchase].potentialBuyers.push(msg.sender);
+    purchases[purchase].deliveryAddresses[msg.sender] = deliveryAddress;
+    require(SensorLibrary.setSensors(purchases[purchase].terms[i], maxTemp, minTemp, acceleration, humidity, pressure));
     Proposed(msg.sender);
   }
 
@@ -99,21 +105,23 @@ contract Purchase2 {
   ///---Proposed---///
   ////////////////////
 
-  function decline(address purchase)
+  function decline(address purchase, uint buyer)
     public
     onlySeller(purchase)
-    inState(purchase, State.Proposed)
+    inState(purchase, State.Created)
   {
-    purchases[purchase].state = State.Created;
-    Declined(msg.sender);
+    Declined(purchases[purchase].potentialBuyers[buyer]);
+    delete purchases[purchase].potentialBuyers[buyer];
   }
 
-  function accept(address purchase)
+  function accept(address purchase, uint buyer)
     public
     onlySeller(purchase)
-    inState(purchase, State.Proposed)
+    inState(purchase, State.Created)
   {
-    MinimalPurchase(purchase).transferFrom(purchases[purchase].t, purchases[purchase].buyer, purchase, purchases[purchase].price);
+    purchases[purchase].buyerAddress = purchases[purchase].potentialBuyers[buyer];
+    purchases[purchase].buyerIndex = buyer;
+    MinimalPurchase(purchase).transferFrom(purchases[purchase].t, purchases[purchase].buyerAddress, purchase, purchases[purchase].price);
     purchases[purchase].state = State.Locked;
     Accepted(msg.sender);
   }
@@ -126,7 +134,7 @@ contract Purchase2 {
     public
     inState(purchase, State.Locked)
   {
-    purchases[purchase].sensors.sensors[sensorType].provider = id;
+    purchases[purchase].terms[purchases[purchase].buyerIndex].sensors[sensorType].provider = id;
   }
 
   function transport(address purchase)
@@ -140,13 +148,13 @@ contract Purchase2 {
   ///---Transit---///
   ///////////////////
 
-  function sensorData(address purchase, string sensorType, string id, uint value)
+  function sensorData(address purchase, string sensorType, string id, int value)
     public
     inState(purchase, State.Transit)
-    condition(keccak256(purchases[purchase].sensors.sensors[sensorType].provider) == keccak256(id) &&
-    (value < purchases[purchase].sensors.sensors[sensorType].threshold) == (keccak256(sensorType) == keccak256('minTemp')))
+    condition(keccak256(purchases[purchase].terms[purchases[purchase].buyerIndex].sensors[sensorType].provider) == keccak256(id) &&
+    (value < purchases[purchase].terms[purchases[purchase].buyerIndex].sensors[sensorType].threshold) == (keccak256(sensorType) == keccak256('minTemp')))
   {
-    purchases[purchase].sensors.sensors[sensorType].warning = true;
+    purchases[purchase].terms[purchases[purchase].buyerIndex].sensors[sensorType].warning = true;
   }
 
   function deliver(address purchase)
@@ -177,7 +185,7 @@ contract Purchase2 {
     inState(purchase, State.Confirm)
   {
     purchases[purchase].state = State.Inactive;
-    MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].buyer, purchases[purchase].price);
+    MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].buyerAddress, purchases[purchase].price);
     Dissatisfied(msg.sender);
   }
 
@@ -185,20 +193,29 @@ contract Purchase2 {
   ///---Other functions---///
   ///////////////////////////
 
-  function getSensor(address purchase, string name)
+  function getSensor(address purchase, string name, uint _buyer)
     public
     constant
-    returns(uint threshold, bool warning, string provider, bool set)
+    returns(int threshold, bool warning, string provider, bool set)
   {
-    return (purchases[purchase].sensors.sensors[name].threshold, purchases[purchase].sensors.sensors[name].warning,
-    purchases[purchase].sensors.sensors[name].provider, purchases[purchase].sensors.sensors[name].set);
+    return (purchases[purchase].terms[_buyer].sensors[name].threshold, purchases[purchase].terms[_buyer].sensors[name].warning,
+    purchases[purchase].terms[_buyer].sensors[name].provider, purchases[purchase].terms[_buyer].sensors[name].set);
   }
 
   function getPurchase(address purchase)
     public
     constant
-    returns(uint price, State state, address seller, address buyer)
+    returns(uint price, State state, address seller, address buyerAddress, uint buyerIndex)
   {
-    return (purchases[purchase].price, purchases[purchase].state, purchases[purchase].seller, purchases[purchase].buyer);
+    return (purchases[purchase].price, purchases[purchase].state, purchases[purchase].seller, purchases[purchase].buyerAddress,
+      purchases[purchase].buyerIndex);
+  }
+
+  function getPotentialBuyers(address purchase)
+    public
+    constant
+    returns(address[] potentialBuyers)
+  {
+    return purchases[purchase].potentialBuyers;
   }
 }

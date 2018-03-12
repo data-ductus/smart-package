@@ -14,7 +14,7 @@ contract Token is Owned, SafeMath, ERC20 {
   mapping(address => uint) balances;
   mapping(address => mapping(address => uint)) allowed;
 
-  function Token(){
+  function Token() public {
     symbol = "T";
     name = "Token";
     decimals = 18;
