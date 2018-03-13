@@ -3,11 +3,13 @@ pragma solidity ^0.4.0;
 import "../Token/Token.sol";
 import "./SensorLibrary.sol";
 import "./MinimalPurchase.sol";
+import "../DApp.sol";
 
 contract Purchase2 {
 
+  DApp dapp;
   Token t = Token(0x2492ff0373197367f8503f201cefa484df7d8351);
-  enum State { Created, Locked, Transit, Confirm, Inactive }
+  enum State { Created, Locked, Transit, Confirm, Dissatisfied, Return, Returned, Review, Clerk, Inactive }
 
   struct Purchase {
     uint price;
@@ -15,6 +17,7 @@ contract Purchase2 {
     Token t;
     address seller;
     address buyerAddress;
+    address deliveryCompany;
     uint buyerIndex;
     address[] potentialBuyers;
     mapping(address => string) deliveryAddresses;
@@ -45,6 +48,11 @@ contract Purchase2 {
     _;
   }
 
+  modifier onlyDeliveryCompany(address purchase) {
+    require(msg.sender == purchases[purchase].deliveryCompany);
+    _;
+  }
+
   modifier notSeller(address purchase) {
     require(msg.sender != purchases[purchase].seller);
     _;
@@ -55,7 +63,15 @@ contract Purchase2 {
     _;
   }
 
-  function Purchase2() public {}
+  modifier onlyClerk() {
+    require(dapp.isClerk(msg.sender));
+    _;
+  }
+
+  function Purchase2(address _dapp) public
+  {
+    dapp = DApp(_dapp);
+  }
 
   function newPurchase(address purchase, uint _price, address _seller) {
     purchases[purchase].price = _price;
@@ -141,6 +157,8 @@ contract Purchase2 {
     public
     inState(purchase, State.Locked)
   {
+    purchases[purchase].deliveryCompany = msg.sender;
+    MinimalPurchase(purchase).transferFrom(purchases[purchase].t, msg.sender, purchase, purchases[purchase].price);
     purchases[purchase].state = State.Transit;
   }
 
@@ -176,6 +194,7 @@ contract Purchase2 {
   {
     purchases[purchase].state = State.Inactive;
     MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].seller, purchases[purchase].price);
+    MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].deliveryCompany, purchases[purchase].price);
     Satisfied(msg.sender);
   }
 
@@ -184,9 +203,90 @@ contract Purchase2 {
     onlyBuyer(purchase)
     inState(purchase, State.Confirm)
   {
-    purchases[purchase].state = State.Inactive;
-    MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].buyerAddress, purchases[purchase].price);
+    purchases[purchase].state = State.Dissatisfied;
+    //MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].buyerAddress, purchases[purchase].price);
     Dissatisfied(msg.sender);
+  }
+
+  ////////////////////////
+  ///---Dissatisfied---///
+  ////////////////////////
+
+  function transportReturn(address purchase)
+    public
+    inState(purchase, State.Return)
+  {
+    purchases[purchase].state = State.Return;
+    MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].buyerAddress, purchases[purchase].price);
+  }
+
+  //////////////////
+  ///---Return---///
+  //////////////////
+
+  function deliverReturn(address purchase)
+    public
+    inState(purchase, State.Return)
+  {
+    purchases[purchase].state = State.Returned;
+  }
+
+  ////////////////////
+  ///---Returned---///
+  ////////////////////
+
+  function sellerSatisfied(address purchase)
+    public
+    onlySeller(purchase)
+    inState(purchase, State.Returned)
+  {
+    purchases[purchase].state = State.Inactive;
+    MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].deliveryCompany, purchases[purchase].price);
+  }
+
+  function goodsDamaged(address purchase)
+    public
+    onlySeller(purchase)
+    inState(purchase, State.Returned)
+    condition(SensorLibrary.warning(purchases[purchase].terms[purchases[purchase].buyerIndex]))
+  {
+    purchases[purchase].state = State.Review;
+  }
+
+  //////////////////
+  ///---Review---///
+  //////////////////
+
+  function compensate(address purchase)
+    public
+    onlyDeliveryCompany(purchase)
+    inState(purchase, State.Review)
+  {
+    purchases[purchase].state = State.Inactive;
+    MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].seller, purchases[purchase].price);
+  }
+
+  function clerk(address purchase)
+    public
+    onlyDeliveryCompany(purchase)
+    inState(purchase, State.Review)
+  {
+    purchases[purchase].state = State.Clerk;
+  }
+
+  /////////////////
+  ///---Clerk---///
+  ////////////////
+
+  function solve(address purchase, uint divide)
+    public
+    onlyClerk()
+    inState(purchase, State.Clerk)
+  {
+    purchases[purchase].state = State.Inactive;
+    uint share = purchases[purchase].price/divide;
+    MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].seller, share);
+    MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].deliveryCompany, purchases[purchase].price - share);
   }
 
   ///////////////////////////
@@ -200,6 +300,14 @@ contract Purchase2 {
   {
     return (purchases[purchase].terms[_buyer].sensors[name].threshold, purchases[purchase].terms[_buyer].sensors[name].warning,
     purchases[purchase].terms[_buyer].sensors[name].provider, purchases[purchase].terms[_buyer].sensors[name].set);
+  }
+
+  function getActiveSensor(address purchase, string name)
+    public
+    constant
+    returns(int threshold, bool warning, string provider, bool set)
+  {
+    return(getSensor(purchase, name, purchases[purchase].buyerIndex));
   }
 
   function getPurchase(address purchase)

@@ -42,4 +42,28 @@ library SensorLibrary {
     Threshold(self.sensors["maxTemp"].threshold, self.sensors["minTemp"].threshold, self.sensors["acceleration"].threshold);
     return true;
   }
+
+  function warning(Sensors storage self)
+    public
+    constant
+    returns(bool)
+  {
+    if(self.sensors["maxTemp"].warning) {
+      return true;
+    }
+    if(self.sensors["minTemp"].warning) {
+      return true;
+    }
+    if(self.sensors["acceleration"].warning) {
+      return true;
+    }
+    if(self.sensors["humidity"].warning) {
+      return true;
+    }
+    if(self.sensors["pressure"].warning) {
+      return true;
+    }
+    return false;
+  }
+
 }
