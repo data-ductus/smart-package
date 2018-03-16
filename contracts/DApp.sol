@@ -60,6 +60,14 @@ contract DApp is Owned {
     return false;
   }
 
+  function getClerks()
+    public
+    constant
+    returns(address[])
+  {
+    return clerks;
+  }
+
   function getUserContracts()
     public
     constant

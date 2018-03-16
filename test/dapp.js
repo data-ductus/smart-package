@@ -28,7 +28,19 @@ contract('dapp', function (accounts) {
     }).then(function (contracts) {
       assert.equal(contracts.length, 2, "Length of contracts wasn't 2");
     })
-  })
+  });
+  it("should add clerks", async function () {
+    const dapp = await Dapp.deployed();
+    await dapp.addClerk(accounts[0]);
+    await dapp.addClerk(accounts[1]);
+    await dapp.addClerk(accounts[2]);
+    const clerks = await dapp.getClerks();
+    const isClerk = await dapp.isClerk(accounts[1]);
+
+    assert(isClerk, "The second account should be a clerk");
+    assert.equal(clerks[2], accounts[2], "The last clerk should be account 3");
+    assert.equal(clerks.length, 3, "The length of the clerk array should be 3");
+  });
 });
 
 contract('dapp-2', function (accounts) {

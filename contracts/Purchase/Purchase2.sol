@@ -146,11 +146,11 @@ contract Purchase2 {
   ///---Locked---///
   //////////////////
 
-  function setProvider(address purchase, string sensorType, string id)
+  function setProvider(address purchase, string sensorType)
     public
-    inState(purchase, State.Locked)
+    condition(purchases[purchase].state == State.Locked || purchases[purchase].state == State.Dissatisfied)
   {
-    purchases[purchase].terms[purchases[purchase].buyerIndex].sensors[sensorType].provider = id;
+    purchases[purchase].terms[purchases[purchase].buyerIndex].sensors[sensorType].provider = msg.sender;
   }
 
   function transport(address purchase)
@@ -166,18 +166,17 @@ contract Purchase2 {
   ///---Transit---///
   ///////////////////
 
-  function sensorData(address purchase, string sensorType, string id, int value)
+  function sensorData(address purchase, string sensorType, int value)
     public
-    inState(purchase, State.Transit)
-    condition(keccak256(purchases[purchase].terms[purchases[purchase].buyerIndex].sensors[sensorType].provider) == keccak256(id) &&
-    (value < purchases[purchase].terms[purchases[purchase].buyerIndex].sensors[sensorType].threshold) == (keccak256(sensorType) == keccak256('minTemp')))
+    condition(purchases[purchase].state == State.Transit || purchases[purchase].state == State.Return)
   {
-    purchases[purchase].terms[purchases[purchase].buyerIndex].sensors[sensorType].warning = true;
+    SensorLibrary.sensorData(purchases[purchase].terms[purchases[purchase].buyerIndex], sensorType, msg.sender, value);
   }
 
   function deliver(address purchase)
     public
     inState(purchase, State.Transit)
+    onlyDeliveryCompany(purchase)
   {
     purchases[purchase].state = State.Confirm;
     Delivered(msg.sender);
@@ -204,7 +203,6 @@ contract Purchase2 {
     inState(purchase, State.Confirm)
   {
     purchases[purchase].state = State.Dissatisfied;
-    //MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].buyerAddress, purchases[purchase].price);
     Dissatisfied(msg.sender);
   }
 
@@ -214,7 +212,8 @@ contract Purchase2 {
 
   function transportReturn(address purchase)
     public
-    inState(purchase, State.Return)
+    inState(purchase, State.Dissatisfied)
+    onlyDeliveryCompany(purchase)
   {
     purchases[purchase].state = State.Return;
     MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].buyerAddress, purchases[purchase].price);
@@ -227,6 +226,7 @@ contract Purchase2 {
   function deliverReturn(address purchase)
     public
     inState(purchase, State.Return)
+    onlyDeliveryCompany(purchase)
   {
     purchases[purchase].state = State.Returned;
   }
@@ -276,15 +276,15 @@ contract Purchase2 {
 
   /////////////////
   ///---Clerk---///
-  ////////////////
+  /////////////////
 
-  function solve(address purchase, uint divide)
+  function solve(address purchase, uint dividend, uint divisor)
     public
     onlyClerk()
     inState(purchase, State.Clerk)
   {
     purchases[purchase].state = State.Inactive;
-    uint share = purchases[purchase].price/divide;
+    uint share = purchases[purchase].price/dividend * divisor;
     MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].seller, share);
     MinimalPurchase(purchase).approve(purchases[purchase].t, purchases[purchase].deliveryCompany, purchases[purchase].price - share);
   }
@@ -296,18 +296,17 @@ contract Purchase2 {
   function getSensor(address purchase, string name, uint _buyer)
     public
     constant
-    returns(int threshold, bool warning, string provider, bool set)
+    returns(int threshold, bool warning, address provider, bool set)
   {
-    return (purchases[purchase].terms[_buyer].sensors[name].threshold, purchases[purchase].terms[_buyer].sensors[name].warning,
-    purchases[purchase].terms[_buyer].sensors[name].provider, purchases[purchase].terms[_buyer].sensors[name].set);
+    return(SensorLibrary.getSensor(purchases[purchase].terms[_buyer], name));
   }
 
   function getActiveSensor(address purchase, string name)
     public
     constant
-    returns(int threshold, bool warning, string provider, bool set)
+    returns(int threshold, bool warning, address provider, bool set)
   {
-    return(getSensor(purchase, name, purchases[purchase].buyerIndex));
+    return(SensorLibrary.getSensor(purchases[purchase].terms[purchases[purchase].buyerIndex], name));
   }
 
   function getPurchase(address purchase)

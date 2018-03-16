@@ -30,11 +30,11 @@ contract('purchase', function (accounts) {
   it("should abort correctly", async function() {
     await purchase.abort(c.address);
     const info = await purchase.getPurchase(c.address);
-    assert.equal(info[1], 4, "The state is not inactive (5)");
+    assert.equal(info[1], 9, "The state is not inactive (9)");
   });
 });
 
-contract('purchase-finish', function(accounts) {
+contract('purchase-success', function(accounts) {
   let purchase;
   let token;
   let c;
@@ -45,6 +45,11 @@ contract('purchase-finish', function(accounts) {
   const pressure = 10000;
   const buyer = accounts[0];
   const seller = accounts[1];
+  const delivery = accounts[2];
+  const tempProvider = accounts[3];
+  const accProvider = accounts[3];
+  const humProvider = accounts[4];
+  const pressProvider = accounts[5];
   const price = 100;
 
   before(async function () {
@@ -54,6 +59,7 @@ contract('purchase-finish', function(accounts) {
     await purchase.setTokenAddress(token.address);
     await purchase.newPurchase(c.address, price, seller);
     await token.approve(c.address, price, {from: buyer});
+    await token.transfer(delivery, 1000, {from: buyer});
   });
   it("should add two proposals and specify terms", async function() {
     await purchase.propose(c.address, 'Skellefteå', maxTemp, minTemp, acceleration, humidity, pressure, {from: buyer});
@@ -98,16 +104,12 @@ contract('purchase-finish', function(accounts) {
   });
 
   it("should set providers", async function() {
-    const tempProvider = "temp";
-    const accProvider = "acc";
-    const humProvider = "hum";
-    const pressProvider = "press";
 
-    await purchase.setProvider(c.address, "maxTemp", tempProvider);
-    await purchase.setProvider(c.address, "minTemp", tempProvider);
-    await purchase.setProvider(c.address, "acceleration", accProvider);
-    await purchase.setProvider(c.address, "humidity", humProvider);
-    await purchase.setProvider(c.address, "pressure", pressProvider);
+    await purchase.setProvider(c.address, "maxTemp", {from: tempProvider});
+    await purchase.setProvider(c.address, "minTemp", {from: tempProvider});
+    await purchase.setProvider(c.address, "acceleration", {from: accProvider});
+    await purchase.setProvider(c.address, "humidity", {from: humProvider});
+    await purchase.setProvider(c.address, "pressure", {from: pressProvider});
 
     const maxSensor = await purchase.getSensor.call(c.address, 'maxTemp', 0);
     const minSensor = await purchase.getSensor.call(c.address, 'minTemp', 0);
@@ -123,47 +125,53 @@ contract('purchase-finish', function(accounts) {
   });
 
   it("should change state to transit", async function() {
-    await purchase.transport(c.address);
+    let tokens_before_delivery;
+    let tokens_before_contract;
+    let tokens_after_delivery;
+    let tokens_after_contract;
+
+    await token.approve(c.address, price, {from: delivery});
+
+    tokens_before_delivery = await token.balanceOf.call(delivery);
+    tokens_before_contract = await token.balanceOf.call(c.address);
+    await purchase.transport(c.address, {from: delivery});
+    tokens_after_delivery = await token.balanceOf.call(delivery);
+    tokens_after_contract = await token.balanceOf.call(c.address);
     const info = await purchase.getPurchase(c.address);
 
+    assert.equal(tokens_after_delivery.toNumber(), tokens_before_delivery-price, "The tokens were not removed correctly from the delivery company's account");
+    assert.equal(tokens_after_contract.toNumber(), tokens_before_contract.toNumber()+price, "The tokens were not added correctly to the contract's account");
     assert.equal(info[1], 2, "The state is not transit (2)");
   });
   it("should not set warning to true when under threshold for maximum temperature, humidity, pressure and acceleration", async function() {
-    const tempProvider = "temp";
-    const accProvider = "acc";
-    const humProvider = "hum";
-    const pressProvider = "press";
 
-    purchase.sensorData(c.address, "maxTemp", tempProvider, maxTemp-1)
+    purchase.sensorData(c.address, "maxTemp", maxTemp-1, {from: tempProvider})
       .then(function(r) {
         assert(false, "Lower temperature than threshold should have failed");
       }, function (e) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Lower temperature than threshold should have failed");
       });
-    purchase.sensorData(c.address, "acceleration", accProvider, acceleration-1)
+    purchase.sensorData(c.address, "acceleration", acceleration-1, {from: accProvider})
       .then(function(r) {
         assert(false, "Lower acceleration than threshold should have failed");
       }, function (e) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Lower acceleration than threshold should have failed");
       });
-    purchase.sensorData(c.address, "humidity", humProvider, humidity-1)
+    purchase.sensorData(c.address, "humidity", humidity-1, {from: humProvider})
       .then(function(r) {
         assert(false, "Lower humidity than threshold should have failed");
       }, function (e) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Lower humidity than threshold should have failed");
       });
-    purchase.sensorData(c.address, "pressure", pressProvider, pressure-1)
+    purchase.sensorData(c.address, "pressure", pressure-1, {from: pressProvider})
       .then(function(r) {
         assert(false, "Lower pressure than threshold should have failed");
       }, function (e) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Lower pressure than threshold should have failed");
       });
   });
-
   it("should not set warning to true when at least at threshold for minimum temperature", async function() {
-    const tempProvider = "temp";
-
-    await purchase.sensorData(c.address, "minTemp", tempProvider, minTemp)
+    await purchase.sensorData(c.address, "minTemp", minTemp, {from: tempProvider})
       .then(function(r) {
           assert(false, "At least threshold temperature should have failed");
         },
@@ -172,15 +180,11 @@ contract('purchase-finish', function(accounts) {
         });
   });
   it("should set warning to true when at least at threshold for maximum temperature and acceleration", async function() {
-    const tempProvider = "temp";
-    const accProvider = "acc";
-    const humProvider = "hum";
-    const pressProvider = "press";
 
-    await purchase.sensorData(c.address, "maxTemp", tempProvider, maxTemp);
-    await purchase.sensorData(c.address, "acceleration", accProvider, acceleration);
-    await purchase.sensorData(c.address, "humidity", humProvider, humidity);
-    await purchase.sensorData(c.address, "pressure", pressProvider, pressure);
+    await purchase.sensorData(c.address, "maxTemp", maxTemp, {from: tempProvider});
+    await purchase.sensorData(c.address, "acceleration", acceleration, {from: accProvider});
+    await purchase.sensorData(c.address, "humidity", humidity, {from: humProvider});
+    await purchase.sensorData(c.address, "pressure", pressure, {from: pressProvider});
 
     const maxSensor = await purchase.getSensor.call(c.address, 'maxTemp', 0);
     const accSensor = await purchase.getSensor.call(c.address, 'acceleration', 0);
@@ -194,27 +198,26 @@ contract('purchase-finish', function(accounts) {
   });
 
   it("should set warning to true when under threshold for minimum temperature", async function() {
-    const tempProvider = "temp";
 
-    await purchase.sensorData(c.address, "minTemp", tempProvider, minTemp-1);
+    await purchase.sensorData(c.address, "minTemp", minTemp-1, {from: tempProvider});
 
     const minSensor = await purchase.getSensor.call(c.address, 'minTemp', 0);
 
     assert(minSensor[1], "Warning on minimum temperature should be true");
   });
   it("should change state to confirm", async function() {
-    await purchase.deliver(c.address);
+    await purchase.deliver(c.address, {from: delivery});
     const info = await purchase.getPurchase(c.address);
 
     assert.equal(info[1], 3, "The state is not confirm (3)")
   });
   it("should approve tokens to dissatisfied buyer", async function() {
-    await purchase.dissatisfied(c.address, {from: buyer});
-    const allowance = await token.allowance.call(c.address, buyer);
+    await purchase.satisfied(c.address, {from: buyer});
+    const allowance = await token.allowance.call(c.address, seller);
     const info = await purchase.getPurchase(c.address);
 
-    assert.equal(allowance, price, "The buyer should be allowed to retrieve his/her tokens from the contract");
-    assert.equal(info[1].toNumber(), 4, "The state should be inactive (4)");
+    assert.equal(allowance, price, "The seller should be allowed to retrieve the payment from the contract");
+    assert.equal(info[1].toNumber(), 9, "The state should be inactive (9)");
   })
 });
 

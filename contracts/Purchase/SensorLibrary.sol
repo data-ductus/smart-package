@@ -7,13 +7,18 @@ library SensorLibrary {
   struct Sensor {
     int threshold;
     bool warning;
-    string provider;
+    address provider;
     bool set;
   }
   struct Sensors {
     mapping(string => Sensor) sensors;
   }
   event Threshold(int maxTemp, int minTemp, int Acceleration);
+
+  modifier condition(bool _condition) {
+    require(_condition);
+    _;
+  }
 
   function setSensors(Sensors storage self, int maxTemp, int minTemp, int acceleration, int humidity, int pressure)
     public
@@ -64,6 +69,22 @@ library SensorLibrary {
       return true;
     }
     return false;
+  }
+
+  function sensorData(Sensors storage self, string sensorType, address id, int value)
+    public
+    condition(self.sensors[sensorType].provider == id &&
+    (value < self.sensors[sensorType].threshold) == (keccak256(sensorType) == keccak256('minTemp')))
+  {
+    self.sensors[sensorType].warning = true;
+  }
+
+  function getSensor(Sensors storage self, string name)
+    public
+    constant
+    returns(int threshold, bool warning, address provider, bool set)
+  {
+    return (self.sensors[name].threshold, self.sensors[name].warning, self.sensors[name].provider, self.sensors[name].set);
   }
 
 }
