@@ -14,6 +14,9 @@ library SensorLibrary {
     mapping(string => Sensor) sensors;
   }
   event Threshold(int maxTemp, int minTemp, int Acceleration);
+  event Request(address provider);
+  event Data(int value, address purchase);
+  event Location(int lat, int long, address purchase);
 
   modifier condition(bool _condition) {
     require(_condition);
@@ -87,4 +90,21 @@ library SensorLibrary {
     return (self.sensors[name].threshold, self.sensors[name].warning, self.sensors[name].provider, self.sensors[name].set);
   }
 
+  function requestData(Sensors storage self, string sensorType)
+    public
+  {
+    Request(self.sensors[sensorType].provider);
+  }
+
+  function currentValue(int value, address purchase)
+    public
+  {
+    Data(value, purchase);
+  }
+
+  function currentLocation(int lat, int lng, address purchase)
+    public
+  {
+    Location(lat, lng, purchase);
+  }
 }

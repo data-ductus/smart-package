@@ -173,6 +173,13 @@ contract Purchase2 {
     SensorLibrary.sensorData(purchases[purchase].terms[purchases[purchase].buyerIndex], sensorType, msg.sender, value);
   }
 
+  function requestData(address purchase, string sensorType)
+    public
+    condition(purchases[purchase].state == State.Transit || purchases[purchase].state == State.Return)
+  {
+    SesnorLibrary.requestData(purchases[purchase].terms[purchases[purchase].buyerIndex], sensorType);
+  }
+
   function deliver(address purchase)
     public
     inState(purchase, State.Transit)
