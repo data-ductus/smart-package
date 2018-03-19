@@ -128,12 +128,15 @@ contract('purchase-revert-wrong-state', function (accounts) {
 
 contract('purchase-revert-wrong-state-2', function (accounts) {
   let purchase;
+  let token;
   const buyer = accounts[0];
   const seller = accounts[1];
   let c;
 
   before(async function () {
     purchase = await Purchase2.deployed();
+    token = await Token.deployed();
+    await purchase.setTokenAddress(token.address);
     c = await MinimalPurchase.new(purchase.address);
     await purchase.newPurchase(c.address, 0, seller);
     await purchase.propose(c.address, 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer});
@@ -173,6 +176,8 @@ contract("purchase-revert-wrong-sender", function (accounts) {
 
   before(async function () {
     purchase = await Purchase2.deployed();
+    token = await Token.deployed();
+    await purchase.setTokenAddress(token.address);
     c = await MinimalPurchase.new(purchase.address);
     await purchase.newPurchase(c.address, 0, seller);
   });
@@ -210,6 +215,8 @@ contract("purchase-revert-wrong-sender-2", function (accounts) {
 
   before(async function () {
     purchase = await Purchase2.deployed();
+    token = await Token.deployed();
+    await purchase.setTokenAddress(token.address);
     c = await MinimalPurchase.new(purchase.address);
     await purchase.newPurchase(c.address, 0, seller);
     await purchase.propose(c.address, 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer});
@@ -241,6 +248,8 @@ contract("purchase-revert-wrong-sender-3", function (accounts) {
 
   before(async function () {
     purchase = await Purchase2.deployed();
+    token = await Token.deployed();
+    await purchase.setTokenAddress(token.address);
     c = await MinimalPurchase.new(purchase.address);
     await purchase.newPurchase(c.address, 0, seller);
     await purchase.propose(c.address, 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer});
@@ -275,6 +284,8 @@ contract("purchase-revert-wrong-sender-4", function (accounts) {
 
   before(async function () {
     purchase = await Purchase2.deployed();
+    token = await Token.deployed();
+    await purchase.setTokenAddress(token.address);
     c = await MinimalPurchase.new(purchase.address);
     await purchase.newPurchase(c.address, 0, seller);
     await purchase.propose(c.address, 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer});
@@ -311,6 +322,8 @@ contract("purchase-revert-wrong-sender-5", function (accounts) {
 
   before(async function () {
     purchase = await Purchase2.deployed();
+    token = await Token.deployed();
+    await purchase.setTokenAddress(token.address);
     c = await MinimalPurchase.new(purchase.address);
     await purchase.newPurchase(c.address, 0, seller);
     await purchase.propose(c.address, 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer});
@@ -363,6 +376,8 @@ contract("purchase-revert-wrong-sender-6", function (accounts) {
     dapp.addClerk(clerk);
     const address = await dapp.purchase2();
     purchase = await Purchase2.at(address);
+    token = await Token.deployed();
+    await purchase.setTokenAddress(token.address);
     await dapp.createMinimalPurchase(0, {from: seller});
     c = await dapp.getAllContracts();
     await purchase.propose(c[0], 'Skellefteå', maxTemp, 0, 0, 0, 0, {from: buyer});

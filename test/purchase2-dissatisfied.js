@@ -42,10 +42,10 @@ contract('purchase-dissatisfied', function (accounts) {
   it("should change state to return and approve tokens to buyer", async function () {
     await purchase.transportReturn(c[0], {from: delivery});
     const info = await purchase.getPurchase(c[0]);
-    const approved = await token.allowance(c[0], buyer);
+    const approved = await token.allowance.call(c[0], buyer);
 
     assert.equal(info[1], 5, "The state is not return (5)");
-    assert.equal(approved, price, "The buyer is not allowed to retrieve the tokens");
+    assert.equal(approved.toNumber(), price, "The buyer is not allowed to retrieve the tokens");
   });
   it("should send sensor data", async function () {
     await purchase.sensorData(c[0], "maxTemp", maxTemp, {from: tempProvider});
@@ -75,10 +75,10 @@ contract('purchase-dissatisfied', function (accounts) {
     await dapp.addClerk(clerk);
     await purchase.solve(c[0], 3, 2, {from: clerk});
 
-    const allowance_seller = await token.allowance(c[0], seller);
-    const allowance_delivery = await token.allowance(c[0], delivery);
+    const allowance_seller = await token.allowance.call(c[0], seller);
+    const allowance_delivery = await token.allowance.call(c[0], delivery);
     const info = await purchase.getPurchase(c[0]);
-
+ 
     assert.equal(allowance_seller.toNumber(), Math.floor(2*price/3), "The seller is not allowed two thirds of the cost");
     assert.equal(allowance_delivery.toNumber(), price - Math.floor(2*price/3), "The delivery company is not allowed one third of the cost");
     assert.equal(info[1], 9, "The state is not inactive (9)")
@@ -120,7 +120,7 @@ contract('purchase-dissatisfied-2', function (accounts) {
   });
   it("should return money to delivery company and set state to inactive", async function () {
     await purchase.sellerSatisfied(c[0], {from: seller});
-    const allowance_delivery = await token.allowance(c[0], delivery);
+    const allowance_delivery = await token.allowance.call(c[0], delivery);
     const info = await purchase.getPurchase(c[0]);
 
     assert.equal(allowance_delivery.toNumber(), price, "The delivery company is not allowed to retrieve their tokens");
@@ -164,7 +164,7 @@ contract('purchase-dissatisfied-3', function (accounts) {
   });
   it("should return money to delivery company and set state to inactive", async function () {
     await purchase.compensate(c[0], {from: delivery});
-    const allowance_delivery = await token.allowance(c[0], seller);
+    const allowance_delivery = await token.allowance.call(c[0], seller);
     const info = await purchase.getPurchase(c[0]);
 
     assert.equal(allowance_delivery.toNumber(), price, "The seller is not allowed the compensation");
