@@ -27,11 +27,6 @@ export class ConfirmComponent implements OnInit {
     this.getAllowance();
   }
 
-  async getPurchase() {
-    this.purchase = await this.web3Service.getContract(this.contract.abi, this.contractAddress);
-    this.purchase.options.from = this.account;
-  }
-
   async satisfied() {
     await this.purchase.methods.satisfied(this.contractAddress).send({from: this.account});
   }

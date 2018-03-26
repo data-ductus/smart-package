@@ -1,27 +1,37 @@
 const Token = artifacts.require("./Token/Token.sol");
-//const Purchase = artifacts.require("./Purchase/Purchase.sol");
+const Purchase = artifacts.require("./Purchase/Purchase.sol");
 const Purchase2 = artifacts.require("./Purchase/Purchase2.sol");
+const PurchaseData = artifacts.require("./Purchase/PurchaseData.sol");
 const Sensors = artifacts.require("./Purchase/SensorLibrary.sol");
-const PurchaseLibrary = artifacts.require("./Purchase/PurchaseLibrary");
 const MinimalPurchase = artifacts.require("./Purchase/MinimalPurchase");
-//const PurchaseUsingLibrary = artifacts.require("./Purchase/PurchaseUsingLibrary");
 const DApp = artifacts.require("./DApp.sol");
-//const test = artifacts.require("./test2variabler");
 
 module.exports = function(deployer) {
   deployer.deploy(Token);
   deployer.deploy(Sensors);
-  deployer.deploy(PurchaseLibrary);
-  deployer.deploy(MinimalPurchase, 0x0);
-  //deployer.link(Sensors, Purchase);
+  deployer.link(Sensors, PurchaseData);
+  deployer.link(Sensors, Purchase);
   deployer.link(Sensors, Purchase2);
-  //deployer.link(PurchaseLibrary, Purchase);
-  //deployer.link(PurchaseLibrary, PurchaseUsingLibrary);
-  //deployer.deploy(Purchase, 0, 0x0000000000000000000000000000000000000000);
-  deployer.deploy(Purchase2, 0x0);
-  //deployer.deploy(PurchaseUsingLibrary, 0, 0x0000000000000000000000000000000000000000);
   deployer.link(Sensors, DApp);
-  deployer.link(PurchaseLibrary, DApp);
-  deployer.deploy(DApp);
-  //deployer.deploy(test);
+  deployer.deploy(Purchase, 0x0)
+    .then(() => {
+      deployer.deploy(Purchase2, 0x0)
+        .then(() =>{
+          Purchase.deployed()
+            .then(p => {
+              deployPurchaseData(deployer, p)
+            })
+        });
+    });
+  deployer.deploy(MinimalPurchase, 0x0);
+};
+
+const deployPurchaseData = function(deployer, p) {
+  Purchase2.deployed()
+    .then(p2 => {
+      deployer.deploy(PurchaseData, p.address, p2.address)
+        .then(() => {
+          deployer.deploy(DApp, p.address, p2.address)
+        });
+    })
 };

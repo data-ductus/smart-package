@@ -1,2 +1,3 @@
 <h5>You have <span id="balance">{{model.balance}}</span> tokens</h5>
+<br><button id="send" (click)="sendTokens()">Distribute tokens</button><br>
 <app-create-contract [account]="model.account" [token]="token"></app-create-contract>

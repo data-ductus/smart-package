@@ -3,41 +3,27 @@ pragma solidity ^0.4.0;
 import "./Purchase/Purchase.sol";
 import "./Purchase/Purchase2.sol";
 import "./Purchase/MinimalPurchase.sol";
-import "./Purchase/PurchaseUsingLibrary.sol";
 import "./Token/Token.sol";
 import "./Token/Owned.sol";
 
 contract DApp is Owned {
   mapping (address => address[]) userContracts;
   address[] public allContracts;
-  Purchase2 public purchase2;
+  address public purchase;
+  address public purchase2;
   address[] public clerks;
 
-  function DApp() public {
-    purchase2 = new Purchase2(this);
-  }
-/*
-  function createContract(uint price) public returns(address){
-    address c = new Purchase(price, msg.sender);
-    allContracts.push(c);
-    userContracts[msg.sender].push(c);
-    return c;
+  function DApp(address p1, address p2) public {
+    purchase = p1;
+    purchase2 = p2;
+    require(Purchase2(p2).setDapp(this));
   }
 
-  function createPurchaseUsingLibrary(uint price) public returns(address) {
-    address c = new PurchaseUsingLibrary(price, msg.sender);
+  function createMinimalPurchase(uint price) public {
+    address c = new MinimalPurchase(this);
+    Purchase p = Purchase(purchase);
+    p.newPurchase(c, price, msg.sender);
     allContracts.push(c);
-    userContracts[msg.sender].push(c);
-    return c;
-  }
-*/
-
-  function createMinimalPurchase(uint price) public returns(address) {
-    address c = new MinimalPurchase(purchase2);
-    purchase2.newPurchase(c, price, msg.sender);
-    allContracts.push(c);
-    userContracts[msg.sender].push(c);
-    return c;
   }
 
   function addClerk(address clerk)
@@ -82,5 +68,13 @@ contract DApp is Owned {
     returns(address[])
   {
     return allContracts;
+  }
+
+  function isPurchaseContract(address a)
+    public
+    constant
+    returns(bool)
+  {
+    return (a == purchase || a == purchase2);
   }
 }

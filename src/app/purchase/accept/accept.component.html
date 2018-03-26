@@ -1,2 +1,17 @@
+<div *ngIf="terms.maxT[3]">
+  Max temp: {{terms.maxT[0]}}&deg;C
+</div>
+<div *ngIf="terms.minT[3]">
+  Min temp: {{terms.minT[0]}}&deg;C
+</div>
+<div *ngIf="terms.acc[3]">
+  Acceleration: {{terms.acc[0]}}g
+</div>
+<div *ngIf="terms.hum[3]">
+  Humidity: {{terms.hum[0]}}
+</div>
+<div *ngIf="terms.press[3]">
+  Pressure: {{terms.press[0]}}
+</div>
 <button id="accept" (click)="acceptProposal()">Accept</button>
 <button id="decline" (click)="declineProposal()">Decline</button>

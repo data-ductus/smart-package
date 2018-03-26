@@ -1,6 +1,6 @@
 <div class="card-header text-white"
-     [ngClass]="{'bg-dark' : account == purchaseInfo.seller, 'bg-info' : account == purchaseInfo.buyer,
-     'bg-secondary' : account != purchaseInfo.seller && account != purchaseInfo.buyer}">
+     [ngClass]="{'bg-dark' : account == purchaseInfo.seller, 'bg-info' : account == purchaseInfo.buyerAddress,
+     'bg-secondary' : account != purchaseInfo.seller && account != purchaseInfo.buyerAddress}">
   Contract {{contractAddress}}
 </div>
 <div class="card-body">
@@ -16,25 +16,37 @@
     <div *ngIf="acc[3]">
       Acceleration: {{acc[0]}}g <i *ngIf="acc['warning']" class="fa fa-warning"></i>
     </div>
+    <div *ngIf="hum[3]">
+      Humidity: {{hum[0]}} <i *ngIf="hum['warning']" class="fa fa-warning"></i>
+    </div>
+    <div *ngIf="press[3]">
+      Pressure: {{press[0]}} <i *ngIf="press['warning']" class="fa fa-warning"></i>
+    </div>
   </div>
   <div *ngIf="account==purchaseInfo.seller && purchaseInfo.state==0">
     <label for="amount">Price:</label><input type="text" id="amount" placeholder="e.g., 95" [(ngModel)]="price">
     <button id="send" (click)="setPrice()">Set price</button>
     <button id="abort" (click)="abort()">Abort</button>
   </div>
-  <app-accept *ngIf="account==purchaseInfo.seller && purchaseInfo.state==1" [account]="account" [purchase]="purchase"
-  [contractAddress]="contractAddress"></app-accept>
+  <div *ngFor="let p of proposals; let i = index">
+    <app-accept *ngIf="account==purchaseInfo.seller && purchaseInfo.state==0" [account]="account" [purchase]="purchase" [id]="i"
+                [terms]="p" [contractAddress]="contractAddress"></app-accept>
+  </div>
+
   <div *ngIf="account!=purchaseInfo.seller && purchaseInfo.state==0">
     Price: {{purchaseInfo.price}}
+    <br><label for="maxT">Delivery address:</label><input type="text" id="deliveryAddress" [(ngModel)]="model.deliveryAddress">
     <br><label for="maxT">Max temp:</label><input type="text" id="maxT" [(ngModel)]="model.maxTThreshold">
     <br><label for="minT">Min temp:</label><input type="text" id="minT" [(ngModel)]="model.minTThreshold">
     <br><label for="acc">Acceleration:</label><input type="text" id="acc" [(ngModel)]="model.accThreshold">
+    <br><label for="acc">Humidity:</label><input type="text" id="hum" [(ngModel)]="model.humThreshold">
+    <br><label for="acc">Pressure:</label><input type="text" id="press" [(ngModel)]="model.pressThreshold">
     <br><button id="propose" (click)="propose()">Propose</button><br>
   </div>
-  <app-simulation *ngIf="purchaseInfo.state==2" [contractAddress]="contractAddress" [account]="account" [purchase]="purchase"></app-simulation>
   <app-confirm [state]="purchaseInfo.state" [account]="account" [contractAddress]="contractAddress" [token]="token"
                [buyer]="purchaseInfo.buyer" [purchase]="purchase"></app-confirm>
+  <app-returned [contractAddress]="contractAddress" [account]="account" [purchase]="purchase"></app-returned>
+  <app-review [purchase]="purchase" [account]="account | lowercase" [contractAddress]="contractAddress" [state]="purchaseInfo.state"
+    [dapp]="dapp"></app-review>
 </div>
-
-
 

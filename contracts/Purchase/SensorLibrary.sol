@@ -74,6 +74,12 @@ library SensorLibrary {
     return false;
   }
 
+  function combineTerms(Sensors storage self, Sensors storage additionalTerms)
+    public
+  {
+
+  }
+
   function sensorData(Sensors storage self, string sensorType, address id, int value)
     public
     condition(self.sensors[sensorType].provider == id &&

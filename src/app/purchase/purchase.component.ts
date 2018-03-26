@@ -58,9 +58,10 @@ export class PurchaseComponent implements OnInit {
     this.status = status;
   }
 
-  clickAddress(e) {
-    this.model.account = e.target.value;
-    this.refreshBalance();
+  async sendTokens() {
+    const deployedToken = await this.token.deployed();
+    await deployedToken.transfer.sendTransaction('0x5a1813C2F7F0183b374Fd0faa3952a945202EcB0', 10000, {from: this.model.account});
+    await deployedToken.transfer.sendTransaction('0x1Db698682F691d0604e33Ab803fb32533EAb5F39', 10000, {from: this.model.account});
   }
 
 }

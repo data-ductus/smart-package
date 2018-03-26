@@ -1,27 +1,28 @@
 pragma solidity ^0.4.0;
 
 import "../Token/Token.sol";
+import "../DApp.sol";
 
 contract MinimalPurchase {
 
-  address purchase;
+  DApp dapp;
 
-  function MinimalPurchase(address _purchase) public { purchase = _purchase; }
+  function MinimalPurchase(address _dapp) public { dapp = DApp(_dapp); }
 
-  modifier onlyPurchase() {
-    require(msg.sender == purchase);
+  modifier condition(bool c) {
+    require(c);
     _;
   }
 
   function approve(address tokenAddress, address to, uint amount)
     public
-    onlyPurchase()
+    condition(dapp.isPurchaseContract(msg.sender))
   {
     require(Token(tokenAddress).approve(to, amount));
   }
   function transferFrom(address tokenAddress, address from, address to, uint amount)
     public
-    onlyPurchase()
+    condition(dapp.isPurchaseContract(msg.sender))
   {
     require(Token(tokenAddress).transferFrom(from, to, amount));
   }

@@ -5,6 +5,7 @@ import { Web3Service } from '../util/web3.service';
 import { TransportService } from './transport.service';
 import purchase_artifact from '../../../build/contracts/purchase2.json';
 import dapp_artifact from '../../../build/contracts/dapp.json';
+import token_artifact from '../../../build/contracts/token.json';
 import {} from '@types/googlemaps';
 
 @Component({
@@ -26,6 +27,8 @@ export class TransportComponent implements OnInit {
   accData = [];
   pressData = [];
   humidityData = [];
+
+  purchaseInfo: any;
 
   loc = {
     lat: 24.799448,
@@ -53,12 +56,18 @@ export class TransportComponent implements OnInit {
   async startSimulation() {
     console.log('abi', this.contract);
     const dappAbstraction = await this.web3Service.artifactsToContract(dapp_artifact);
+    const tokenAbstraction = await this.web3Service.artifactsToContract(token_artifact);
     const deployedDapp = await dappAbstraction.deployed();
+    const deployedToken = await tokenAbstraction.deployed();
     const purchaseAddress = await deployedDapp.purchase2();
     this.purchase = await this.web3Service.getContract(this.contract.abi, purchaseAddress);
+    await this.getInfo();
+    await deployedToken.approve.sendTransaction(this.contractAddress, this.purchaseInfo['price'], {from: this.account});
     this.transportService.setContract(this.purchase);
-    setInterval(() => this.transportService.getSensors(this.contractAddress), 100);
+    await this.transportService.getSensors(this.contractAddress);
+    await this.transportService.setProviders(this.contractAddress);
     await this.getGeoCodeDirection();
+    setInterval(() => this.transportService.getSensors(this.contractAddress), 100);
   }
 
   watchAccount() {
@@ -151,4 +160,7 @@ export class TransportComponent implements OnInit {
       });
   }
 
+  async getInfo() {
+    this.purchaseInfo = await this.purchase.methods.getPurchase(this.contractAddress).call();
+  }
 }

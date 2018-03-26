@@ -16,38 +16,17 @@ export class CreateContractComponent implements OnInit {
   dapp: any;
   price: number;
   contracts: any[];
+  address: string;
   constructor(private web3Service: Web3Service) { }
 
   ngOnInit() {
-    this.web3Service.artifactsToContract(dapp_artifact)
-      .then((dappAbstraction) => {
-        this.dapp = dappAbstraction;
-        this.getContracts();
-      });
+    this.getDapp();
   }
-/*
-  async createContract() {
-    try {
-      const deployedDapp = await this.dapp.deployed();
-      const contractAddress = await deployedDapp.createContract.sendTransaction(this.price, {from: this.account});
-      console.log(contractAddress);
-      this.getContracts();
-    } catch (e) {
-      console.log(e);
-    }
+  async getDapp() {
+    const dappAbstraction = await this.web3Service.artifactsToContract(dapp_artifact);
+    this.dapp = await dappAbstraction.deployed();
+    await this.getContracts();
   }
-
-  async createContractUsingLibrary() {
-    try {
-      const deployedDapp = await this.dapp.deployed();
-      const contractAddress = await deployedDapp.createPurchaseUsingLibrary.sendTransaction(this.price, {from: this.account});
-      console.log(contractAddress);
-      this.getContracts();
-    } catch (e) {
-      console.log(e);
-    }
-  }
-*/
   async createMinimalPurchase() {
     try {
       const deployedDapp = await this.dapp.deployed();
@@ -57,15 +36,20 @@ export class CreateContractComponent implements OnInit {
       console.log(e);
     }
   }
-
   async getContracts() {
     try {
-      const deployedDapp = await this.dapp.deployed();
-      const purchaseAddress = await deployedDapp.purchase2.call();
+      const purchaseAddress = await this.dapp.purchase2.call();
       const purchaseAbstraction = await this.web3Service.artifactsToContract(purchase2_artifact);
       this.purchase = await this.web3Service.getContract(purchaseAbstraction.abi, purchaseAddress);
-      this.contracts = await deployedDapp.getAllContracts.call({from: this.account});
+      this.contracts = await this.dapp.getAllContracts.call({from: this.account});
       console.log('contracts ', this.contracts);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  async addClerk() {
+    try {
+      await this.dapp.addClerk.sendTransaction(this.address, {from: this.account});
     } catch (e) {
       console.log(e);
     }

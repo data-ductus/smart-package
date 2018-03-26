@@ -3,21 +3,43 @@ pragma solidity ^0.4.0;
 
 import "../Token/Token.sol";
 import "./SensorLibrary.sol";
-import "./PurchaseLibrary.sol";
+import "./PurchaseData.sol";
+import "./MinimalPurchase.sol";
 
 contract Purchase {
-  /*
-  SensorLibrary.Sensors sensors;
-  uint public price;
-  enum State { Created, Proposed, Locked, Transit, Confirm, Inactive }
-  State public state;
-  Token t;
-  address public seller;
-  address public buyer;
+  Token t = Token(0x2492ff0373197367f8503f201cefa484df7d8351);
+  PurchaseData p;
+  bool purchaseDataSet;
 
-  /////////////////////
-  ///---Modifiers---///
-  /////////////////////
+  modifier condition(bool _condition) {
+    require(_condition);
+    _;
+  }
+
+  modifier onlyBuyer(address purchase) {
+    require(p.buyer(purchase) == msg.sender);
+    _;
+  }
+
+  modifier onlySeller(address purchase) {
+    require(p.seller(purchase) == msg.sender);
+    _;
+  }
+
+  modifier onlyDeliveryCompany(address purchase) {
+    require(p.deliveryCompany(purchase) == msg.sender);
+    _;
+  }
+
+  modifier notSeller(address purchase) {
+    require(!(p.seller(purchase) == msg.sender));
+    _;
+  }
+
+  modifier inState(address purchase, PurchaseData.State _state) {
+    require(p.state(purchase) == _state);
+    _;
+  }
 
   event Proposed(address from);
   event Declined(address from);
@@ -26,36 +48,20 @@ contract Purchase {
   event Satisfied(address from);
   event Dissatisfied(address from);
 
-  modifier condition(bool _condition) {
-    require(_condition);
-    _;
+  function Purchase() public {}
+
+  function setPurchaseData(address _purchaseData)
+    public
+    condition(!purchaseDataSet)
+    returns(bool)
+  {
+    purchaseDataSet = true;
+    p = PurchaseData(_purchaseData);
+    return true;
   }
 
-  modifier onlyBuyer() {
-    require(msg.sender == buyer);
-    _;
-  }
-
-  modifier onlySeller() {
-    require(msg.sender == seller);
-    _;
-  }
-
-  modifier notSeller() {
-    require(msg.sender != seller);
-    _;
-  }
-
-  modifier inState(State _state) {
-    require(state == _state);
-    _;
-  }
-
-  function Purchase(uint _price, address _seller) {
-    seller = _seller;
-    price = _price;
-    state = State.Created;
-    t = Token(0x2492ff0373197367f8503f201cefa484df7d8351);
+  function newPurchase(address purchase, uint _price, address _seller) {
+    p.newPurchase(purchase, _price, _seller);
   }
 
   function setTokenAddress(address tokenAddress) public {
@@ -66,56 +72,50 @@ contract Purchase {
   ///---Created---///
   ///////////////////
 
-  function setPrice(uint _price)
-    public
-    onlySeller
-    inState(State.Created)
+  function setPrice(address purchase, uint _price)
+  public
+  onlySeller(purchase)
+  condition(p.state(purchase) == PurchaseData.State.Created)
   {
-    price = _price;
+    p.setPrice(purchase, _price);
   }
 
-  function abort()
-    public
-    onlySeller
-    inState(State.Created)
+  function abort(address purchase)
+  public
+  onlySeller(purchase)
+  inState(purchase, PurchaseData.State.Created)
   {
-    state = State.Inactive;
+    p.setState(purchase, PurchaseData.State.Inactive);
   }
 
-  function propose(uint maxTemp, uint minTemp, uint acceleration)
-    public
-    notSeller
-    inState(State.Created)
+  function propose(address purchase, string deliveryAddress, int maxTemp, int minTemp, int acceleration, int humidity, int pressure)
+  public
+  notSeller(purchase)
+  inState(purchase, PurchaseData.State.Created)
   {
-    state = State.Proposed;
-
-    require(SensorLibrary.setSensors(sensors, maxTemp, minTemp, acceleration));
-
-    //t.approve(buyer, payed[msg.sender]-price);
-    buyer = msg.sender;
-    Proposed(msg.sender);
+    p.addPotentialBuyer(purchase, deliveryAddress, maxTemp, minTemp, acceleration, humidity, pressure);
   }
 
   ////////////////////
   ///---Proposed---///
-  //////////////////// - payed[buyer]
+  ////////////////////
 
-  function decline()
+  function decline(address purchase, uint buyer)
     public
-    onlySeller
-    inState(State.Proposed)
+    onlySeller(purchase)
+    inState(purchase, PurchaseData.State.Created)
   {
-    state = State.Created;
-    Declined(msg.sender);
+    p.deleteBuyer(purchase, buyer);
   }
 
-  function accept()
+  function accept(address purchase, uint _buyer)
     public
-    onlySeller
-    inState(State.Proposed)
+    onlySeller(purchase)
+    inState(purchase, PurchaseData.State.Created)
   {
-    require(t.transferFrom(buyer, this, price));
-    state = State.Locked;
+    p.setBuyer(purchase, _buyer);
+    MinimalPurchase(purchase).transferFrom(t, p.buyer(purchase), purchase, p.price(purchase));
+    p.setState(purchase, PurchaseData.State.Locked);
     Accepted(msg.sender);
   }
 
@@ -123,38 +123,46 @@ contract Purchase {
   ///---Locked---///
   //////////////////
 
-  function setProvider(string sensorType, string id)
+  function setProvider(address purchase, string sensorType)
     public
-    inState(State.Locked)
+    condition(p.state(purchase) == PurchaseData.State.Locked || p.state(purchase) == PurchaseData.State.Dissatisfied)
   {
-    sensors.sensors[sensorType].provider = id;
+    p.setProvider(purchase, sensorType, msg.sender);
   }
 
-  function transport()
+  function transport(address purchase, string returnAddress)
     public
-    inState(State.Locked)
+    inState(purchase, PurchaseData.State.Locked)
   {
-    state = State.Transit;
+    p.setState(purchase, PurchaseData.State.Transit);
+    p.setDeliveryCompany(purchase, msg.sender, returnAddress);
+    MinimalPurchase(purchase).transferFrom(t, msg.sender, purchase, p.price(purchase));
   }
 
   ///////////////////
   ///---Transit---///
   ///////////////////
 
-  function sensorData(string sensorType, string id, uint value)
+  function sensorData(address purchase, string sensorType, int value)
     public
-    inState(State.Transit)
-    condition(keccak256(sensors.sensors[sensorType].provider) == keccak256(id) &&
-    (value < sensors.sensors[sensorType].threshold) == (keccak256(sensorType) == keccak256('minTemp')))
+    condition(p.state(purchase) == PurchaseData.State.Transit || p.state(purchase) == PurchaseData.State.Return)
   {
-    sensors.sensors[sensorType].warning = true;
+    p.sensorData(purchase, sensorType, msg.sender, value);
   }
 
-  function deliver()
+  function requestData(address purchase, string sensorType)
     public
-    inState(State.Transit)
+    condition(p.state(purchase) == PurchaseData.State.Transit || p.state(purchase) == PurchaseData.State.Return)
   {
-    state = State.Confirm;
+    p.requestData(purchase, sensorType);
+  }
+
+  function deliver(address purchase)
+    public
+    inState(purchase, PurchaseData.State.Transit)
+    onlyDeliveryCompany(purchase)
+  {
+    p.setState(purchase, PurchaseData.State.Confirm);
     Delivered(msg.sender);
   }
 
@@ -162,42 +170,25 @@ contract Purchase {
   ///---Confirm---///
   ///////////////////
 
-  function satisfied()
+  function satisfied(address purchase)
     public
-    onlyBuyer
-    inState(State.Confirm)
+    onlyBuyer(purchase)
+    inState(purchase, PurchaseData.State.Confirm)
   {
-    state = State.Inactive;
-    t.approve(seller, price);
+    p.setState(purchase, PurchaseData.State.Inactive);
+    uint _price = p.price(purchase);
+    MinimalPurchase(purchase).approve(t, p.seller(purchase), _price);
+    MinimalPurchase(purchase).approve(t, p.deliveryCompany(purchase), _price);
     Satisfied(msg.sender);
   }
 
-  function dissatisfied()
+  function dissatisfied(address purchase)
     public
-    onlyBuyer
-    inState(State.Confirm)
+    onlyBuyer(purchase)
+    inState(purchase, PurchaseData.State.Confirm)
   {
-    state = State.Inactive;
-    t.approve(buyer, price);
+    p.setState(purchase, PurchaseData.State.Dissatisfied);
     Dissatisfied(msg.sender);
   }
-
-  ///////////////////////////
-  ///---Other functions---///
-  ///////////////////////////
-
-  function withdrawTokens() public {
-    uint amount = t.allowance(this, msg.sender);
-    t.transferFrom(this, msg.sender, amount);
-  }
-
-  function getSensor(string name)
-    public
-    constant
-    returns(uint threshold, bool warning, string provider, bool set)
-  {
-    return (sensors.sensors[name].threshold, sensors.sensors[name].warning, sensors.sensors[name].provider, sensors.sensors[name].set);
-  }
-*/
 }
 

@@ -21,6 +21,8 @@ import { AgmCoreModule } from '@agm/core';
 import { AgmDirectionModule } from 'agm-direction';
 
 import { TransportService } from './transport/transport.service';
+import { ReturnedComponent } from './purchase/returned/returned.component';
+import { ReviewComponent } from './purchase/review/review.component';
 
 const appRoutes: Routes = [
   { path: 'transport', component: TransportComponent },
@@ -37,6 +39,8 @@ const appRoutes: Routes = [
     SimulationComponent,
     ConfirmComponent,
     TransportComponent,
+    ReturnedComponent,
+    ReviewComponent,
   ],
   imports: [
     AgmCoreModule.forRoot({
