@@ -1,12 +1,13 @@
 let Token = artifacts.require("./Token.sol");
+let Sale = artifacts.require("./Sale.sol");
 
 contract('Token', function(accounts) {
-  it("should put 100000000000000000000000000 tokens in the first account", function() {
-    return Token.deployed().then(function(instance) {
-      return instance.balanceOf.call(accounts[0]);
-    }).then(function(balance) {
-      assert.equal(balance.valueOf(), 100000000000000000000000000, "100000000000000000000000000 wasn't in the first account");
-    });
+  let sale;
+  before(async function () {
+    let value = 100;
+    sale = await Sale.deployed();
+    await sale.buyTokens(accounts[0], {from: accounts[0], value: value});
+    await sale.buyTokens(accounts[1], {from: accounts[1], value: value});
   });
   it("should send tokens correctly", function() {
     let token;

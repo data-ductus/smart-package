@@ -2,6 +2,7 @@ let Purchase = artifacts.require("./Purchase.sol");
 let Purchase2 = artifacts.require("./Purchase2.sol");
 let PurchaseData = artifacts.require("./PurchaseData.sol");
 let Token = artifacts.require("./Token.sol");
+let Sale = artifacts.require("./Sale.sol");
 let MinimalPurchase = artifacts.require("./MinimalPurchase.sol");
 let Dapp = artifacts.require("./DApp.sol");
 
@@ -20,7 +21,16 @@ contract('purchase-dissatisfied', function (accounts) {
   const tempProvider = accounts[3];
   const clerk = accounts[4];
 
+  const buyToken = async function() {
+    let value = 10000;
+    const sale = await Sale.deployed();
+    await sale.buyTokens(accounts[0], {from: accounts[0], value: value});
+    await sale.buyTokens(accounts[1], {from: accounts[1], value: value});
+    await sale.buyTokens(accounts[2], {from: accounts[2], value: value});
+  };
+
   before(async function () {
+    await buyToken();
     dapp = await Dapp.deployed();
     purchase = await Purchase.deployed();
     purchase2 = await Purchase2.deployed();
@@ -103,7 +113,16 @@ contract('purchase-dissatisfied-2', function (accounts) {
   const price = 100;
   const tempProvider = accounts[3];
 
+  const buyToken = async function() {
+    let value = 10000;
+    const sale = await Sale.deployed();
+    await sale.buyTokens(accounts[0], {from: accounts[0], value: value});
+    await sale.buyTokens(accounts[1], {from: accounts[1], value: value});
+    await sale.buyTokens(accounts[2], {from: accounts[2], value: value});
+  };
+
   before(async function () {
+    await buyToken();
     dapp = await Dapp.deployed();
     purchase = await Purchase.deployed();
     purchase2 = await Purchase2.deployed();
@@ -151,7 +170,16 @@ contract('purchase-dissatisfied-3', function (accounts) {
   const price = 100;
   const tempProvider = accounts[3];
 
+  const buyToken = async function() {
+    let value = 10000;
+    const sale = await Sale.deployed();
+    await sale.buyTokens(accounts[0], {from: accounts[0], value: value});
+    await sale.buyTokens(accounts[1], {from: accounts[1], value: value});
+    await sale.buyTokens(accounts[2], {from: accounts[2], value: value});
+  };
+
   before(async function () {
+    await buyToken();
     dapp = await Dapp.deployed();
     purchase = await Purchase.deployed();
     purchase2 = await Purchase2.deployed();

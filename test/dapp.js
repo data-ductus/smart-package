@@ -1,10 +1,8 @@
 let Dapp = artifacts.require("./DApp.sol");
 let Purchase = artifacts.require("./Purchase.sol");
-let Token = artifacts.require("./Token.sol");
 let PurchaseData = artifacts.require("./PurchaseData.sol");
 
 contract('dapp', function (accounts) {
-
   it("should create a purchase contract", function () {
     let dapp;
 

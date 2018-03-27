@@ -4,9 +4,9 @@ import "./Purchase/Purchase.sol";
 import "./Purchase/Purchase2.sol";
 import "./Purchase/MinimalPurchase.sol";
 import "./Token/Token.sol";
-import "./Token/Owned.sol";
+import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract DApp is Owned {
+contract DApp is Ownable {
   mapping (address => address[]) userContracts;
   address[] public allContracts;
   address public purchase;

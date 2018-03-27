@@ -3,6 +3,7 @@ let Purchase2 = artifacts.require("./Purchase2.sol");
 let PurchaseData = artifacts.require("./PurchaseData.sol");
 let Dapp = artifacts.require("../DApp.sol");
 let Token = artifacts.require("./Token.sol");
+let Sale = artifacts.require("./Sale.sol");
 let MinimalPurchase = artifacts.require("./MinimalPurchase.sol");
 
 contract('purchase', function (accounts) {
@@ -12,6 +13,11 @@ contract('purchase', function (accounts) {
   let data;
 
   before(async function () {
+    let value = 10000;
+    const sale = await Sale.deployed();
+    await sale.buyTokens(accounts[0], {from: accounts[0], value: value});
+    await sale.buyTokens(accounts[1], {from: accounts[1], value: value});
+    await sale.buyTokens(accounts[2], {from: accounts[2], value: value});
     purchase = await Purchase.deployed();
     data = await PurchaseData.deployed();
     c = await MinimalPurchase.new(purchase.address);
@@ -61,6 +67,11 @@ contract('purchase-success', function(accounts) {
   const price = 100;
 
   before(async function () {
+    let value = 10000;
+    const sale = await Sale.deployed();
+    await sale.buyTokens(accounts[0], {from: accounts[0], value: value});
+    await sale.buyTokens(accounts[1], {from: accounts[1], value: value});
+    await sale.buyTokens(accounts[2], {from: accounts[2], value: value});
     purchase = await Purchase.deployed();
     purchase2 = await Purchase2.deployed();
     data = await PurchaseData.deployed();
@@ -193,7 +204,7 @@ contract('purchase-success', function(accounts) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Lower pressure than threshold should have failed");
       });
   });
- it("should not set warning to true when at least at threshold for minimum temperature", async function() {
+  it("should not set warning to true when at least at threshold for minimum temperature", async function() {
     await purchase.sensorData(c.address, "minTemp", minTemp, {from: tempProvider})
       .then(function(r) {
           assert(false, "At least threshold temperature should have failed");
@@ -254,6 +265,11 @@ contract("purchase-decline", function(accounts) {
   let c;
 
   before(async function () {
+    let value = 10000;
+    const sale = await Sale.deployed();
+    await sale.buyTokens(accounts[0], {from: accounts[0], value: value});
+    await sale.buyTokens(accounts[1], {from: accounts[1], value: value});
+    await sale.buyTokens(accounts[2], {from: accounts[2], value: value});
     purchase = await Purchase.deployed();
     data = await PurchaseData.deployed();
     c = await MinimalPurchase.new(purchase.address);
@@ -270,4 +286,3 @@ contract("purchase-decline", function(accounts) {
     assert.equal(buyers[0], 0x0, "The first buyer should be deleted")
   })
 });
-
