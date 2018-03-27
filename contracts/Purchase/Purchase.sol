@@ -7,7 +7,7 @@ import "./PurchaseData.sol";
 import "./MinimalPurchase.sol";
 
 contract Purchase {
-  Token t = Token(0x2492ff0373197367f8503f201cefa484df7d8351);
+  Token t;
   PurchaseData p;
   bool purchaseDataSet;
 
@@ -48,7 +48,9 @@ contract Purchase {
   event Satisfied(address from);
   event Dissatisfied(address from);
 
-  function Purchase() public {}
+  function Purchase(address _token) public {
+    t = Token(_token);
+  }
 
   function setPurchaseData(address _purchaseData)
     public
@@ -93,7 +95,7 @@ contract Purchase {
   notSeller(purchase)
   inState(purchase, PurchaseData.State.Created)
   {
-    p.addPotentialBuyer(purchase, deliveryAddress, maxTemp, minTemp, acceleration, humidity, pressure);
+    p.addPotentialBuyer(purchase, msg.sender, deliveryAddress, maxTemp, minTemp, acceleration, humidity, pressure);
   }
 
   ////////////////////
@@ -114,7 +116,7 @@ contract Purchase {
     inState(purchase, PurchaseData.State.Created)
   {
     p.setBuyer(purchase, _buyer);
-    MinimalPurchase(purchase).transferFrom(t, p.buyer(purchase), purchase, p.price(purchase));
+    MinimalPurchase(purchase).transferFrom(p.buyer(purchase), p.price(purchase));
     p.setState(purchase, PurchaseData.State.Locked);
     Accepted(msg.sender);
   }
@@ -136,7 +138,7 @@ contract Purchase {
   {
     p.setState(purchase, PurchaseData.State.Transit);
     p.setDeliveryCompany(purchase, msg.sender, returnAddress);
-    MinimalPurchase(purchase).transferFrom(t, msg.sender, purchase, p.price(purchase));
+    MinimalPurchase(purchase).transferFrom(msg.sender, p.price(purchase));
   }
 
   ///////////////////
@@ -177,8 +179,8 @@ contract Purchase {
   {
     p.setState(purchase, PurchaseData.State.Inactive);
     uint _price = p.price(purchase);
-    MinimalPurchase(purchase).approve(t, p.seller(purchase), _price);
-    MinimalPurchase(purchase).approve(t, p.deliveryCompany(purchase), _price);
+    MinimalPurchase(purchase).approve(p.seller(purchase), _price);
+    MinimalPurchase(purchase).approve(p.deliveryCompany(purchase), _price);
     Satisfied(msg.sender);
   }
 

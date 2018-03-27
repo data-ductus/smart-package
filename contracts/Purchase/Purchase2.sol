@@ -9,7 +9,7 @@ import "../DApp.sol";
 contract Purchase2 {
 
   DApp dapp;
-  Token t = Token(0x2492ff0373197367f8503f201cefa484df7d8351);
+  Token t;
   PurchaseData p;
   bool purchaseDataSet;
 
@@ -55,7 +55,9 @@ contract Purchase2 {
   event Satisfied(address from);
   event Dissatisfied(address from);
 
-  function Purchase2() public {}
+  function Purchase2(address _token) public {
+    t = Token(_token);
+  }
 
   function setPurchaseData(address _purchaseData)
     public
@@ -85,7 +87,6 @@ contract Purchase2 {
     onlyDeliveryCompany(purchase)
   {
     p.setState(purchase, PurchaseData.State.Return);
-    MinimalPurchase(purchase).approve(t, p.buyer(purchase), p.price(purchase));
   }
 
   //////////////////
@@ -110,7 +111,8 @@ contract Purchase2 {
     inState(purchase, PurchaseData.State.Returned)
   {
     p.setState(purchase, PurchaseData.State.Inactive);
-    MinimalPurchase(purchase).approve(t, p.deliveryCompany(purchase), p.price(purchase));
+    MinimalPurchase(purchase).approve(p.buyer(purchase), p.price(purchase));
+    MinimalPurchase(purchase).approve(p.deliveryCompany(purchase), p.price(purchase));
   }
 
   function goodsDamaged(address purchase)
@@ -132,7 +134,8 @@ contract Purchase2 {
     inState(purchase, PurchaseData.State.Review)
   {
     p.setState(purchase, PurchaseData.State.Inactive);
-    MinimalPurchase(purchase).approve(t, p.seller(purchase), p.price(purchase));
+    MinimalPurchase(purchase).approve(p.buyer(purchase), p.price(purchase));
+    MinimalPurchase(purchase).approve(p.seller(purchase), p.price(purchase));
   }
 
   function clerk(address purchase)
@@ -154,9 +157,9 @@ contract Purchase2 {
     condition(_seller+_buyer+_delivery == t.balanceOf(purchase))
   {
     p.setState(purchase, PurchaseData.State.Inactive);
-    MinimalPurchase(purchase).approve(t, p.seller(purchase), _seller);
-    MinimalPurchase(purchase).approve(t, p.deliveryCompany(purchase), _delivery);
-    MinimalPurchase(purchase).approve(t, p.buyer(purchase), _buyer);
+    MinimalPurchase(purchase).approve(p.seller(purchase), _seller);
+    MinimalPurchase(purchase).approve(p.deliveryCompany(purchase), _delivery);
+    MinimalPurchase(purchase).approve(p.buyer(purchase), _buyer);
   }
 
   ///////////////////////////

@@ -7,31 +7,26 @@ const MinimalPurchase = artifacts.require("./Purchase/MinimalPurchase");
 const DApp = artifacts.require("./DApp.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(Token);
-  deployer.deploy(Sensors);
-  deployer.link(Sensors, PurchaseData);
-  deployer.link(Sensors, Purchase);
-  deployer.link(Sensors, Purchase2);
-  deployer.link(Sensors, DApp);
-  deployer.deploy(Purchase, 0x0)
-    .then(() => {
-      deployer.deploy(Purchase2, 0x0)
-        .then(() =>{
-          Purchase.deployed()
-            .then(p => {
-              deployPurchaseData(deployer, p)
-            })
-        });
-    });
-  deployer.deploy(MinimalPurchase, 0x0);
+  deployer.then(async () => {
+    await deployer.deploy(Token);
+    await deployer.deploy(Sensors);
+    await deployer.link(Sensors, PurchaseData);
+    await deployer.link(Sensors, Purchase);
+    await deployer.link(Sensors, Purchase2);
+    await deployer.link(Sensors, DApp);
+    const t = await Token.deployed();
+    await deployer.deploy(Purchase, t.address);
+    await deployer.deploy(Purchase2, t.address);
+    const p1 = await Purchase.deployed();
+    const p2 = await Purchase2.deployed();
+    await deployer.deploy(PurchaseData, p1.address, p2.address);
+    await deployer.deploy(DApp, p1.address, p2.address, t.address);
+    const d = await DApp.deployed();
+    await deployer.deploy(MinimalPurchase, d.address, t.address);
+  });
+
 };
 
 const deployPurchaseData = function(deployer, p) {
-  Purchase2.deployed()
-    .then(p2 => {
-      deployer.deploy(PurchaseData, p.address, p2.address)
-        .then(() => {
-          deployer.deploy(DApp, p.address, p2.address)
-        });
-    })
+
 };

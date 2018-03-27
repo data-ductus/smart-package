@@ -93,12 +93,21 @@ contract PurchaseData {
     delete potentialBuyers[purchase][_buyer];
   }
 
-  function addPotentialBuyer(address purchase, string _deliveryAddress, int maxTemp, int minTemp, int acceleration, int humidity, int pressure)
+  function addPotentialBuyer(
+    address purchase,
+    address _buyer,
+    string _deliveryAddress,
+    int maxTemp,
+    int minTemp,
+    int acceleration,
+    int humidity,
+    int pressure
+  )
     public
     onlyPurchaseContract()
   {
     uint i =  potentialBuyers[purchase].length;
-    potentialBuyers[purchase].push(msg.sender);
+    potentialBuyers[purchase].push(_buyer);
     deliveryAddress[purchase][msg.sender] = _deliveryAddress;
     require(SensorLibrary.setSensors(additionalTerms[purchase][i], maxTemp, minTemp, acceleration, humidity, pressure));
     Proposed(msg.sender);
@@ -136,6 +145,14 @@ contract PurchaseData {
     returns(int threshold, bool warning, address provider, bool set)
   {
     return(SensorLibrary.getSensor(additionalTerms[purchase][_buyer], name));
+  }
+
+  function getPotentialBuyers(address purchase)
+    public
+    constant
+    returns(address[])
+  {
+    return potentialBuyers[purchase];
   }
 
 }

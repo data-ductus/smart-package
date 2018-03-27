@@ -6,24 +6,28 @@ import "../DApp.sol";
 contract MinimalPurchase {
 
   DApp dapp;
+  Token t;
 
-  function MinimalPurchase(address _dapp) public { dapp = DApp(_dapp); }
+  function MinimalPurchase(address _dapp, address _token) public {
+    dapp = DApp(_dapp);
+    t = Token(_token);
+  }
 
   modifier condition(bool c) {
     require(c);
     _;
   }
 
-  function approve(address tokenAddress, address to, uint amount)
+  function approve(address to, uint amount)
     public
     condition(dapp.isPurchaseContract(msg.sender))
   {
-    require(Token(tokenAddress).approve(to, amount));
+    require(t.approve(to, amount));
   }
-  function transferFrom(address tokenAddress, address from, address to, uint amount)
+  function transferFrom(address from, uint amount)
     public
     condition(dapp.isPurchaseContract(msg.sender))
   {
-    require(Token(tokenAddress).transferFrom(from, to, amount));
+    require(t.transferFrom(from, this, amount));
   }
 }

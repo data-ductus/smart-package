@@ -77,7 +77,21 @@ library SensorLibrary {
   function combineTerms(Sensors storage self, Sensors storage additionalTerms)
     public
   {
-
+    if(additionalTerms.sensors["maxTemp"].set) {
+      self.sensors["maxTemp"] = additionalTerms.sensors["maxTemp"];
+    }
+    if(additionalTerms.sensors["minTemp"].set) {
+      self.sensors["minTemp"] = additionalTerms.sensors["minTemp"];
+    }
+    if(additionalTerms.sensors["acceleration"].set) {
+      self.sensors["acceleration"] = additionalTerms.sensors["acceleration"];
+    }
+    if(additionalTerms.sensors["humidity"].set) {
+      self.sensors["humidity"] = additionalTerms.sensors["humidity"];
+    }
+    if(additionalTerms.sensors["pressure"].set) {
+      self.sensors["pressure"] = additionalTerms.sensors["pressure"];
+    }
   }
 
   function sensorData(Sensors storage self, string sensorType, address id, int value)

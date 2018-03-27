@@ -12,15 +12,17 @@ contract DApp is Owned {
   address public purchase;
   address public purchase2;
   address[] public clerks;
+  address public token;
 
-  function DApp(address p1, address p2) public {
+  function DApp(address p1, address p2, address t) public {
     purchase = p1;
     purchase2 = p2;
+    token = t;
     require(Purchase2(p2).setDapp(this));
   }
 
   function createMinimalPurchase(uint price) public {
-    address c = new MinimalPurchase(this);
+    address c = new MinimalPurchase(this, token);
     Purchase p = Purchase(purchase);
     p.newPurchase(c, price, msg.sender);
     allContracts.push(c);
