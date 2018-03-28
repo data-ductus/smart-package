@@ -21,7 +21,7 @@ contract('purchase-revert-wrong-state', function (accounts) {
     purchase = await Purchase.deployed();
     purchase2 = await Purchase2.deployed();
     data = await PurchaseData.deployed();
-    await dapp.createMinimalPurchase(0, {from: seller});
+    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await dapp.addClerk(clerk);
   });
@@ -58,7 +58,8 @@ contract('purchase-revert-wrong-state', function (accounts) {
       });
   });
   it("should revert satisfied if not in confirm", async function() {
-    await purchase.satisfied(c[0], {from: buyer})
+    await timeout(2000);
+    await purchase.success(c[0])
       .then(function(r) {
         assert(false, "Satisfied should revert");
       }, function (e) {
@@ -97,14 +98,14 @@ contract('purchase-revert-wrong-state', function (accounts) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Seller satisfied should revert");
       });
   });
-  it("should revert goods damaged if not in return", async function() {
+  /*it("should revert goods damaged if not in return", async function() {
     await purchase2.goodsDamaged(c[0], {from: seller})
       .then(function(r) {
         assert(false, "Goods damaged should revert");
       }, function (e) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Goods damaged should revert");
       });
-  });
+  });*/
   it("should revert compensate if not in return", async function() {
     await purchase2.compensate(c[0], {from: delivery})
       .then(function(r) {
@@ -141,10 +142,9 @@ contract('purchase-revert-wrong-state-2', function (accounts) {
   before(async function () {
     dapp = await Dapp.deployed();
     purchase = await Purchase.deployed();
-    await dapp.createMinimalPurchase(0, {from: seller});
+    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
-    await purchase.newPurchase(c[0], 0, seller);
-    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer});
+    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer});
     await purchase.accept(c[0], 0, {from: seller})
   });
   it("should revert set price if not in created", async function() {
@@ -164,7 +164,7 @@ contract('purchase-revert-wrong-state-2', function (accounts) {
       });
   });
   it("should revert propose if not in created", async function() {
-    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer})
+    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer})
       .then(function(r) {
         assert(false, "Propose should revert");
       }, function (e) {
@@ -183,9 +183,8 @@ contract("purchase-revert-wrong-sender", function (accounts) {
   before(async function () {
     dapp = await Dapp.deployed();
     purchase = await Purchase.deployed();
-    await dapp.createMinimalPurchase(0, {from: seller});
+    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
-    await purchase.newPurchase(c[0], 0, seller);
   });
   it("should revert set price if not seller", async function() {
     await purchase.setPrice(c[0], 10, {from: buyer})
@@ -204,7 +203,7 @@ contract("purchase-revert-wrong-sender", function (accounts) {
       });
   });
   it("should revert propose if buyer", async function() {
-    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, {from: seller})
+    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: seller})
       .then(function(r) {
         assert(false, "Propose should revert");
       }, function (e) {
@@ -223,10 +222,9 @@ contract("purchase-revert-wrong-sender-2", function (accounts) {
   before(async function () {
     dapp = await Dapp.deployed();
     purchase = await Purchase.deployed();
-    await dapp.createMinimalPurchase(0, {from: seller});
+    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
-    await purchase.newPurchase(c[0], 0, seller);
-    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer});
+    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer});
   });
   it("should revert decline if not seller", async function() {
     await purchase.decline(c[0], 0, {from: buyer})
@@ -257,16 +255,15 @@ contract("purchase-revert-wrong-sender-3", function (accounts) {
   before(async function () {
     dapp = await Dapp.deployed();
     purchase = await Purchase.deployed();
-    await dapp.createMinimalPurchase(0, {from: seller});
+    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
-    await purchase.newPurchase(c[0], 0, seller);
-    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer});
+    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer});
     await purchase.accept(c[0], 0, {from: seller});
     await purchase.transport(c[0], 'Stockholm', {from: delivery});
     await purchase.deliver(c[0], {from: delivery});
   });
-  it("should revert satisfied if not buyer", async function() {
-    await purchase.satisfied(c[0], {from: seller})
+  it("should revert satisfied if not enough time has passed", async function() {
+    await purchase.success(c[0])
       .then(function(r) {
         assert(false, "Satisfied should revert");
       }, function (e) {
@@ -296,10 +293,9 @@ contract("purchase-revert-wrong-sender-4", function (accounts) {
     dapp = await Dapp.deployed();
     purchase = await Purchase.deployed();
     purchase2 = await Purchase2.deployed();
-    await dapp.createMinimalPurchase(0, {from: seller});
+    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
-    await purchase.newPurchase(c[0], 0, seller);
-    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer});
+    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer});
     await purchase.accept(c[0], 0, {from: seller});
     await purchase.transport(c[0], 'Stockholm', {from: delivery});
     await purchase.deliver(c[0], {from: delivery});
@@ -337,10 +333,9 @@ contract("purchase-revert-wrong-sender-5", function (accounts) {
     dapp = await Dapp.deployed();
     purchase = await Purchase.deployed();
     purchase2 = await Purchase2.deployed();
-    await dapp.createMinimalPurchase(0, {from: seller});
+    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
-    await purchase.newPurchase(c[0], 0, seller);
-    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer});
+    await purchase.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer});
     await purchase.accept(c[0], 0, {from: seller});
     await purchase.transport(c[0], 'Stockholm', {from: delivery});
     await purchase.deliver(c[0], {from: delivery});
@@ -364,14 +359,14 @@ contract("purchase-revert-wrong-sender-5", function (accounts) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Goods damaged should revert");
       });
   });
-  /*it("should revert goods damaged if no warnings", async function () {
+  it("should revert goods damaged if no warnings", async function () {
     await purchase2.goodsDamaged(c[0], {from: seller})
       .then(function(r) {
         assert(false, "Goods damaged should revert");
       }, function (e) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Goods damaged should revert");
       });
-  })*/
+  })
 });
 
 contract("purchase-revert-wrong-sender-6", function (accounts) {
@@ -390,10 +385,10 @@ contract("purchase-revert-wrong-sender-6", function (accounts) {
     dapp = await Dapp.deployed();
     purchase = await Purchase.deployed();
     purchase2 = await Purchase2.deployed();
-    await dapp.createMinimalPurchase(0, {from: seller});
+    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     dapp.addClerk(clerk);
-    await purchase.propose(c[0], 'Skellefteå', maxTemp, 0, 0, 0, 0, {from: buyer});
+    await purchase.propose(c[0], 'Skellefteå', maxTemp, 0, 0, 0, 0, false, {from: buyer});
     await purchase.accept(c[0], 0, {from: seller});
     await purchase.setProvider(c[0], "maxTemp", {from: tempProvider});
     await purchase.transport(c[0], 'Stockholm', {from: delivery});
@@ -430,3 +425,7 @@ contract("purchase-revert-wrong-sender-6", function (accounts) {
       });
   });
 });
+
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

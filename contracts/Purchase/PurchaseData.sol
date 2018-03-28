@@ -17,7 +17,7 @@ contract PurchaseData {
   mapping(address => mapping(address => string)) public deliveryAddress;
   mapping(address => SensorLibrary.Sensors) terms;
   mapping(address => address[]) public potentialBuyers;
-  mapping(address => mapping(uint => SensorLibrary.Sensors)) additionalTerms;
+  mapping(address => mapping(uint => SensorLibrary.Sensors)) proposals;
 
   event Proposed(address from);
   event Declined(address from);
@@ -44,12 +44,24 @@ contract PurchaseData {
   ///---Setters---///
   ///////////////////
 
-  function newPurchase(address purchase, uint _price, address _seller)
+  function newPurchase
+  (
+    address purchase,
+    uint _price,
+    address _seller,
+    int maxTemp,
+    int minTemp,
+    int acceleration,
+    int humidity,
+    int pressure,
+    bool gps
+  )
     public
     onlyPurchaseContract()
   {
     price[purchase] = _price;
     seller[purchase] = _seller;
+    require(SensorLibrary.setSensors(terms[purchase], maxTemp, minTemp, acceleration, humidity, pressure, gps));
   }
 
   function setState(address purchase, State _state)
@@ -75,7 +87,7 @@ contract PurchaseData {
     onlyPurchaseContract()
   {
     buyer[purchase] = potentialBuyers[purchase][_buyer];
-    SensorLibrary.combineTerms(terms[purchase], additionalTerms[purchase][_buyer]);
+    SensorLibrary.combineTerms(terms[purchase], proposals[purchase][_buyer]);
   }
 
   function setDeliveryCompany(address purchase, address _deliveryCompany, string _returnAddress)
@@ -93,7 +105,8 @@ contract PurchaseData {
     delete potentialBuyers[purchase][_buyer];
   }
 
-  function addPotentialBuyer(
+  function addPotentialBuyer
+  (
     address purchase,
     address _buyer,
     string _deliveryAddress,
@@ -101,7 +114,8 @@ contract PurchaseData {
     int minTemp,
     int acceleration,
     int humidity,
-    int pressure
+    int pressure,
+    bool gps
   )
     public
     onlyPurchaseContract()
@@ -109,7 +123,7 @@ contract PurchaseData {
     uint i =  potentialBuyers[purchase].length;
     potentialBuyers[purchase].push(_buyer);
     deliveryAddress[purchase][msg.sender] = _deliveryAddress;
-    require(SensorLibrary.setSensors(additionalTerms[purchase][i], maxTemp, minTemp, acceleration, humidity, pressure));
+    require(SensorLibrary.setSensors(proposals[purchase][i], maxTemp, minTemp, acceleration, humidity, pressure, gps));
     Proposed(msg.sender);
   }
 
@@ -144,7 +158,7 @@ contract PurchaseData {
     constant
     returns(int threshold, bool warning, address provider, bool set)
   {
-    return(SensorLibrary.getSensor(additionalTerms[purchase][_buyer], name));
+    return(SensorLibrary.getSensor(proposals[purchase][_buyer], name));
   }
 
   function getPotentialBuyers(address purchase)

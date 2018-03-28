@@ -21,10 +21,20 @@ contract DApp is Ownable {
     require(Purchase2(p2).setDapp(this));
   }
 
-  function createMinimalPurchase(uint price) public {
+  function createMinimalPurchase(
+    uint price,
+    int maxTemp,
+    int minTemp,
+    int acceleration,
+    int humidity,
+    int pressure,
+    bool gps
+  )
+    public
+  {
     address c = new MinimalPurchase(this, token);
     Purchase p = Purchase(purchase);
-    p.newPurchase(c, price, msg.sender);
+    p.newPurchase(c, price, msg.sender, maxTemp, minTemp, acceleration, humidity, pressure, gps);
     allContracts.push(c);
   }
 

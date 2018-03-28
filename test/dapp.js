@@ -8,7 +8,7 @@ contract('dapp', function (accounts) {
 
     return Dapp.deployed().then(function (instance) {
       dapp = instance;
-      return dapp.createMinimalPurchase(0);
+      return dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false);
     }).then(function () {
       return dapp.getAllContracts();
     }).then(function (contracts) {
@@ -21,7 +21,7 @@ contract('dapp', function (accounts) {
 
     return Dapp.deployed().then(function (instance) {
       dapp = instance;
-      return dapp.createMinimalPurchase(0, {from: accounts[1]});
+      return dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: accounts[1]});
     }).then(function () {
       return dapp.getAllContracts();
     }).then(function (contracts) {
@@ -50,7 +50,7 @@ contract('dapp-2', function (accounts) {
   before(async function () {
     dapp = await Dapp.deployed();
     data = await PurchaseData.deployed();
-    await dapp.createMinimalPurchase(100);
+    await dapp.createMinimalPurchase(100, -999, -999, -999, -999, -999, false);
     c = await dapp.getAllContracts();
   });
   it("should have the correct price", async function () {

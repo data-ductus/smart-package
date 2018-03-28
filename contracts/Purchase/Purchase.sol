@@ -7,9 +7,13 @@ import "./PurchaseData.sol";
 import "./MinimalPurchase.sol";
 
 contract Purchase {
+
+  uint constant day = 2;
+
   Token t;
   PurchaseData p;
   bool purchaseDataSet;
+  mapping(address => uint) arrivalTime;
 
   modifier condition(bool _condition) {
     require(_condition);
@@ -62,8 +66,20 @@ contract Purchase {
     return true;
   }
 
-  function newPurchase(address purchase, uint _price, address _seller) {
-    p.newPurchase(purchase, _price, _seller);
+  function newPurchase
+  (
+    address purchase,
+    uint _price,
+    address _seller,
+    int maxTemp,
+    int minTemp,
+    int acceleration,
+    int humidity,
+    int pressure,
+    bool gps
+  )
+  {
+    p.newPurchase(purchase, _price, _seller, maxTemp, minTemp, acceleration, humidity, pressure, gps);
   }
 
   function setTokenAddress(address tokenAddress) public {
@@ -75,27 +91,37 @@ contract Purchase {
   ///////////////////
 
   function setPrice(address purchase, uint _price)
-  public
-  onlySeller(purchase)
-  condition(p.state(purchase) == PurchaseData.State.Created)
+    public
+    onlySeller(purchase)
+    condition(p.state(purchase) == PurchaseData.State.Created)
   {
     p.setPrice(purchase, _price);
   }
 
   function abort(address purchase)
-  public
-  onlySeller(purchase)
-  inState(purchase, PurchaseData.State.Created)
+    public
+    onlySeller(purchase)
+    inState(purchase, PurchaseData.State.Created)
   {
     p.setState(purchase, PurchaseData.State.Inactive);
   }
 
-  function propose(address purchase, string deliveryAddress, int maxTemp, int minTemp, int acceleration, int humidity, int pressure)
-  public
-  notSeller(purchase)
-  inState(purchase, PurchaseData.State.Created)
+  function propose
+  (
+    address purchase,
+    string deliveryAddress,
+    int maxTemp,
+    int minTemp,
+    int acceleration,
+    int humidity,
+    int pressure,
+    bool gps
+  )
+    public
+    notSeller(purchase)
+    inState(purchase, PurchaseData.State.Created)
   {
-    p.addPotentialBuyer(purchase, msg.sender, deliveryAddress, maxTemp, minTemp, acceleration, humidity, pressure);
+    p.addPotentialBuyer(purchase, msg.sender, deliveryAddress, maxTemp, minTemp, acceleration, humidity, pressure, gps);
   }
 
   ////////////////////
@@ -164,6 +190,7 @@ contract Purchase {
     inState(purchase, PurchaseData.State.Transit)
     onlyDeliveryCompany(purchase)
   {
+    arrivalTime[purchase] = now;
     p.setState(purchase, PurchaseData.State.Confirm);
     Delivered(msg.sender);
   }
@@ -172,9 +199,9 @@ contract Purchase {
   ///---Confirm---///
   ///////////////////
 
-  function satisfied(address purchase)
+  function success(address purchase)
     public
-    onlyBuyer(purchase)
+    condition(now > arrivalTime[purchase] + day)
     inState(purchase, PurchaseData.State.Confirm)
   {
     p.setState(purchase, PurchaseData.State.Inactive);
@@ -188,6 +215,7 @@ contract Purchase {
     public
     onlyBuyer(purchase)
     inState(purchase, PurchaseData.State.Confirm)
+    condition(now <= arrivalTime[purchase] + day)
   {
     p.setState(purchase, PurchaseData.State.Dissatisfied);
     Dissatisfied(msg.sender);

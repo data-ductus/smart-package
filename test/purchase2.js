@@ -23,7 +23,7 @@ contract('purchase', function (accounts) {
     c = await MinimalPurchase.new(purchase.address);
     token = await Token.deployed();
     await purchase.setTokenAddress(token.address);
-    await purchase.newPurchase(c.address, 100, accounts[0]);
+    await purchase.newPurchase(c.address, 100, accounts[0], -999, -999, -999, -999, -999, false);
   });
   it("should have the correct initial info", async function () {
     let cost = 100;
@@ -79,13 +79,13 @@ contract('purchase-success', function(accounts) {
     const dapp = await Dapp.deployed();
     c = await MinimalPurchase.new(dapp.address, token.address);
     await purchase.setTokenAddress(token.address);
-    await purchase.newPurchase(c.address, price, seller);
+    await purchase.newPurchase(c.address, price, seller, maxTemp, -999, acceleration, -999, -999, false);
     await token.approve(c.address, price, {from: buyer});
     await token.transfer(delivery, 1000, {from: buyer});
   });
   it("should add two proposals and specify terms", async function() {
-    await purchase.propose(c.address, 'Skellefteå', maxTemp, minTemp, acceleration, humidity, pressure, {from: buyer});
-    await purchase.propose(c.address, 'Skellefteå', maxTemp, minTemp, acceleration, humidity, pressure, {from: accounts[2]});
+    await purchase.propose(c.address, 'Skellefteå', -999, minTemp, -999, humidity, pressure, true, {from: buyer});
+    await purchase.propose(c.address, 'Skellefteå', maxTemp, minTemp, acceleration, humidity, pressure, true, {from: accounts[2]});
 
     const proposals = await data.getPotentialBuyers(c.address);
 
@@ -95,16 +95,16 @@ contract('purchase-success', function(accounts) {
     const humSensor = await data.getProposedTerms.call(c.address, 'humidity', 0);
     const pressSensor = await data.getProposedTerms.call(c.address, 'pressure', 0);
 
-    assert.equal(maxSensor[0].toNumber(), maxTemp, "The maximum temperature threshold was not set correctly");
+    assert.equal(maxSensor[3], false, "The maximum temperature threshold was not set correctly");
     assert.equal(minSensor[0].toNumber(), minTemp, "The minimum temperature threshold was not set correctly");
-    assert.equal(accSensor[0].toNumber(), acceleration, "The acceleration threshold was not set correctly");
+    assert.equal(accSensor[3], false, "The acceleration threshold was not set correctly");
     assert.equal(humSensor[0].toNumber(), humidity, "The humidity threshold was not set correctly");
     assert.equal(pressSensor[0].toNumber(), pressure, "The pressure threshold was not set correctly");
-    assert.equal(proposals.length, 2, "There should be one proposals");
+    assert.equal(proposals.length, 2, "There should be one proposal");
     assert.equal(proposals[0], buyer, "The first potential buyer should have the correct address");
   });
 
-  it("should transfer tokens, set correct buyer and change state to locked", async function() {
+  it("should transfer tokens, set correct buyer, combine terms and change state to locked", async function() {
     let tokens_before_buyer;
     let tokens_before_contract;
     let tokens_after_buyer;
@@ -245,12 +245,15 @@ contract('purchase-success', function(accounts) {
 
     assert.equal(_state, 3, "The state is not confirm (3)")
   });
-  it("should approve tokens to dissatisfied buyer", async function() {
-    await purchase.satisfied(c.address, {from: buyer});
+  it("should approve tokens to seller after timeout", async function() {
+    await timeout(3000);
+    await purchase.success(c.address);
     const allowance = await token.allowance.call(c.address, seller);
+    const allowance_d = await token.allowance.call(c.address, delivery);
     const _state = await data.state(c.address);
 
     assert.equal(allowance, price, "The seller should be allowed to retrieve the payment from the contract");
+    assert.equal(allowance_d, price, "The delivery company should be allowed to retrieve their tokens from the contract");
     assert.equal(_state, 9, "The state should be inactive (9)");
   })
 });
@@ -275,8 +278,8 @@ contract("purchase-decline", function(accounts) {
     c = await MinimalPurchase.new(purchase.address);
     token = await Token.deployed();
     await purchase.setTokenAddress(token.address);
-    await purchase.newPurchase(c.address, price, seller);
-    await purchase.propose(c.address, 'Skellefteå', 0, 0, 0, 0, 0, {from: buyer});
+    await purchase.newPurchase(c.address, price, seller, -999, -999, -999, -999, -999, false);
+    await purchase.propose(c.address, 'Skellefteå', -999, -999, -999, -999, -999, false, {from: buyer});
   });
 
   it("should decline correctly", async function () {
@@ -286,3 +289,7 @@ contract("purchase-decline", function(accounts) {
     assert.equal(buyers[0], 0x0, "The first buyer should be deleted")
   })
 });
+
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

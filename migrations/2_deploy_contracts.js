@@ -7,7 +7,10 @@ const Sensors = artifacts.require("./Purchase/SensorLibrary.sol");
 const MinimalPurchase = artifacts.require("./Purchase/MinimalPurchase");
 const DApp = artifacts.require("./DApp.sol");
 
+const test2 = artifacts.require("./test2variabler.sol");
+
 module.exports = function(deployer) {
+  deployer.deploy(test2);
   deployer.then(async () => {
     await deployer.deploy(Token);
     await deployer.deploy(Sensors);

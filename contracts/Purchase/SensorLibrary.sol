@@ -12,6 +12,8 @@ library SensorLibrary {
   }
   struct Sensors {
     mapping(string => Sensor) sensors;
+    address gpsProvider;
+    bool gps;
   }
   event Threshold(int maxTemp, int minTemp, int Acceleration);
   event Request(address provider);
@@ -23,7 +25,7 @@ library SensorLibrary {
     _;
   }
 
-  function setSensors(Sensors storage self, int maxTemp, int minTemp, int acceleration, int humidity, int pressure)
+  function setSensors(Sensors storage self, int maxTemp, int minTemp, int acceleration, int humidity, int pressure, bool gps)
     public
     returns(bool)
   {
@@ -46,6 +48,9 @@ library SensorLibrary {
     if(keccak256(pressure) != keccak256(notSet)) {
       self.sensors["pressure"].threshold = pressure;
       self.sensors["pressure"].set = true;
+    }
+    if(gps) {
+      self.gps = true;
     }
     Threshold(self.sensors["maxTemp"].threshold, self.sensors["minTemp"].threshold, self.sensors["acceleration"].threshold);
     return true;
@@ -91,6 +96,9 @@ library SensorLibrary {
     }
     if(additionalTerms.sensors["pressure"].set) {
       self.sensors["pressure"] = additionalTerms.sensors["pressure"];
+    }
+    if(additionalTerms.gps) {
+      self.gps = true;
     }
   }
 
