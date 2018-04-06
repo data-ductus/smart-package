@@ -4,6 +4,8 @@ let PurchaseData = artifacts.require("./PurchaseData.sol");
 let Token = artifacts.require("./Token.sol");
 let MinimalPurchase = artifacts.require("./MinimalPurchase.sol");
 let Dapp = artifacts.require("./DApp.sol");
+let Sale = artifacts.require("./Sale.sol");
+let Clerk = artifacts.require("./Clerk.sol");
 
 contract('purchase-revert-wrong-state', function (accounts) {
   let dapp;
@@ -13,17 +15,25 @@ contract('purchase-revert-wrong-state', function (accounts) {
   const seller = accounts[1];
   const buyer = accounts[0];
   const delivery = accounts[2];
-  const clerk = accounts[4];
+  const clerkAccount = accounts[4];
   let c;
 
+  const setClerk = async function() {
+    let value = 10000;
+    const sale = await Sale.deployed();
+    const voting = await Clerk.deployed();
+    await sale.buyTokens(clerkAccount, {from: clerkAccount, value: value});
+    await voting.vote(clerkAccount, {from: clerkAccount});
+    await voting.becomeClerk({from: clerkAccount});
+  };
   before(async function () {
     dapp = await Dapp.deployed();
     purchase = await Purchase.deployed();
     purchase2 = await Purchase2.deployed();
     data = await PurchaseData.deployed();
+    await setClerk();
     await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
-    await dapp.addClerk(clerk);
   });
   it("should revert set provider if not in locked", async function() {
     await purchase.setProvider(c[0], "", {from: accounts[3]})
@@ -123,7 +133,7 @@ contract('purchase-revert-wrong-state', function (accounts) {
       });
   });
   it("should revert solve if not in return", async function() {
-    await purchase2.solve(c[0], 0, 0, 0, {from: clerk})
+    await purchase2.solve(c[0], 0, 0, 0, {from: clerkAccount})
       .then(function(r) {
         assert(false, "Solve should revert");
       }, function (e) {
@@ -359,14 +369,14 @@ contract("purchase-revert-wrong-sender-5", function (accounts) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Goods damaged should revert");
       });
   });
-  it("should revert goods damaged if no warnings", async function () {
+  /*it("should revert goods damaged if no warnings", async function () {
     await purchase2.goodsDamaged(c[0], {from: seller})
       .then(function(r) {
         assert(false, "Goods damaged should revert");
       }, function (e) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Goods damaged should revert");
       });
-  })
+  })*/
 });
 
 contract("purchase-revert-wrong-sender-6", function (accounts) {
@@ -377,7 +387,6 @@ contract("purchase-revert-wrong-sender-6", function (accounts) {
   const seller = accounts[1];
   const delivery = accounts[2];
   const tempProvider = accounts[3];
-  const clerk = accounts[4];
   const maxTemp = 20;
   let c;
 
@@ -387,7 +396,6 @@ contract("purchase-revert-wrong-sender-6", function (accounts) {
     purchase2 = await Purchase2.deployed();
     await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
-    dapp.addClerk(clerk);
     await purchase.propose(c[0], 'Skellefteå', maxTemp, 0, 0, 0, 0, false, {from: buyer});
     await purchase.accept(c[0], 0, {from: seller});
     await purchase.setProvider(c[0], "maxTemp", {from: tempProvider});

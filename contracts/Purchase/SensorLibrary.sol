@@ -16,7 +16,6 @@ library SensorLibrary {
     bool gps;
   }
   event Threshold(int maxTemp, int minTemp, int Acceleration);
-  event Request(address provider);
   event Data(int value, address purchase);
   event Location(int lat, int long, address purchase);
 
@@ -116,12 +115,6 @@ library SensorLibrary {
     returns(int threshold, bool warning, address provider, bool set)
   {
     return (self.sensors[name].threshold, self.sensors[name].warning, self.sensors[name].provider, self.sensors[name].set);
-  }
-
-  function requestData(Sensors storage self, string sensorType)
-    public
-  {
-    Request(self.sensors[sensorType].provider);
   }
 
   function currentValue(int value, address purchase)

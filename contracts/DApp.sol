@@ -7,18 +7,16 @@ import "./Token/Token.sol";
 import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract DApp is Ownable {
-  mapping (address => address[]) userContracts;
   address[] public allContracts;
   address public purchase;
   address public purchase2;
-  address[] public clerks;
+  //address[] public clerks;
   address public token;
 
-  function DApp(address p1, address p2, address t) public {
-    purchase = p1;
-    purchase2 = p2;
-    token = t;
-    require(Purchase2(p2).setDapp(this));
+  function DApp(address _purchase1, address _purchase2, address _token) public {
+    purchase = _purchase1;
+    purchase2 = _purchase2;
+    token = _token;
   }
 
   function createMinimalPurchase(
@@ -33,12 +31,11 @@ contract DApp is Ownable {
     public
   {
     address c = new MinimalPurchase(this, token);
-    Purchase p = Purchase(purchase);
-    p.newPurchase(c, price, msg.sender, maxTemp, minTemp, acceleration, humidity, pressure, gps);
+    Purchase(purchase).newPurchase(c, price, msg.sender, maxTemp, minTemp, acceleration, humidity, pressure, gps);
     allContracts.push(c);
   }
 
-  function addClerk(address clerk)
+  /*function addClerk(address clerk)
     public
     onlyOwner()
   {
@@ -64,15 +61,7 @@ contract DApp is Ownable {
     returns(address[])
   {
     return clerks;
-  }
-
-  function getUserContracts()
-    public
-    constant
-    returns(address[])
-  {
-    return userContracts[msg.sender];
-  }
+  }*/
 
   function getAllContracts()
     public

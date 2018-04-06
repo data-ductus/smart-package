@@ -4,14 +4,16 @@ import "../Token/Token.sol";
 import "./SensorLibrary.sol";
 import "./PurchaseData.sol";
 import "./MinimalPurchase.sol";
-import "../DApp.sol";
+import "../Voting/Clerk.sol";
 
 contract Purchase2 {
 
-  DApp dapp;
   Token t;
+  Clerk c;
   PurchaseData p;
   bool purchaseDataSet;
+  mapping(address => uint) clerkPayment;
+  mapping(address => PurchaseData.State) previousState;
 
   modifier condition(bool _condition) {
     require(_condition);
@@ -44,7 +46,7 @@ contract Purchase2 {
   }
 
   modifier onlyClerk() {
-    require(dapp.isClerk(msg.sender));
+    require(c.isClerk(msg.sender));
     _;
   }
 
@@ -55,8 +57,9 @@ contract Purchase2 {
   event Satisfied(address from);
   event Dissatisfied(address from);
 
-  function Purchase2(address _token) public {
+  function Purchase2(address _token, address _clerk) public {
     t = Token(_token);
+    c = Clerk(_clerk);
   }
 
   function setPurchaseData(address _purchaseData)
@@ -66,14 +69,6 @@ contract Purchase2 {
   {
     purchaseDataSet = true;
     p = PurchaseData(_purchaseData);
-    return true;
-  }
-
-  function setDapp(address _dapp)
-    public
-    returns(bool)
-  {
-    dapp = DApp(_dapp);
     return true;
   }
 
@@ -138,14 +133,6 @@ contract Purchase2 {
     MinimalPurchase(purchase).approve(p.seller(purchase), p.price(purchase));
   }
 
-  function clerk(address purchase)
-    public
-    onlyDeliveryCompany(purchase)
-    inState(purchase, PurchaseData.State.Review)
-  {
-    p.setState(purchase, PurchaseData.State.Clerk);
-  }
-
   /////////////////
   ///---Clerk---///
   /////////////////
@@ -154,15 +141,52 @@ contract Purchase2 {
     public
     onlyClerk()
     inState(purchase, PurchaseData.State.Clerk)
-    condition(_seller+_buyer+_delivery == t.balanceOf(purchase))
+    condition(_seller+_buyer+_delivery+clerkPayment[purchase] == t.balanceOf(purchase))
   {
     p.setState(purchase, PurchaseData.State.Inactive);
+
+    uint tokens = clerkPayment[purchase];
+    clerkPayment[purchase] = 0;
+
     MinimalPurchase(purchase).approve(p.seller(purchase), _seller);
     MinimalPurchase(purchase).approve(p.deliveryCompany(purchase), _delivery);
     MinimalPurchase(purchase).approve(p.buyer(purchase), _buyer);
+    MinimalPurchase(purchase).approve(msg.sender, tokens);
+  }
+
+  function returnToPreviousState(address purchase)
+    public
+    onlyClerk()
+    inState(purchase, PurchaseData.State.Clerk)
+  {
+    p.setState(purchase, PurchaseData.State.Inactive);
+
+    uint tokens = clerkPayment[purchase];
+    clerkPayment[purchase] = 0;
+  }
+
+  function increaseClerkPayment(address purchase, uint amount)
+    public
+    inState(purchase, PurchaseData.State.Clerk)
+  {
+    clerkPayment[purchase] += payment;
+    MinimalPurchase(purchase).transferFrom(msg.sender, payment);
   }
 
   ///////////////////////////
   ///---Other functions---///
   ///////////////////////////
+
+  function clerk(address purchase, uint payment)
+    public
+    condition(p.state(purchase) != PurchaseData.State.Clerk)
+  {
+    PurchaseData.State s = p.state(purchase);
+
+    p.setState(purchase, PurchaseData.State.Clerk);
+    previousState[purchase] = s;
+
+    clerkPayment[purchase] += payment;
+    MinimalPurchase(purchase).transferFrom(msg.sender, payment);
+  }
 }

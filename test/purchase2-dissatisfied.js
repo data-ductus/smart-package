@@ -5,6 +5,7 @@ let Token = artifacts.require("./Token.sol");
 let Sale = artifacts.require("./Sale.sol");
 let MinimalPurchase = artifacts.require("./MinimalPurchase.sol");
 let Dapp = artifacts.require("./DApp.sol");
+let Clerk = artifacts.require("./Clerk.sol");
 
 contract('purchase-dissatisfied', function (accounts) {
   let purchase;
@@ -12,6 +13,7 @@ contract('purchase-dissatisfied', function (accounts) {
   let token;
   let c;
   let dapp;
+  let clerk;
   let data;
   const maxTemp = 30;
   const buyer = accounts[0];
@@ -19,14 +21,18 @@ contract('purchase-dissatisfied', function (accounts) {
   const delivery = accounts[2];
   const price = 100;
   const tempProvider = accounts[3];
-  const clerk = accounts[4];
+  const clerkAccount = accounts[4];
 
   const buyToken = async function() {
     let value = 10000;
     const sale = await Sale.deployed();
+    const clerk = await Clerk.deployed();
     await sale.buyTokens(accounts[0], {from: accounts[0], value: value});
     await sale.buyTokens(accounts[1], {from: accounts[1], value: value});
     await sale.buyTokens(accounts[2], {from: accounts[2], value: value});
+    await clerk.vote(clerkAccount, {from: buyer});
+    await clerk.vote(clerkAccount, {from: seller});
+    await clerk.becomeClerk({from: clerkAccount});
   };
 
   before(async function () {
@@ -84,8 +90,7 @@ contract('purchase-dissatisfied', function (accounts) {
     assert.equal(_state, 8, "The state is not review (8)");
   });
   it("should split the money and set state to inactive", async function () {
-    await dapp.addClerk(clerk);
-    await purchase2.solve(c[0], price, price, 0, {from: clerk});
+    await purchase2.solve(c[0], price, price, 0, {from: clerkAccount});
 
     const allowance_seller = await token.allowance.call(c[0], seller);
     const allowance_buyer = await token.allowance.call(c[0], buyer);

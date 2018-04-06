@@ -25,6 +25,7 @@ contract PurchaseData {
   event Delivered(address from);
   event Satisfied(address from);
   event Dissatisfied(address from);
+  event Request(address indexed provider);
 
   address[] purchaseContracts;
 
@@ -72,7 +73,7 @@ contract PurchaseData {
   }
 
   function requestData(address purchase, string sensorType) public {
-    SensorLibrary.requestData(terms[purchase], sensorType);
+    Request(terms[purchase].sensors[sensorType].provider);
   }
 
   function sensorData(address purchase, string sensorType, address sender, int value)

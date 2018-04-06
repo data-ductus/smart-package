@@ -124,10 +124,6 @@ contract Purchase {
     p.addPotentialBuyer(purchase, msg.sender, deliveryAddress, maxTemp, minTemp, acceleration, humidity, pressure, gps);
   }
 
-  ////////////////////
-  ///---Proposed---///
-  ////////////////////
-
   function decline(address purchase, uint buyer)
     public
     onlySeller(purchase)
