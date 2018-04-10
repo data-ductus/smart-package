@@ -29,7 +29,7 @@
     <button id="abort" (click)="abort()">Abort</button>
   </div>
   <div *ngFor="let p of proposals; let i = index">
-    <app-accept *ngIf="account==purchaseInfo.seller && purchaseInfo.state==0" [account]="account" [purchase]="purchase" [id]="i"
+    <app-accept *ngIf="account==purchaseInfo.seller && purchaseInfo.state==0" [account]="account" [agreementDeliver]="agreementDeliver" [id]="i"
                 [terms]="p" [contractAddress]="contractAddress"></app-accept>
   </div>
 
@@ -43,10 +43,11 @@
     <br><label for="acc">Pressure:</label><input type="text" id="press" [(ngModel)]="model.pressThreshold">
     <br><button id="propose" (click)="propose()">Propose</button><br>
   </div>
-  <app-confirm [state]="purchaseInfo.state" [account]="account" [contractAddress]="contractAddress" [token]="token"
-               [buyer]="purchaseInfo.buyer" [purchase]="purchase"></app-confirm>
-  <app-returned [contractAddress]="contractAddress" [account]="account" [purchase]="purchase"></app-returned>
-  <app-review [purchase]="purchase" [account]="account | lowercase" [contractAddress]="contractAddress" [state]="purchaseInfo.state"
-    [dapp]="dapp"></app-review>
+  <app-confirm [account]="account" [contractAddress]="contractAddress" [token]="token" [state]="purchaseInfo.state"
+               [buyer]="purchaseInfo.buyer" [agreementDeliver]="agreementDeliver"></app-confirm>
+  <app-returned [contractAddress]="contractAddress" [account]="account" [agreementReturn]="agreementReturn"
+                [state]="purchaseInfo.state"></app-returned>
+  <app-review [agreementReturn]="agreementReturn" [account]="account | lowercase" [contractAddress]="contractAddress"
+              [state]="purchaseInfo.state"></app-review>
 </div>
 

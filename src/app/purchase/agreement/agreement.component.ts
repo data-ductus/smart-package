@@ -1,5 +1,4 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {Web3Service} from '../../util/web3.service';
 
 
 @Component({
@@ -11,7 +10,9 @@ export class AgreementComponent implements OnInit {
   @Input() contractAddress: string;
   @Input() account: string;
   @Input() token: any;
-  @Input() purchase: any;
+  @Input() agreementData: any;
+  @Input() agreementDeliver: any;
+  @Input() agreementReturn: any;
   @Input() dapp: any;
   price = 0;
   purchaseInfo = {
@@ -50,21 +51,20 @@ export class AgreementComponent implements OnInit {
   }
 
   async getPrice() {
-    const info = await this.purchase.getPurchase.call(this.contractAddress);
-    this.price = info['price'];
+
   }
 
   async getSensors() {
-    this.maxT = await this.purchase.methods.getActiveSensor(this.contractAddress, 'maxTemp').call();
-    this.minT = await this.purchase.methods.getActiveSensor(this.contractAddress, 'minTemp').call();
-    this.acc = await this.purchase.methods.getActiveSensor(this.contractAddress, 'acceleration').call();
-    this.hum = await this.purchase.methods.getActiveSensor(this.contractAddress, 'humidity').call();
-    this.press = await this.purchase.methods.getActiveSensor(this.contractAddress, 'pressure').call();
+    this.maxT = await this.agreementData.methods.getSensor(this.contractAddress, 'maxTemp').call();
+    this.minT = await this.agreementData.methods.getSensor(this.contractAddress, 'minTemp').call();
+    this.acc = await this.agreementData.methods.getSensor(this.contractAddress, 'acceleration').call();
+    this.hum = await this.agreementData.methods.getSensor(this.contractAddress, 'humidity').call();
+    this.press = await this.agreementData.methods.getSensor(this.contractAddress, 'pressure').call();
   }
 
   async setPrice() {
     try {
-      await this.purchase.methods.setPrice(this.contractAddress, this.price).send({from: this.account});
+      await this.agreementDeliver.methods.setPrice(this.contractAddress, this.price).send({from: this.account});
       await this.getPrice();
     } catch (e) {
       console.log(e);
@@ -73,7 +73,7 @@ export class AgreementComponent implements OnInit {
 
   async abort() {
     try {
-      const a = await this.purchase.methods.abort(this.contractAddress).send({from: this.account});
+      const a = await this.agreementDeliver.methods.abort(this.contractAddress).send({from: this.account});
       console.log(a);
     } catch (e) {
       console.log(e);
@@ -104,24 +104,24 @@ export class AgreementComponent implements OnInit {
         pressThreshold = -999;
       }
       await deployedToken.approve.sendTransaction(this.contractAddress, this.price, {from: this.account});
-      await this.purchase.methods.propose(this.contractAddress, this.model.deliveryAddress, maxTThreshold, minTThreshold, accThreshold,
-        humThreshold, pressThreshold).send({from: this.account});
+      await this.agreementDeliver.methods.propose(this.contractAddress, this.model.deliveryAddress, maxTThreshold, minTThreshold,
+        accThreshold, humThreshold, pressThreshold).send({from: this.account});
     } catch (e) {
       console.log(e);
     }
   }
   async watchPurchase() {
-    this.purchaseInfo = await this.purchase.methods.getPurchase(this.contractAddress).call();
+    this.price = await this.agreementData.methods.price(this.contractAddress).call();
   }
   async getProposals() {
     const a = [];
-    const p = await this.purchase.methods.getPotentialBuyers(this.contractAddress).call();
+    const p = await this.agreementData.methods.getPotentialBuyers(this.contractAddress).call();
     for (let i = 0; i < p.length; i++) {
-      const maxT = await this.purchase.methods.getSensor(this.contractAddress, 'maxTemp', i).call();
-      const minT = await this.purchase.methods.getSensor(this.contractAddress, 'minTemp', i).call();
-      const acc = await this.purchase.methods.getSensor(this.contractAddress, 'acceleration', i).call();
-      const hum = await this.purchase.methods.getSensor(this.contractAddress, 'humidity', i).call();
-      const press = await this.purchase.methods.getSensor(this.contractAddress, 'pressure', i).call();
+      const maxT = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'maxTemp', i).call();
+      const minT = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'minTemp', i).call();
+      const acc = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'acceleration', i).call();
+      const hum = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'humidity', i).call();
+      const press = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'pressure', i).call();
       a.push({address: p[i], maxT: maxT, minT: minT, acc: acc, hum: hum, press: press});
     }
     this.proposals = a;

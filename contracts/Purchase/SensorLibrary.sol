@@ -80,6 +80,7 @@ library SensorLibrary {
 
   function combineTerms(Sensors storage self, Sensors storage additionalTerms)
     public
+    returns(bool)
   {
     if(additionalTerms.sensors["maxTemp"].set) {
       self.sensors["maxTemp"] = additionalTerms.sensors["maxTemp"];
@@ -99,6 +100,7 @@ library SensorLibrary {
     if(additionalTerms.gps) {
       self.gps = true;
     }
+    return true;
   }
 
   function sensorData(Sensors storage self, string sensorType, address id, int value)

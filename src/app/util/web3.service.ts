@@ -10,8 +10,8 @@ export class Web3Service {
   private web3: Web3;
   private accounts: string[];
   public ready = false;
-  public MetaCoin: any;
   public accountsObservable = new Subject<string[]>();
+  private Tx = require('ethereumjs-tx');
 
   constructor() {
     window.addEventListener('load', (event) => {
@@ -24,7 +24,6 @@ export class Web3Service {
     if (typeof window.web3 !== 'undefined') {
       // Use Mist/MetaMask's provider
       this.web3 = new Web3(window.web3.currentProvider);
-      console.log('web3 ', this.web3);
     } else {
       console.log('No web3? You should consider trying MetaMask!');
 
@@ -33,8 +32,22 @@ export class Web3Service {
       // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
       this.web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
     }
-
     setInterval(() => this.refreshAccounts(), 100);
+  }
+
+  async signAndSend(data, address) {
+    const privateKey = new Buffer('c59bb835075113b1027fccb42838d7fa3cb8d41e56f0239f01849046e744534c', 'hex');
+    const rawTx = {
+      to: address,
+      value: 0,
+      gas: 2000000,
+      data: data
+    };
+    const tx = new this.Tx(rawTx);
+    tx.sign(privateKey);
+    const serializedTx = tx.serialize();
+    this.web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'))
+      .on('receipt', console.log);
   }
 
   public async artifactsToContract(artifacts) {

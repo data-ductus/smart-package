@@ -8,17 +8,18 @@ import {Component, Input, OnInit} from '@angular/core';
 export class ReturnedComponent implements OnInit {
   @Input() contractAddress;
   @Input() account;
-  @Input() purchase;
+  @Input() agreementReturn;
   @Input() seller;
+  @Input() state;
 
   constructor() { }
 
   ngOnInit() {
   }
-  async sellerSatisfied() {
-    await this.purchase.methods.sellerSatisfied(this.contractAddress).send({from: this.account});
+  async successReturn() {
+    await this.agreementReturn.methods.successReturn(this.contractAddress).send({from: this.account});
   }
   async goodsDamaged() {
-    await this.purchase.methods.goodsDamaged(this.contractAddress).send({from: this.account});
+    await this.agreementReturn.methods.goodsDamaged(this.contractAddress).send({from: this.account});
   }
 }

@@ -12,7 +12,8 @@
 </div>
 <div *ngFor="let c of contracts">
   <div class="card">
-    <app-agreement [contractAddress]="c" [account]="account" [token]="token" [purchase]="purchase" [dapp]="dapp"></app-agreement>
+    <app-agreement [contractAddress]="c" [account]="account" [token]="token" [agreementData]="agreementData"
+                   [agreementDeliver]="agreementDeliver" [agreementReturn]="agreementReturn" [dapp]="dapp"></app-agreement>
   </div>
 </div>
 

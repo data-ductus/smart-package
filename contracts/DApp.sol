@@ -10,7 +10,6 @@ contract DApp is Ownable {
   address[] public allContracts;
   address public purchase;
   address public purchase2;
-  //address[] public clerks;
   address public token;
 
   function DApp(address _purchase1, address _purchase2, address _token) public {
@@ -34,34 +33,6 @@ contract DApp is Ownable {
     Purchase(purchase).newPurchase(c, price, msg.sender, maxTemp, minTemp, acceleration, humidity, pressure, gps);
     allContracts.push(c);
   }
-
-  /*function addClerk(address clerk)
-    public
-    onlyOwner()
-  {
-    clerks.push(clerk);
-  }
-
-  function isClerk(address clerk)
-    public
-    constant
-    returns(bool)
-  {
-    for (uint i = 0; i < clerks.length; i++) {
-      if (clerks[i] == clerk) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  function getClerks()
-    public
-    constant
-    returns(address[])
-  {
-    return clerks;
-  }*/
 
   function getAllContracts()
     public

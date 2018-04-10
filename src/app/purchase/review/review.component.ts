@@ -1,4 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
+import clerk_artifact from '../../../../build/contracts/clerk.json';
+import {Web3Service} from '../../util/web3.service';
 
 @Component({
   selector: 'app-review',
@@ -8,31 +10,43 @@ import {Component, Input, OnInit} from '@angular/core';
 export class ReviewComponent implements OnInit {
   @Input() contractAddress;
   @Input() account;
-  @Input() purchase;
+  @Input() agreementReturn;
   @Input() state;
   @Input() seller;
-  @Input() dapp;
+  clerkContract: any;
   amountSeller: number;
   amountBuyer: number;
   amountDelivery: number;
   isClerk = false;
-  constructor() { }
+
+  constructor(private web3Service: Web3Service) { }
 
   ngOnInit() {
-    setInterval(() => this.getClerks(), 1000);
+    this.getClerkContract();
   }
+
   async compensate() {
-    await this.purchase.methods.compensate(this.contractAddress).send({from: this.account});
+    await this.agreementReturn.methods.compensate(this.contractAddress).send({from: this.account});
   }
+
   async clerk() {
-    await this.purchase.methods.clerk(this.contractAddress).send({from: this.account});
+    await this.agreementReturn.methods.clerk(this.contractAddress).send({from: this.account});
   }
+
   async solve() {
-    await this.purchase.methods.solve(this.contractAddress, this.amountSeller, this.amountBuyer, this.amountDelivery)
+    await this.agreementReturn.methods.solve(this.contractAddress, this.amountSeller, this.amountBuyer, this.amountDelivery)
       .send({from: this.account});
   }
+
+  async getClerkContract() {
+    const clerkAbstraction = await this.web3Service.artifactsToContract(clerk_artifact);
+    const c = await clerkAbstraction.deployed();
+    this.clerkContract = await this.web3Service.getContract(c.abi, c.address);
+    setInterval(() => this.getClerks(), 1000);
+  }
+
   async getClerks() {
-    const clerks = await this.dapp.getClerks.call();
+    const clerks = await this.clerkContract.methods.getClerks.call();
     for (let i = 0; i < clerks.length; i++) {
       if (clerks[i] === this.account) {
         this.isClerk = true;

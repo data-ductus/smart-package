@@ -82,10 +82,6 @@ contract Purchase {
     p.newPurchase(purchase, _price, _seller, maxTemp, minTemp, acceleration, humidity, pressure, gps);
   }
 
-  function setTokenAddress(address tokenAddress) public {
-    t = Token(tokenAddress);
-  }
-
   ///////////////////
   ///---Created---///
   ///////////////////

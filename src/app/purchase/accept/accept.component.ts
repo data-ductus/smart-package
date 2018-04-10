@@ -7,7 +7,7 @@ import {Component, Input, OnInit} from '@angular/core';
 })
 export class AcceptComponent implements OnInit {
   @Input() account: any;
-  @Input() purchase: any;
+  @Input() agreementDeliver: any;
   @Input() id: number;
   @Input() terms: any;
   @Input() contractAddress: any;
@@ -19,7 +19,7 @@ export class AcceptComponent implements OnInit {
 
   async acceptProposal() {
     try {
-      await this.purchase.methods.accept(this.contractAddress, this.id).send({from: this.account});
+      await this.agreementDeliver.methods.accept(this.contractAddress, this.id).send({from: this.account});
     } catch (e) {
       console.log(e);
     }
@@ -27,7 +27,7 @@ export class AcceptComponent implements OnInit {
 
   async declineProposal() {
     try {
-      await this.purchase.methods.decline(this.contractAddress, this.id).send({from: this.account});
+      await this.agreementDeliver.methods.decline(this.contractAddress, this.id).send({from: this.account});
     } catch (e) {
       console.log(e);
     }

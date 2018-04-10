@@ -8,12 +8,15 @@ import "../Voting/Clerk.sol";
 
 contract Purchase2 {
 
+  uint constant day = 2;
+
   Token t;
   Clerk c;
   PurchaseData p;
   bool purchaseDataSet;
   mapping(address => uint) clerkPayment;
   mapping(address => PurchaseData.State) previousState;
+  mapping(address => uint) arrivalTime;
 
   modifier condition(bool _condition) {
     require(_condition);
@@ -94,15 +97,16 @@ contract Purchase2 {
     onlyDeliveryCompany(purchase)
   {
     p.setState(purchase, PurchaseData.State.Returned);
+    arrivalTime[purchase] = now;
   }
 
   ////////////////////
   ///---Returned---///
   ////////////////////
 
-  function sellerSatisfied(address purchase)
+  function successReturn(address purchase)
     public
-    onlySeller(purchase)
+    condition(now > arrivalTime[purchase] + day)
     inState(purchase, PurchaseData.State.Returned)
   {
     p.setState(purchase, PurchaseData.State.Inactive);
@@ -114,7 +118,7 @@ contract Purchase2 {
     public
     onlySeller(purchase)
     inState(purchase, PurchaseData.State.Returned)
-    //condition(SensorLibrary.warning(purchases[purchase].terms[purchases[purchase].buyerIndex]))
+    condition(now <= arrivalTime[purchase] + day)
   {
     p.setState(purchase, PurchaseData.State.Review);
   }
@@ -169,8 +173,8 @@ contract Purchase2 {
     public
     inState(purchase, PurchaseData.State.Clerk)
   {
-    clerkPayment[purchase] += payment;
-    MinimalPurchase(purchase).transferFrom(msg.sender, payment);
+    clerkPayment[purchase] += amount;
+    MinimalPurchase(purchase).transferFrom(msg.sender, amount);
   }
 
   ///////////////////////////
