@@ -1,0 +1,28 @@
+<table class="table table-striped">
+  <thead>
+  <tr>
+    <th scope="col" class="clickable" (click)="showClerks = !showClerks">Clerks</th>
+  </tr>
+  </thead>
+  <tbody *ngIf="showClerks">
+  <tr *ngFor="let c of clerks">
+    <td *ngIf="c != 0x0">{{c}}</td>
+  </tr>
+  </tbody>
+</table>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col" class="clickable" (click)="showCandidates = !showCandidates">Candidates</th>
+      <th scope="col" class="clickable" (click)="showCandidates = !showCandidates"></th>
+    </tr>
+  </thead>
+  <tbody *ngIf="showCandidates">
+    <tr *ngFor="let c of candidates">
+      <td *ngIf="c != 0x0">{{c}}</td>
+      <td *ngIf="c != 0x0" class="font-weight-bold clickable" (click)="vote(c)">Vote</td>
+    </tr>
+  </tbody>
+</table>
+<button *ngIf="!isCandidate && !isClerk" class="btn btn-success" (click)="becomeCandidate()">Become candidate</button>
+<button *ngIf="isCandidate" class="btn btn-success" (click)="becomeClerk()" [disabled]="!eligible">Become clerk</button>

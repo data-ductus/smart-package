@@ -84,13 +84,27 @@ contract('purchase-dissatisfied', function (accounts) {
     assert.equal(_state, 7, "The state is not review (7)");
   });
   it("should change state to clerk", async function () {
-    await purchase2.clerk(c[0], {from: delivery});
+    await purchase2.clerk(c[0], 0, {from: delivery});
     const _state = await data.state(c[0]);
 
     assert.equal(_state, 8, "The state is not review (8)");
   });
-  it("should split the money and set state to inactive", async function () {
+  it("should split the money and set state to appeal", async function () {
     await purchase2.solve(c[0], price, price, 0, {from: clerkAccount});
+
+    const allowance_seller = await purchase2.sellerTokens(c[0]);
+    const allowance_buyer = await purchase2.buyerTokens(c[0]);
+    const allowance_delivery = await purchase2.logisticsTokens(c[0]);
+    const _state = await data.state(c[0]);
+
+    assert.equal(allowance_seller.toNumber(), price, "The seller is not allowed 100 tokens");
+    assert.equal(allowance_buyer.toNumber(), price, "The seller is not allowed 100 tokens");
+    assert.equal(allowance_delivery.toNumber(), 0, "The delivery company is not allowed 0 tokens");
+    assert.equal(_state, 9, "The state is not appeal (9)")
+  });
+  it("should approve the promised tokens", async function () {
+    await timeout(3000);
+    await purchase2.finalizeClerkDecision(c[0], {from: seller});
 
     const allowance_seller = await token.allowance.call(c[0], seller);
     const allowance_buyer = await token.allowance.call(c[0], buyer);
@@ -100,8 +114,8 @@ contract('purchase-dissatisfied', function (accounts) {
     assert.equal(allowance_seller.toNumber(), price, "The seller is not allowed 100 tokens");
     assert.equal(allowance_buyer.toNumber(), price, "The seller is not allowed 100 tokens");
     assert.equal(allowance_delivery.toNumber(), 0, "The delivery company is not allowed 0 tokens");
-    assert.equal(_state, 9, "The state is not inactive (9)")
-  });
+    assert.equal(_state, 10, "The state is not inactive (10)")
+  })
 });
 
 contract('purchase-dissatisfied-2', function (accounts) {
@@ -133,7 +147,6 @@ contract('purchase-dissatisfied-2', function (accounts) {
     purchase2 = await Purchase2.deployed();
     data = await PurchaseData.deployed();
     token = await Token.deployed();
-    await purchase.setTokenAddress(token.address);
     await dapp.createMinimalPurchase(100, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await token.approve(c[0], price, {from: buyer});
@@ -150,14 +163,15 @@ contract('purchase-dissatisfied-2', function (accounts) {
     await purchase2.deliverReturn(c[0], {from: delivery});
   });
   it("should return money to delivery company and set state to inactive", async function () {
-    await purchase2.sellerSatisfied(c[0], {from: seller});
+    await timeout(3000);
+    await purchase2.successReturn(c[0], {from: seller});
     const allowance_delivery = await token.allowance.call(c[0], delivery);
     const allowance_buyer = await token.allowance.call(c[0], buyer);
     const _state = await data.state(c[0]);
 
     assert.equal(allowance_delivery.toNumber(), price, "The delivery company is not allowed to retrieve their tokens");
     assert.equal(allowance_buyer.toNumber(), price, "The buyer is not allowed to retrieve their tokens");
-    assert.equal(_state, 9, "The state is not inactive (9)")
+    assert.equal(_state, 10, "The state is not inactive (10)")
   })
 });
 
@@ -190,7 +204,6 @@ contract('purchase-dissatisfied-3', function (accounts) {
     purchase2 = await Purchase2.deployed();
     data = await PurchaseData.deployed();
     token = await Token.deployed();
-    await purchase.setTokenAddress(token.address);
     await dapp.createMinimalPurchase(100, -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await token.approve(c[0], price, {from: buyer});
@@ -215,6 +228,10 @@ contract('purchase-dissatisfied-3', function (accounts) {
 
     assert.equal(allowance_delivery.toNumber(), price, "The seller is not allowed the compensation");
     assert.equal(allowance_buyer.toNumber(), price, "The buyer is not allowed to retrieve their tokens");
-    assert.equal(_state, 9, "The state is not inactive (9)")
+    assert.equal(_state, 10, "The state is not inactive (10)")
   });
 });
+
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

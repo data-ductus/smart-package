@@ -1,47 +1,44 @@
 <div class="card-header text-white"
-     [ngClass]="{'bg-dark' : account == purchaseInfo.seller, 'bg-info' : account == purchaseInfo.buyerAddress,
-     'bg-secondary' : account != purchaseInfo.seller && account != purchaseInfo.buyerAddress}">
+     [ngClass]="{'bg-dark' : account == purchaseInfo.seller, 'bg-info' : account == purchaseInfo.buyer,
+     'bg-secondary' : account != purchaseInfo.seller && account != purchaseInfo.buyer}">
   Contract {{contractAddress}}
 </div>
 <div class="card-body">
-  <div *ngIf="purchaseInfo.state!=0">
-    Price: {{purchaseInfo.price}}
-    <br>
-    <div *ngIf="maxT[3]">
-      Max temp: {{maxT[0]}}&deg;C <i *ngIf="maxT['warning']" class="fa fa-warning"></i>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="font-weight-bold col-4">
+        State: {{state[purchaseInfo.state]}}
+      </div>
+      <div>
+        <p class="text-center font-weight-bold">Price: {{purchaseInfo.price}} Tokens</p>
+      </div>
     </div>
-    <div *ngIf="minT[3]">
-      Min temp: {{minT[0]}}&deg;C <i *ngIf="minT['warning']" class="fa fa-warning"></i>
+    <app-display-sensors [maxT]="maxT" [minT]="minT" [acc]="acc" [hum]="hum" [press]="press" [gps]="gps"></app-display-sensors>
+  </div>
+  <div *ngIf="purchaseInfo.state == 0 && account === purchaseInfo.seller">
+    <div class="input-group">
+      <input class="form-control" type="text" placeholder="Price" id="price" [(ngModel)]="price">
+      <span class="input-group-btn">
+        <button class="btn btn-secondary" id="send" (click)="setPrice()">Update price</button>
+      </span>
     </div>
-    <div *ngIf="acc[3]">
-      Acceleration: {{acc[0]}}g <i *ngIf="acc['warning']" class="fa fa-warning"></i>
-    </div>
-    <div *ngIf="hum[3]">
-      Humidity: {{hum[0]}} <i *ngIf="hum['warning']" class="fa fa-warning"></i>
-    </div>
-    <div *ngIf="press[3]">
-      Pressure: {{press[0]}} <i *ngIf="press['warning']" class="fa fa-warning"></i>
-    </div>
+    <button class="btn btn-warning button-margin" id="abort" (click)="abort()">Abort</button>
   </div>
   <div *ngIf="account==purchaseInfo.seller && purchaseInfo.state==0">
-    <label for="amount">Price:</label><input type="text" id="amount" placeholder="e.g., 95" [(ngModel)]="price">
-    <button id="send" (click)="setPrice()">Set price</button>
-    <button id="abort" (click)="abort()">Abort</button>
+    <button  class="btn btn-dark button-margin" (click)="toggleProposals = !toggleProposals">
+      Proposals <label *ngIf="proposals" class="badge badge-light badge-pill">{{proposalAmount}}</label>
+    </button>
+    <div *ngIf="toggleProposals">
+      <div *ngFor="let p of proposals; let i = index">
+        <app-accept *ngIf="proposals[i].address !== contractAddress" [account]="account" [agreementDeliver]="agreementDeliver" [id]="i"
+                    [terms]="p" [contractAddress]="contractAddress"></app-accept>
+      </div>
+      <hr>
+    </div>
   </div>
-  <div *ngFor="let p of proposals; let i = index">
-    <app-accept *ngIf="account==purchaseInfo.seller && purchaseInfo.state==0" [account]="account" [agreementDeliver]="agreementDeliver" [id]="i"
-                [terms]="p" [contractAddress]="contractAddress"></app-accept>
-  </div>
-
   <div *ngIf="account!=purchaseInfo.seller && purchaseInfo.state==0">
-    Price: {{purchaseInfo.price}}
-    <br><label for="maxT">Delivery address:</label><input type="text" id="deliveryAddress" [(ngModel)]="model.deliveryAddress">
-    <br><label for="maxT">Max temp:</label><input type="text" id="maxT" [(ngModel)]="model.maxTThreshold">
-    <br><label for="minT">Min temp:</label><input type="text" id="minT" [(ngModel)]="model.minTThreshold">
-    <br><label for="acc">Acceleration:</label><input type="text" id="acc" [(ngModel)]="model.accThreshold">
-    <br><label for="acc">Humidity:</label><input type="text" id="hum" [(ngModel)]="model.humThreshold">
-    <br><label for="acc">Pressure:</label><input type="text" id="press" [(ngModel)]="model.pressThreshold">
-    <br><button id="propose" (click)="propose()">Propose</button><br>
+    <app-set-terms [create]="false" [account]="account" [token]="token" [dapp]="dapp"
+                   [agreementDeliver]="agreementDeliver" [contractAddress]="contractAddress" [price]="purchaseInfo.price"></app-set-terms>
   </div>
   <app-confirm [account]="account" [contractAddress]="contractAddress" [token]="token" [state]="purchaseInfo.state"
                [buyer]="purchaseInfo.buyer" [agreementDeliver]="agreementDeliver"></app-confirm>
@@ -49,5 +46,14 @@
                 [state]="purchaseInfo.state"></app-returned>
   <app-review [agreementReturn]="agreementReturn" [account]="account | lowercase" [contractAddress]="contractAddress"
               [state]="purchaseInfo.state"></app-review>
+  <div *ngIf="purchaseInfo.state != 8 && purchaseInfo.state != 9 && purchaseInfo.state != 10" class="input-group button-margin">
+    <input class="form-control" type="text" placeholder="Clerk payment" id="clerkPayment" [(ngModel)]="clerkPayment">
+    <span class="input-group-btn">
+        <button class="btn btn-danger" id="callClerk" (click)="callClerk()">Call clerk</button>
+      </span>
+  </div>
+  <app-clerk *ngIf="purchaseInfo.state == 8" [clerk]="clerk" [account]="account" [agreementReturn]="agreementReturn"
+             [contractAddress]="contractAddress" [token]="token"></app-clerk>
+  <app-appeal *ngIf="purchaseInfo.state == 9" [token]="token" [contractAddress]="contractAddress"
+              [agreementReturn]="agreementReturn" [account]="account"></app-appeal>
 </div>
-

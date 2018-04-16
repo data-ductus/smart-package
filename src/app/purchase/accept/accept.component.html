@@ -1,17 +1,5 @@
-<div *ngIf="terms.maxT[3]">
-  Max temp: {{terms.maxT[0]}}&deg;C
-</div>
-<div *ngIf="terms.minT[3]">
-  Min temp: {{terms.minT[0]}}&deg;C
-</div>
-<div *ngIf="terms.acc[3]">
-  Acceleration: {{terms.acc[0]}}g
-</div>
-<div *ngIf="terms.hum[3]">
-  Humidity: {{terms.hum[0]}}
-</div>
-<div *ngIf="terms.press[3]">
-  Pressure: {{terms.press[0]}}
-</div>
-<button id="accept" (click)="acceptProposal()">Accept</button>
-<button id="decline" (click)="declineProposal()">Decline</button>
+<hr>
+<p class="text-center font-weight-bold">Buyer: {{terms.address}}</p>
+<app-display-sensors [maxT]="terms.maxT" [minT]="terms.minT" [acc]="terms.acc" [hum]="terms.hum" [press]="terms.press" [gps]="terms.gps"></app-display-sensors>
+<button class="btn btn-success" id="accept" (click)="acceptProposal()">Accept</button>
+<button class="btn btn-danger" id="decline" (click)="declineProposal()">Decline</button>

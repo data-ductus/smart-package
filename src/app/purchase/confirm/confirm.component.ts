@@ -35,7 +35,7 @@ export class ConfirmComponent implements OnInit {
     await this.agreementDeliver.methods.dissatisfied(this.contractAddress).send({from: this.account});
   }
   async getAllowance() {
-    this.allowance = await this.deployedToken.allowance(this.contractAddress, this.account);
+    this.allowance = await this.deployedToken.allowance(this.contractAddress, this.account, {from: this.account});
   }
 
 

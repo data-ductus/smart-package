@@ -6,7 +6,6 @@ import { Web3Service } from './util/web3.service';
 import { RouterModule, Routes } from '@angular/router';
 import { ChartsModule } from 'ng2-charts';
 import { AmChartsModule } from '@amcharts/amcharts3-angular';
-import {LowerCasePipe} from '@angular/common';
 
 import { AppComponent } from './app.component';
 import { PurchaseComponent } from './purchase/purchase.component';
@@ -20,9 +19,19 @@ import { TransportComponent } from './transport/transport.component';
 import { AgmCoreModule } from '@agm/core';
 import { AgmDirectionModule } from 'agm-direction';
 
-import { TransportService } from './transport/transport.service';
 import { ReturnedComponent } from './purchase/returned/returned.component';
 import { ReviewComponent } from './purchase/review/review.component';
+
+import { TransportService } from './transport/transport.service';
+import { AgreementService} from './services/agreement.service';
+
+import { AngularFontAwesomeModule} from 'angular-font-awesome';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { DisplaySensorsComponent } from './purchase/agreement/display-sensors/display-sensors.component';
+import { SetTermsComponent } from './purchase/set-terms/set-terms.component';
+import { ClerkVoteComponent } from './purchase/clerk-vote/clerk-vote.component';
+import { ClerkComponent } from './purchase/clerk/clerk.component';
+import { AppealComponent } from './purchase/appeal/appeal.component';
 
 const appRoutes: Routes = [
   { path: 'transport', component: TransportComponent },
@@ -41,6 +50,11 @@ const appRoutes: Routes = [
     TransportComponent,
     ReturnedComponent,
     ReviewComponent,
+    DisplaySensorsComponent,
+    SetTermsComponent,
+    ClerkVoteComponent,
+    ClerkComponent,
+    AppealComponent,
   ],
   imports: [
     AgmCoreModule.forRoot({
@@ -48,13 +62,15 @@ const appRoutes: Routes = [
     }),
     AgmDirectionModule,
     AmChartsModule,
+    AngularFontAwesomeModule,
     BrowserModule,
     ChartsModule,
     FormsModule,
     HttpClientModule,
+    NgbModule.forRoot(),
     RouterModule.forRoot(appRoutes)
   ],
-  providers: [Web3Service, TransportService],
+  providers: [Web3Service, TransportService, AgreementService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

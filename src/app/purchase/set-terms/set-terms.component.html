@@ -1,0 +1,37 @@
+<input *ngIf="create" class="form-control col-12" type="text" placeholder="Price" id="price"[(ngModel)]="price">
+<input *ngIf="!create" class="form-control col-12" type="text" placeholder="Delivery address" id="delAddress"[(ngModel)]="deliveryAddress">
+<div class="input-group">
+      <span class="input-group-addon">
+        <input type="checkbox" aria-label="Checkbox for following text input" [checked]="minTemp.set" (change)="minTemp.set = !minTemp.set">
+      </span>
+  <input class="form-control" type="text" placeholder="Min temperature" id="minTemp" aria-label="min" aria-describedby="temp1" [(ngModel)]="minTemp.threshold">
+  <span class="input-group-addon" id="degree1">&deg;C</span>
+  <span class="input-group-addon">
+        <input type="checkbox" aria-label="Checkbox for following text input" [checked]="maxTemp.set" (change)="maxTemp.set = !maxTemp.set">
+      </span>
+  <input class="form-control" type="text" placeholder="Max temperature" id="maxTemp"[(ngModel)]="maxTemp.threshold">
+  <span class="input-group-addon" id="degree2">&deg;C</span>
+</div>
+<div class="input-group">
+      <span class="input-group-addon">
+        <input type="checkbox" aria-label="Checkbox for following text input" [checked]="acceleration.set" (change)="acceleration.set = !acceleration.set">
+      </span>
+  <input class="form-control" type="text" placeholder="Acceleration" id="acceleration"[(ngModel)]="acceleration.threshold">
+  <span class="input-group-addon" id="acc">g</span>
+</div>
+<div class="input-group">
+      <span class="input-group-addon">
+        <input type="checkbox" aria-label="Checkbox for following text input" [checked]="humidity.set" (change)="humidity.set = !humidity.set">
+      </span>
+  <input class="form-control" type="text" placeholder="Humidity" id="humidity"[(ngModel)]="humidity.threshold">
+  <span class="input-group-addon" id="hum">%</span>
+</div>
+<div class="input-group">
+      <span class="input-group-addon">
+        <input type="checkbox" aria-label="Checkbox for following text input" [checked]="pressure.set" (change)="pressure.set = !pressure.set">
+      </span>
+  <input class="form-control" type="text" placeholder="Pressure" id="pressure"[(ngModel)]="pressure.threshold">
+  <span class="input-group-addon" id="press">Pa</span>
+</div>
+<button *ngIf="create" class="btn btn-dark button-margin" id="create" (click)="createMinimalPurchase()">Create purchase</button>
+<button *ngIf="!create" class="btn btn-dark button-margin" id="propose" (click)="propose()">Propose additional terms</button>

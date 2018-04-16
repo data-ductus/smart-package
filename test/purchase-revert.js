@@ -101,7 +101,7 @@ contract('purchase-revert-wrong-state', function (accounts) {
       });
   });
   it("should revert seller satisfied if not in return", async function() {
-    await purchase2.sellerSatisfied(c[0], {from: seller})
+    await purchase2.successReturn(c[0], {from: seller})
       .then(function(r) {
         assert(false, "Seller satisfied should revert");
       }, function (e) {
@@ -122,14 +122,6 @@ contract('purchase-revert-wrong-state', function (accounts) {
         assert(false, "Compensate should revert");
       }, function (e) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Compensate damaged should revert");
-      });
-  });
-  it("should revert clerk if not in return", async function() {
-    await purchase2.clerk(c[0], {from: delivery})
-      .then(function(r) {
-        assert(false, "Clerk should revert");
-      }, function (e) {
-        assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Clerk should revert");
       });
   });
   it("should revert solve if not in return", async function() {
@@ -354,7 +346,7 @@ contract("purchase-revert-wrong-sender-5", function (accounts) {
     await purchase2.deliverReturn(c[0], {from: delivery});
   });
   it("should revert seller satisfied if not seller", async function() {
-    await purchase2.sellerSatisfied(c[0], {from: delivery})
+    await purchase2.successReturn(c[0], {from: delivery})
       .then(function(r) {
         assert(false, "Seller satisfied should revert");
       }, function (e) {
@@ -415,16 +407,8 @@ contract("purchase-revert-wrong-sender-6", function (accounts) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Compensate should revert");
       });
   });
-  it("should revert clerk if not delivery", async function() {
-    await purchase2.clerk(c[0], {from: seller})
-      .then(function(r) {
-        assert(false, "Clerk should revert");
-      }, function (e) {
-        assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Clerk should revert");
-      });
-  });
   it("should revert solve if not clerk", async function() {
-    await purchase2.clerk(c[0], {from: delivery});
+    await purchase2.clerk(c[0], 0, {from: delivery});
     await purchase2.solve(c[0], 0, 0, 0, {from: seller})
       .then(function(r) {
         assert(false, "Solve should revert");

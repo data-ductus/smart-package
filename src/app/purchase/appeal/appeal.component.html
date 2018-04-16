@@ -1,0 +1,27 @@
+<hr>
+<div class="row">
+  <div class="font-weight-bold text-center col-12">
+    Balance: {{balance - clerkReward}}
+  </div>
+</div>
+<div class="row">
+  <div class="font-weight-bold text-center col-12">
+    Decision: {{message()}}
+  </div>
+</div>
+<div class="row" *ngIf="!returnToPreviousState">
+  <div class="col-4">
+    <p class="text-center font-weight-bold">Seller: {{allowedSeller}} Tokens</p>
+  </div>
+  <div class="col-4">
+    <p class="text-center font-weight-bold">Buyer: {{allowedBuyer}} Tokens</p>
+  </div>
+  <div class="col-4">
+    <p class="text-center font-weight-bold">Logistics: {{allowedLogistics}} Tokens</p>
+  </div>
+</div>
+<div class="btn-toolbar">
+  <button class="btn btn-success button-margin" (click)="finalize()" [disabled]="time * 1000 + 20000 - now.valueOf() > 0">Finalize</button>
+  <button class="btn btn-danger button-margin" (click)="reject()" [disabled]="time * 1000 + 20000 - now.valueOf() < 0">Reject</button>
+</div>
+

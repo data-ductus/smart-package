@@ -22,7 +22,6 @@ contract('purchase', function (accounts) {
     data = await PurchaseData.deployed();
     c = await MinimalPurchase.new(purchase.address);
     token = await Token.deployed();
-    await purchase.setTokenAddress(token.address);
     await purchase.newPurchase(c.address, 100, accounts[0], -999, -999, -999, -999, -999, false);
   });
   it("should have the correct initial info", async function () {
@@ -78,7 +77,6 @@ contract('purchase-success', function(accounts) {
     token = await Token.deployed();
     const dapp = await Dapp.deployed();
     c = await MinimalPurchase.new(dapp.address, token.address);
-    await purchase.setTokenAddress(token.address);
     await purchase.newPurchase(c.address, price, seller, maxTemp, -999, acceleration, -999, -999, false);
     await token.approve(c.address, price, {from: buyer});
     await token.transfer(delivery, 1000, {from: buyer});
@@ -277,7 +275,6 @@ contract("purchase-decline", function(accounts) {
     data = await PurchaseData.deployed();
     c = await MinimalPurchase.new(purchase.address);
     token = await Token.deployed();
-    await purchase.setTokenAddress(token.address);
     await purchase.newPurchase(c.address, price, seller, -999, -999, -999, -999, -999, false);
     await purchase.propose(c.address, 'Skellefteå', -999, -999, -999, -999, -999, false, {from: buyer});
   });

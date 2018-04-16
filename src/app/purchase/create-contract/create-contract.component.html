@@ -1,19 +1,6 @@
-<div class="card">
-  <div class="card-body">
-    <label for="address">Address:</label><input type="text" id="address"[(ngModel)]="address">
-    <button id="clerk" (click)="addClerk()">Add clerk</button>
-  </div>
-</div>
-<div class="card">
-  <div class="card-body">
-    <label for="amount">Price:</label><input type="text" id="amount"[(ngModel)]="price">
-    <button id="create3" (click)="createMinimalPurchase()">Create purchase</button>
-  </div>
-</div>
-<div *ngFor="let c of contracts">
-  <div class="card">
-    <app-agreement [contractAddress]="c" [account]="account" [token]="token" [agreementData]="agreementData"
-                   [agreementDeliver]="agreementDeliver" [agreementReturn]="agreementReturn" [dapp]="dapp"></app-agreement>
+<div class="alert alert-dark" role="alert">
+  <div class="container">
+    <app-set-terms [create]="true" [dapp]="dapp" [token]="token" [account]="account"></app-set-terms>
   </div>
 </div>
 

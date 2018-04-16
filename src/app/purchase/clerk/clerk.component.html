@@ -1,0 +1,36 @@
+<hr>
+<div class="row">
+  <div class="font-weight-bold text-center col-5">
+    Clerk reward: {{clerkPayment}} Tokens
+  </div>
+  <div class="text-center font-weight-bold col-7">
+    Remaining balance: {{balance - clerkPayment - amountSeller - amountBuyer - amountLogistics}} Tokens
+  </div>
+</div>
+<div *ngIf="isClerk">
+  <div class="input-group button-margin">
+    <span class="input-group-addon">Tokens to seller:</span>
+    <input class="form-control" type="text" [(ngModel)]="amountSeller">
+  </div>
+  <div class="input-group button-margin">
+    <span class="input-group-addon">Tokens to buyer:</span>
+    <input class="form-control" type="text" [(ngModel)]="amountBuyer">
+  </div>
+  <div class="input-group button-margin">
+    <span class="input-group-addon">Tokens to logistics:</span>
+    <input class="form-control" type="text" [(ngModel)]="amountLogistics">
+  </div>
+  <div class="btn-toolbar" role="toolbar">
+    <button class="btn btn-success button-margin" (click)="solve()"
+            [disabled]="balance - clerkPayment - amountSeller - amountBuyer - amountLogistics != 0">Solve</button>
+    <button class="btn btn-danger button-margin" (click)="returnToPrevState()">Return to previous state</button>
+  </div>
+</div>
+<hr>
+<div class="input-group">
+  <input class="form-control" type="text" placeholder="Clerk payment" id="clerkPayment" [(ngModel)]="increasedReward">
+  <span class="input-group-btn">
+        <button class="btn btn-warning" id="callClerk" (click)="increaseClerkPayment()">Increase clerk payment</button>
+</span>
+</div>
+

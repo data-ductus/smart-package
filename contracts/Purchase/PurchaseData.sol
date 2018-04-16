@@ -6,7 +6,7 @@ import "./Purchase.sol";
 import "./Purchase2.sol";
 
 contract PurchaseData {
-  enum State { Created, Locked, Transit, Confirm, Dissatisfied, Return, Returned, Review, Clerk, Inactive }
+  enum State { Created, Locked, Transit, Confirm, Dissatisfied, Return, Returned, Review, Clerk, Appeal, Inactive }
 
   mapping(address => uint) public price;
   mapping(address => State) public state;
@@ -103,7 +103,7 @@ contract PurchaseData {
     public
     onlyPurchaseContract()
   {
-    delete potentialBuyers[purchase][_buyer];
+    potentialBuyers[purchase][_buyer] = purchase;
   }
 
   function addPotentialBuyer
@@ -132,7 +132,7 @@ contract PurchaseData {
     public
     onlyPurchaseContract()
   {
-    delete potentialBuyers[purchase];
+    potentialBuyers[purchase] = [purchase];
     price[purchase] = _price;
   }
 

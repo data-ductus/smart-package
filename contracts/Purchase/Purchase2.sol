@@ -14,9 +14,14 @@ contract Purchase2 {
   Clerk c;
   PurchaseData p;
   bool purchaseDataSet;
-  mapping(address => uint) clerkPayment;
+  mapping(address => uint) public clerkPayment;
   mapping(address => PurchaseData.State) previousState;
-  mapping(address => uint) arrivalTime;
+  mapping(address => uint) public arrivalTime;
+  mapping(address => uint) public sellerTokens;
+  mapping(address => uint) public buyerTokens;
+  mapping(address => uint) public logisticsTokens;
+  mapping(address => bool) public returnToPrevState;
+  mapping(address => address) public currentClerk;
 
   modifier condition(bool _condition) {
     require(_condition);
@@ -106,8 +111,8 @@ contract Purchase2 {
 
   function successReturn(address purchase)
     public
-    condition(now > arrivalTime[purchase] + day)
     inState(purchase, PurchaseData.State.Returned)
+    condition(now > arrivalTime[purchase] + day)
   {
     p.setState(purchase, PurchaseData.State.Inactive);
     MinimalPurchase(purchase).approve(p.buyer(purchase), p.price(purchase));
@@ -147,15 +152,13 @@ contract Purchase2 {
     inState(purchase, PurchaseData.State.Clerk)
     condition(_seller+_buyer+_delivery+clerkPayment[purchase] == t.balanceOf(purchase))
   {
-    p.setState(purchase, PurchaseData.State.Inactive);
+    p.setState(purchase, PurchaseData.State.Appeal);
+    currentClerk[purchase] = msg.sender;
+    arrivalTime[purchase] = now;
 
-    uint tokens = clerkPayment[purchase];
-    clerkPayment[purchase] = 0;
-
-    MinimalPurchase(purchase).approve(p.seller(purchase), _seller);
-    MinimalPurchase(purchase).approve(p.deliveryCompany(purchase), _delivery);
-    MinimalPurchase(purchase).approve(p.buyer(purchase), _buyer);
-    MinimalPurchase(purchase).approve(msg.sender, tokens);
+    sellerTokens[purchase] = _seller;
+    buyerTokens[purchase] = _buyer;
+    logisticsTokens[purchase] = _delivery;
   }
 
   function returnToPreviousState(address purchase)
@@ -163,10 +166,10 @@ contract Purchase2 {
     onlyClerk()
     inState(purchase, PurchaseData.State.Clerk)
   {
-    p.setState(purchase, PurchaseData.State.Inactive);
-
-    uint tokens = clerkPayment[purchase];
-    clerkPayment[purchase] = 0;
+    p.setState(purchase, PurchaseData.State.Appeal);
+    currentClerk[purchase] = msg.sender;
+    arrivalTime[purchase] = now;
+    returnToPrevState[purchase] = true;
   }
 
   function increaseClerkPayment(address purchase, uint amount)
@@ -177,6 +180,48 @@ contract Purchase2 {
     MinimalPurchase(purchase).transferFrom(msg.sender, amount);
   }
 
+  //////////////////
+  ///---Appeal---///
+  //////////////////
+
+  function rejectClerkDecision(address purchase)
+    public
+    inState(purchase, PurchaseData.State.Appeal)
+    condition(now <= arrivalTime[purchase] + day)
+    condition(msg.sender == p.seller(purchase)
+      || msg.sender == p.buyer(purchase)
+      || msg.sender == p.deliveryCompany(purchase))
+  {
+    p.setState(purchase, PurchaseData.State.Clerk);
+
+    delete sellerTokens[purchase];
+    delete buyerTokens[purchase];
+    delete logisticsTokens[purchase];
+    returnToPrevState[purchase] = false;
+  }
+
+  function finalizeClerkDecision(address purchase)
+    public
+    inState(purchase, PurchaseData.State.Appeal)
+    condition(now > arrivalTime[purchase] + day)
+  {
+    if (returnToPrevState[purchase]) {
+      p.setState(purchase, previousState[purchase]);
+    } else {
+      p.setState(purchase, PurchaseData.State.Inactive);
+
+
+
+      MinimalPurchase(purchase).approve(p.seller(purchase), sellerTokens[purchase]);
+      MinimalPurchase(purchase).approve(p.deliveryCompany(purchase), logisticsTokens[purchase]);
+      MinimalPurchase(purchase).approve(p.buyer(purchase), buyerTokens[purchase]);
+    }
+    uint tokens = clerkPayment[purchase];
+    clerkPayment[purchase] = 0;
+
+    MinimalPurchase(purchase).approve(currentClerk[purchase], tokens);
+  }
+
   ///////////////////////////
   ///---Other functions---///
   ///////////////////////////
@@ -184,6 +229,9 @@ contract Purchase2 {
   function clerk(address purchase, uint payment)
     public
     condition(p.state(purchase) != PurchaseData.State.Clerk)
+    condition(msg.sender == p.seller(purchase)
+      || msg.sender == p.buyer(purchase)
+      || msg.sender == p.deliveryCompany(purchase))
   {
     PurchaseData.State s = p.state(purchase);
 

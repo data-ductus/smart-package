@@ -14,7 +14,9 @@ export class AgreementComponent implements OnInit {
   @Input() agreementDeliver: any;
   @Input() agreementReturn: any;
   @Input() dapp: any;
+  @Input() clerk: any;
   price = 0;
+  proposalAmount = 0;
   purchaseInfo = {
     seller: '',
     buyer: '',
@@ -22,19 +24,16 @@ export class AgreementComponent implements OnInit {
     state: 0,
   };
   proposals: any[];
-  maxT = ['Not set'];
-  minT = ['Not set'];
-  acc = ['Not set'];
-  hum = ['Not set'];
-  press = ['Not set'];
-  model = {
-    deliveryAddress: '',
-    maxTThreshold: '',
-    minTThreshold: '',
-    accThreshold: '',
-    humThreshold: '',
-    pressThreshold: '',
-  };
+  maxT = ['Not included'];
+  minT = ['Not included'];
+  acc = ['Not included'];
+  hum = ['Not included'];
+  press = ['Not included'];
+
+  state = ['Created', 'Locked', 'Transit', 'Confirm', 'Dissatisfied', 'Return', 'Returned', 'Review', 'Clerk', 'Appeal', 'Inactive'];
+
+  toggleProposals = false;
+  clerkPayment;
 
   constructor() { }
 
@@ -50,22 +49,20 @@ export class AgreementComponent implements OnInit {
     setInterval(() => this.getProposals(), 100);
   }
 
-  async getPrice() {
-
-  }
-
   async getSensors() {
     this.maxT = await this.agreementData.methods.getSensor(this.contractAddress, 'maxTemp').call();
     this.minT = await this.agreementData.methods.getSensor(this.contractAddress, 'minTemp').call();
     this.acc = await this.agreementData.methods.getSensor(this.contractAddress, 'acceleration').call();
     this.hum = await this.agreementData.methods.getSensor(this.contractAddress, 'humidity').call();
     this.press = await this.agreementData.methods.getSensor(this.contractAddress, 'pressure').call();
+    const deployedToken = await this.token.deployed();
+    const balance = await deployedToken.allowance(this.contractAddress, this.account);
+    console.log('balance ', balance);
   }
 
   async setPrice() {
     try {
       await this.agreementDeliver.methods.setPrice(this.contractAddress, this.price).send({from: this.account});
-      await this.getPrice();
     } catch (e) {
       console.log(e);
     }
@@ -80,42 +77,21 @@ export class AgreementComponent implements OnInit {
     }
   }
 
-  async propose() {
-    try {
-      const deployedToken = await this.token.deployed();
-      let maxTThreshold = +this.model.maxTThreshold;
-      let minTThreshold = +this.model.minTThreshold;
-      let accThreshold = +this.model.accThreshold;
-      let humThreshold = +this.model.humThreshold;
-      let pressThreshold = +this.model.pressThreshold;
-      if (this.model.maxTThreshold === '') {
-        maxTThreshold = -999;
-      }
-      if (this.model.minTThreshold === '') {
-        minTThreshold = -999;
-      }
-      if (this.model.accThreshold === '') {
-        accThreshold = -999;
-      }
-      if (this.model.humThreshold === '') {
-        humThreshold = -999;
-      }
-      if (this.model.pressThreshold === '') {
-        pressThreshold = -999;
-      }
-      await deployedToken.approve.sendTransaction(this.contractAddress, this.price, {from: this.account});
-      await this.agreementDeliver.methods.propose(this.contractAddress, this.model.deliveryAddress, maxTThreshold, minTThreshold,
-        accThreshold, humThreshold, pressThreshold).send({from: this.account});
-    } catch (e) {
-      console.log(e);
-    }
-  }
   async watchPurchase() {
-    this.price = await this.agreementData.methods.price(this.contractAddress).call();
+    this.purchaseInfo.price = await this.agreementData.methods.price(this.contractAddress).call();
+    this.purchaseInfo.seller = await this.agreementData.methods.seller(this.contractAddress).call();
+    this.purchaseInfo.buyer = await this.agreementData.methods.buyer(this.contractAddress).call();
+    this.purchaseInfo.state = await this.agreementData.methods.state(this.contractAddress).call();
   }
+
   async getProposals() {
     const a = [];
+    let n = 0;
+    let update = false;
     const p = await this.agreementData.methods.getPotentialBuyers(this.contractAddress).call();
+    if (!this.proposals || this.proposals.length !== p.length) {
+      update = true;
+    }
     for (let i = 0; i < p.length; i++) {
       const maxT = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'maxTemp', i).call();
       const minT = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'minTemp', i).call();
@@ -123,7 +99,26 @@ export class AgreementComponent implements OnInit {
       const hum = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'humidity', i).call();
       const press = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'pressure', i).call();
       a.push({address: p[i], maxT: maxT, minT: minT, acc: acc, hum: hum, press: press});
+      if (p[i] !== this.contractAddress) {
+        n++;
+      }
+      if (!update) {
+        update = this.proposals[i].address !== p[i];
+      }
     }
-    this.proposals = a;
+    if (update) {
+      this.proposals = a;
+      this.proposalAmount = n;
+    }
+  }
+
+  async callClerk() {
+    try {
+      const deployedToken = await this.token.deployed();
+      await deployedToken.approve.sendTransaction(this.contractAddress, this.clerkPayment, {from: this.account});
+      await this.agreementReturn.methods.clerk(this.contractAddress, this.clerkPayment).send({from: this.account});
+    } catch (e) {
+      console.log(e);
+    }
   }
 }

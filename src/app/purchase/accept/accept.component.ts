@@ -15,6 +15,7 @@ export class AcceptComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+    console.log(this.agreementDeliver.methods);
   }
 
   async acceptProposal() {
@@ -27,10 +28,11 @@ export class AcceptComponent implements OnInit {
 
   async declineProposal() {
     try {
-      await this.agreementDeliver.methods.decline(this.contractAddress, this.id).send({from: this.account});
+      console.log(this.contractAddress, this.id);
+      const decl = await this.agreementDeliver.methods.decline(this.contractAddress, this.id).send({from: this.account});
+      console.log('decline ', decl);
     } catch (e) {
       console.log(e);
     }
   }
-
 }

@@ -2,12 +2,29 @@ import { Component, OnInit } from '@angular/core';
 import token_artifact from '../../../build/contracts/token.json';
 import {Web3Service} from '../util/web3.service';
 
+import dapp_artifact from '../../../build/contracts/dapp.json';
+import sale_artifact from '../../../build/contracts/sale.json';
+import purchase_data_artifact from '../../../build/contracts/purchaseData.json';
+import purchase_artifact from '../../../build/contracts/purchase.json';
+import purchase2_artifact from '../../../build/contracts/purchase2.json';
+import clerk_artifact from '../../../build/contracts/clerk.json';
+
 @Component({
   selector: 'app-purchase',
   templateUrl: './purchase.component.html',
   styleUrls: ['./purchase.component.css']
 })
 export class PurchaseComponent implements OnInit {
+
+  dapp: any;
+  sale: any;
+  agreementData: any;
+  agreementDeliver: any;
+  agreementReturn: any;
+  clerk: any;
+
+  contracts: any;
+  ether: number;
 
   accounts: string[];
   token: any;
@@ -30,6 +47,8 @@ export class PurchaseComponent implements OnInit {
       .then((tokenAbstraction) => {
         this.token = tokenAbstraction;
       });
+    this.getSale();
+    this.getDapp();
   }
 
   watchAccount() {
@@ -58,10 +77,45 @@ export class PurchaseComponent implements OnInit {
     this.status = status;
   }
 
-  async sendTokens() {
-    const deployedToken = await this.token.deployed();
-    await deployedToken.transfer.sendTransaction('0x5a1813C2F7F0183b374Fd0faa3952a945202EcB0', 10000, {from: this.model.account});
-    await deployedToken.transfer.sendTransaction('0x1Db698682F691d0604e33Ab803fb32533EAb5F39', 10000, {from: this.model.account});
+  async getSale() {
+    const saleAbstraction = await this.web3Service.artifactsToContract(sale_artifact);
+    this.sale = await saleAbstraction.deployed();
+  }
+
+  async getDapp() {
+    const dappAbstraction = await this.web3Service.artifactsToContract(dapp_artifact);
+    const agreementDataAbstraction = await this.web3Service.artifactsToContract(purchase_data_artifact);
+    const agreementDeliverAbstraction = await this.web3Service.artifactsToContract(purchase_artifact);
+    const agreementReturnAbstraction = await this.web3Service.artifactsToContract(purchase2_artifact);
+    const clerkAbstraction = await this.web3Service.artifactsToContract(clerk_artifact);
+    const deployedDapp = await dappAbstraction.deployed();
+    this.dapp = await this.web3Service.getContract(deployedDapp.abi, deployedDapp.address);
+    console.log('dapp ', this.dapp);
+    const agrData = await agreementDataAbstraction.deployed();
+    const agrDeliver = await agreementDeliverAbstraction.deployed();
+    const agrReturn = await agreementReturnAbstraction.deployed();
+    const cl = await clerkAbstraction.deployed();
+    await this.getContracts(agrData, agrDeliver, agrReturn, cl);
+    setInterval(() => this.getAgreements(), 1000);
+  }
+
+  async getContracts(agrData, agrDeliver, agrReturn, cl) {
+    try {
+      this.agreementData = await this.web3Service.getContract(agrData.abi, agrData.address);
+      this.agreementDeliver = await this.web3Service.getContract(agrDeliver.abi, agrDeliver.address);
+      this.agreementReturn = await this.web3Service.getContract(agrReturn.abi, agrReturn.address);
+      this.clerk = await this.web3Service.getContract(cl.abi, cl.address);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async getAgreements() {
+    this.contracts = await this.dapp.methods.getAllContracts().call({from: this.model.account});
+  }
+
+  async buyTokens() {
+    await this.sale.buyTokens.sendTransaction(this.model.account, {from: this.model.account, value: this.ether});
   }
 
 }

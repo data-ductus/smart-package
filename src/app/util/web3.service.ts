@@ -70,11 +70,6 @@ export class Web3Service {
     return c;
   }
 
-  public async estimateGas(token, contractAddress, account, allowance) {
-    const gas = await this.web3.eth.estimateGas(token.transferFrom.sendTransaction(contractAddress, account, allowance, {from: account}));
-    console.log('gas ', gas);
-  }
-
   private refreshAccounts() {
     this.web3.eth.getAccounts((err, accs) => {
       console.log('Refreshing accounts');

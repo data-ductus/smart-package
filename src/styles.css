@@ -1,1 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
+.button-margin {
+  margin-top: 5px;
+  margin-right: 5px;
+}

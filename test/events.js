@@ -41,7 +41,6 @@ contract('request-events', function (accounts) {
     purchase2 = await Purchase2.deployed();
     data = await PurchaseData.deployed();
     token = await Token.deployed();
-    await purchase.setTokenAddress(token.address);
     await dapp.createMinimalPurchase(100, -999, -999, acceleration, humidity, -999, true, {from: seller});
     c = await dapp.getAllContracts();
     await token.approve(c[0], price, {from: buyer});
