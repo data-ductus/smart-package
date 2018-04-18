@@ -35,10 +35,14 @@ export class Web3Service {
     setInterval(() => this.refreshAccounts(), 100);
   }
 
-  async signAndSend(data, address) {
-    const privateKey = new Buffer('c59bb835075113b1027fccb42838d7fa3cb8d41e56f0239f01849046e744534c', 'hex');
+  async signAndSend(data, addressTo, addressFrom) {
+    const privateKey = new Buffer('43b4af531c9c7fa66fc43386f493f92d240ed7e129cfbe44c10a772ce8d36239', 'hex');
+    const nonce = await this.web3.eth.getTransactionCount(addressFrom);
     const rawTx = {
-      to: address,
+      nonce: this.web3.utils.toHex(nonce),
+      //gasLimit: this.web3.utils.toHex(250000),
+      //gasPrice: this.web3.utils.toHex(10e9), // 10 Gwei
+      to: addressTo,
       value: 0,
       gas: 2000000,
       data: data

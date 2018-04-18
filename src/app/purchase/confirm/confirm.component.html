@@ -1,6 +1,8 @@
-<div *ngIf="state==3 && buyer == account">
-  <br><button id="satisfied" (click)="satisfied()">Satisfied</button>
-  <button id="dissatisfied" (click)="dissatisfied()">Dissatisfied</button>
+<div *ngIf="state==3">
+  <br><button class="button-margin btn btn-success" id="satisfied" (click)="success()"
+              [disabled]="time * 1000 + 20000 - now.valueOf() > 0">Satisfied</button>
+  <button class="button-margin btn btn-danger" *ngIf="buyer == account" id="dissatisfied" (click)="dissatisfied()"
+          [disabled]="time * 1000 + 20000 - now.valueOf() < 0">Dissatisfied</button>
 </div>
 <button class="btn btn-success button-margin" id="withdraw" (click)="withdraw()">
   Withdraw tokens <label class="badge badge-light badge-pill">{{allowance}}</label>

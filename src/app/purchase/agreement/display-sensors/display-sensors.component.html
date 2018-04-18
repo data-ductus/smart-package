@@ -5,13 +5,13 @@
         <fa name="thermometer-half" size="lg"></fa>
       </div>
       <div *ngIf="minT[3] && maxT[3]">
-        <p class="col-11 nice-text">{{minT[0]}}&deg;C - {{maxT[0]}}&deg;C</p>
+        <p class="col-11 nice-text">{{minT['warning']}} {{minT[0]}}&deg;C - {{maxT[0]}}&deg;C {{maxT['warning']}}</p>
       </div>
       <div *ngIf="!minT[3] && maxT[3]">
-        <p class="col-11 nice-text"> < {{maxT[0]}}&deg;C</p>
+        <p class="col-11 nice-text"> < {{maxT[0]}}&deg;C {{maxT['warning']}}</p>
       </div>
       <div *ngIf="!maxT[3] && minT[3]">
-        <p class="col-11 nice-text"> > {{minT[0]}}&deg;C</p>
+        <p class="col-11 nice-text"> > {{minT[0]}}&deg;C {{minT['warning']}}</p>
       </div>
       <div *ngIf="!minT[3] && !maxT[3]">
         <p class="col-11 nice-text"> Not included</p>
@@ -24,7 +24,7 @@
         <fa name="tachometer" size="lg"></fa>
       </div>
       <div *ngIf="acc[3]">
-        <p class="col-11 nice-text">{{acc[0]}}g</p>
+        <p class="col-11 nice-text">{{acc[0]}}g {{acc['warning']}}</p>
       </div>
       <div *ngIf="!acc[3]">
         <p class="col-11 nice-text">Not included</p>
@@ -37,7 +37,7 @@
         <fa name="tachometer" size="lg"></fa>
       </div>
       <div *ngIf="hum[3]">
-        <p class="col-11 nice-text">{{hum[0]}}%</p>
+        <p class="col-11 nice-text">{{hum[0]}}% {{hum['warning']}}</p>
       </div>
       <div *ngIf="!hum[3]">
         <p class="col-11 nice-text">Not included</p>
@@ -52,7 +52,7 @@
         <fa name="tachometer" size="lg"></fa>
       </div>
       <div *ngIf="press[3]">
-        <p class="col-11 nice-text">{{press[0]}}%</p>
+        <p class="col-11 nice-text">{{press[0]}} Pa {{press['warning']}}</p>
       </div>
       <div *ngIf="!press[3]">
         <p class="col-11 nice-text">Not included</p>

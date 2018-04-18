@@ -56,8 +56,6 @@ export class AgreementComponent implements OnInit {
     this.hum = await this.agreementData.methods.getSensor(this.contractAddress, 'humidity').call();
     this.press = await this.agreementData.methods.getSensor(this.contractAddress, 'pressure').call();
     const deployedToken = await this.token.deployed();
-    const balance = await deployedToken.allowance(this.contractAddress, this.account);
-    console.log('balance ', balance);
   }
 
   async setPrice() {

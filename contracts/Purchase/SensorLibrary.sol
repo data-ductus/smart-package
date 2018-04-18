@@ -116,6 +116,9 @@ library SensorLibrary {
     constant
     returns(int threshold, bool warning, address provider, bool set)
   {
+    if (keccak256(name) == keccak256('gps')) {
+      return (0, false, self.gpsProvider, self.gps);
+    }
     return (self.sensors[name].threshold, self.sensors[name].warning, self.sensors[name].provider, self.sensors[name].set);
   }
 

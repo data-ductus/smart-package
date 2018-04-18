@@ -123,7 +123,7 @@ contract PurchaseData {
   {
     uint i =  potentialBuyers[purchase].length;
     potentialBuyers[purchase].push(_buyer);
-    deliveryAddress[purchase][msg.sender] = _deliveryAddress;
+    deliveryAddress[purchase][_buyer] = _deliveryAddress;
     require(SensorLibrary.setSensors(proposals[purchase][i], maxTemp, minTemp, acceleration, humidity, pressure, gps));
     Proposed(msg.sender);
   }

@@ -1,4 +1,6 @@
-<div *ngIf="state == 7 && account == seller">
-  <button (click)="successReturn()">Satisfied</button>
-  <button (click)="goodsDamaged()">Goods damaged</button>
+<div *ngIf="state == 7">
+  <button class="btn btn-success button-margin" (click)="successReturn()"
+          [disabled]="time * 1000 + 20000 - now.valueOf() > 0">Satisfied</button>
+  <button class="btn btn-danger button-margin" *ngIf="account == seller" (click)="goodsDamaged()"
+          [disabled]="time * 1000 + 20000 - now.valueOf() < 0">Goods damaged</button>
 </div>

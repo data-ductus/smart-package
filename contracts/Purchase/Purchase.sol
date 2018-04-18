@@ -13,7 +13,7 @@ contract Purchase {
   Token t;
   PurchaseData p;
   bool purchaseDataSet;
-  mapping(address => uint) arrivalTime;
+  mapping(address => uint) public arrivalTime;
 
   modifier condition(bool _condition) {
     require(_condition);

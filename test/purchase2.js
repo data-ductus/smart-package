@@ -41,7 +41,7 @@ contract('purchase', function (accounts) {
   it("should abort correctly", async function() {
     await purchase.abort(c.address);
     const state = await data.state(c.address);
-    assert.equal(state, 9, "The state is not inactive (9)");
+    assert.equal(state.toNumber(), 10, "The state is not inactive (10)");
   });
 });
 
@@ -121,6 +121,7 @@ contract('purchase-success', function(accounts) {
     const pressSensor = await data.getSensor.call(c.address, 'pressure');
     const state = await data.state(c.address);
     const _buyer = await data.buyer(c.address);
+    const deliveryAddress = await data.deliveryAddress(c.address, _buyer);
 
     assert.equal(maxSensor[0].toNumber(), maxTemp, "The maximum temperature threshold was not set correctly");
     assert.equal(minSensor[0].toNumber(), minTemp, "The minimum temperature threshold was not set correctly");
@@ -131,6 +132,7 @@ contract('purchase-success', function(accounts) {
     assert.equal(tokens_after_contract.toNumber(), tokens_before_contract+price, "The tokens were not added correctly to the contract's account");
     assert.equal(state, 1, "The state is not locked (1)");
     assert.equal(_buyer, buyer, "It is not the correct buyer");
+    assert.equal(deliveryAddress, "Skellefteå", "It is not the correct delivery address");
   });
 
   it("should set providers", async function() {
@@ -252,7 +254,7 @@ contract('purchase-success', function(accounts) {
 
     assert.equal(allowance, price, "The seller should be allowed to retrieve the payment from the contract");
     assert.equal(allowance_d, price, "The delivery company should be allowed to retrieve their tokens from the contract");
-    assert.equal(_state, 9, "The state should be inactive (9)");
+    assert.equal(_state.toNumber(), 10, "The state should be inactive (10)");
   })
 });
 
@@ -283,7 +285,7 @@ contract("purchase-decline", function(accounts) {
     await purchase.decline(c.address, 0, {from: seller});
 
     const buyers = await data.getPotentialBuyers(c.address);
-    assert.equal(buyers[0], 0x0, "The first buyer should be deleted")
+    assert.equal(buyers[0], c.address, "The first buyer should be deleted")
   })
 });
 

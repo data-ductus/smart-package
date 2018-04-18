@@ -16,10 +16,15 @@ export class ConfirmComponent implements OnInit {
   contract: any;
   deployedToken: any;
   allowance = 0;
+  now = Date.now();
+  time;
+
   constructor() { }
 
   ngOnInit() {
     this.getToken();
+    this.getArrivalTime();
+    setInterval(() => this.updateTime(), 100);
   }
 
   async getToken() {
@@ -27,7 +32,15 @@ export class ConfirmComponent implements OnInit {
     this.getAllowance();
   }
 
-  async satisfied() {
+  updateTime() {
+    this.now = Date.now();
+  }
+
+  async getArrivalTime() {
+    this.time = await this.agreementDeliver.methods.arrivalTime(this.contractAddress).call();
+  }
+
+  async success() {
     await this.agreementDeliver.methods.success(this.contractAddress).send({from: this.account});
   }
 
