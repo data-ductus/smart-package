@@ -8,7 +8,7 @@ import "../Voting/Clerk.sol";
 
 contract Purchase2 {
 
-  uint constant day = 2;
+  uint constant day = 20;
 
   Token t;
   Clerk c;
@@ -70,6 +70,9 @@ contract Purchase2 {
     c = Clerk(_clerk);
   }
 
+  /** @dev Set the address of the contract handling the agreement data. Can only be called once.
+    * @param _purchaData The address of the data contract.
+    */
   function setPurchaseData(address _purchaseData)
     public
     condition(!purchaseDataSet)
@@ -84,6 +87,9 @@ contract Purchase2 {
   ///---Dissatisfied---///
   ////////////////////////
 
+  /** @dev Begin the return of the goods
+    * @param purchase The address of the agreement
+    */
   function transportReturn(address purchase)
     public
     inState(purchase, PurchaseData.State.Dissatisfied)
@@ -96,6 +102,9 @@ contract Purchase2 {
   ///---Return---///
   //////////////////
 
+  /** @dev Deliver the returned goods
+    * @param purchase The address of the agreement
+    */
   function deliverReturn(address purchase)
     public
     inState(purchase, PurchaseData.State.Return)
@@ -109,6 +118,9 @@ contract Purchase2 {
   ///---Returned---///
   ////////////////////
 
+  /** @dev Successful return of goods. Can be called by anyone after a certain time.
+    * @param purchase The address of the agreement
+    */
   function successReturn(address purchase)
     public
     inState(purchase, PurchaseData.State.Returned)
@@ -119,6 +131,9 @@ contract Purchase2 {
     MinimalPurchase(purchase).approve(p.deliveryCompany(purchase), p.price(purchase));
   }
 
+  /** @dev Can be called by the seller to ask for compensation for the goods.
+    * @param purchase The address of the agreement
+    */
   function goodsDamaged(address purchase)
     public
     onlySeller(purchase)
@@ -132,6 +147,9 @@ contract Purchase2 {
   ///---Review---///
   //////////////////
 
+  /** @dev Can be called by the seller to ask for compensation for the goods.
+    * @param purchase The address of the agreement
+    */
   function compensate(address purchase)
     public
     onlyDeliveryCompany(purchase)
@@ -146,6 +164,12 @@ contract Purchase2 {
   ///---Clerk---///
   /////////////////
 
+  /** @dev A clerk proposes a solution to a disagreement
+    * @param purchase The address of the agreement
+    * @param _seller Tokens to seller
+    * @param _seller Tokens to buyer
+    * @param _delivery Tokens to delivery company
+    */
   function solve(address purchase, uint _seller, uint _buyer, uint _delivery)
     public
     onlyClerk()
@@ -161,6 +185,9 @@ contract Purchase2 {
     logisticsTokens[purchase] = _delivery;
   }
 
+  /** @dev A clerk proposes a return to the previous state
+    * @param purchase The address of the agreement
+    */
   function returnToPreviousState(address purchase)
     public
     onlyClerk()
@@ -172,6 +199,10 @@ contract Purchase2 {
     returnToPrevState[purchase] = true;
   }
 
+  /** @dev Increase the reward given to a clerk with an acceptable solution
+    * @param purchase The address of the agreement
+    * @param amount The amount to increase the reward with
+    */
   function increaseClerkPayment(address purchase, uint amount)
     public
     inState(purchase, PurchaseData.State.Clerk)
@@ -184,6 +215,9 @@ contract Purchase2 {
   ///---Appeal---///
   //////////////////
 
+  /** @dev Appeal against a clerk's decision
+    * @param purchase The address of the agreement
+    */
   function rejectClerkDecision(address purchase)
     public
     inState(purchase, PurchaseData.State.Appeal)
@@ -200,6 +234,9 @@ contract Purchase2 {
     returnToPrevState[purchase] = false;
   }
 
+  /** @dev Accept the decision made by a clerk. Available for anyone after a certain time.
+    * @param purchase The address of the agreement
+    */
   function finalizeClerkDecision(address purchase)
     public
     inState(purchase, PurchaseData.State.Appeal)
@@ -209,8 +246,6 @@ contract Purchase2 {
       p.setState(purchase, previousState[purchase]);
     } else {
       p.setState(purchase, PurchaseData.State.Inactive);
-
-
 
       MinimalPurchase(purchase).approve(p.seller(purchase), sellerTokens[purchase]);
       MinimalPurchase(purchase).approve(p.deliveryCompany(purchase), logisticsTokens[purchase]);
@@ -226,6 +261,10 @@ contract Purchase2 {
   ///---Other functions---///
   ///////////////////////////
 
+  /** @dev Lock the contract and wait for a clerk to come up with a solution
+    * @param purchase The address of the agreement
+    * @param payment The reward promised to the clerk
+    */
   function clerk(address purchase, uint payment)
     public
     condition(p.state(purchase) != PurchaseData.State.Clerk)

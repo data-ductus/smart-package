@@ -1,3 +1,4 @@
 <div *ngIf="state == 7">
-  <button class="btn btn-success button-margin" (click)="compensate()">Solve</button>
+  <button *ngIf="account == logistics" class="btn btn-success button-margin" (click)="compensate()">Compensate</button>
+  {{logistics}} {{account}}
 </div>

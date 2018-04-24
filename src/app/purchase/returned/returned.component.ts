@@ -18,9 +18,14 @@ export class ReturnedComponent implements OnInit {
 
   ngOnInit() {
     setInterval(() => this.updateTime(), 100);
+    setInterval(() => this.getArrivalTime(), 100);
   }
+
   updateTime() {
     this.now = Date.now();
+  }
+  async getArrivalTime() {
+    this.time = await this.agreementReturn.methods.arrivalTime(this.contractAddress).call();
   }
   async successReturn() {
     await this.agreementReturn.methods.successReturn(this.contractAddress).send({from: this.account});

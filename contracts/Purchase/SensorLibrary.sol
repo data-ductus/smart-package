@@ -24,6 +24,15 @@ library SensorLibrary {
     _;
   }
 
+  /** @dev Store sensor specs
+    * @param self The instance of the struct where the information should be stored
+    * @param maxTemp Maximum temperature (-999 = not set)
+    * @param minTemp Minimum temperature (-999 = not set)
+    * @param acceleration Maximum acceleration (-999 = not set)
+    * @param humidity Maximum humidity (-999 = not set)
+    * @param pressure Maximum pressure (-999 = not set)
+    * @param gps True if gps included
+    */
   function setSensors(Sensors storage self, int maxTemp, int minTemp, int acceleration, int humidity, int pressure, bool gps)
     public
     returns(bool)
@@ -55,29 +64,10 @@ library SensorLibrary {
     return true;
   }
 
-  function warning(Sensors storage self)
-    public
-    constant
-    returns(bool)
-  {
-    if(self.sensors["maxTemp"].warning) {
-      return true;
-    }
-    if(self.sensors["minTemp"].warning) {
-      return true;
-    }
-    if(self.sensors["acceleration"].warning) {
-      return true;
-    }
-    if(self.sensors["humidity"].warning) {
-      return true;
-    }
-    if(self.sensors["pressure"].warning) {
-      return true;
-    }
-    return false;
-  }
-
+  /** @dev Combine the seller's terms with the accepted proposal
+    * @param self The seller's terms
+    * @param additionalTerms The buyer's proposal
+    */
   function combineTerms(Sensors storage self, Sensors storage additionalTerms)
     public
     returns(bool)
@@ -103,6 +93,12 @@ library SensorLibrary {
     return true;
   }
 
+  /** @dev Set warning to true if threshold violated
+    * @param self The instance of the struct where the information should be stored
+    * @param sensorType The sensor that sent the data
+    * @param id The address of the sensor that sent the data
+    * @param value The value sent from the sensor
+    */
   function sensorData(Sensors storage self, string sensorType, address id, int value)
     public
     condition(self.sensors[sensorType].provider == id &&
@@ -111,23 +107,36 @@ library SensorLibrary {
     self.sensors[sensorType].warning = true;
   }
 
-  function getSensor(Sensors storage self, string name)
+  /** @dev Get the information about a sensor
+    * @param self The instance of the struct where the information is stored
+    * @param sensorType The sensor to get the information about
+    */
+  function getSensor(Sensors storage self, string sensorType)
     public
     constant
     returns(int threshold, bool warning, address provider, bool set)
   {
-    if (keccak256(name) == keccak256('gps')) {
+    if (keccak256(sensorType) == keccak256('gps')) {
       return (0, false, self.gpsProvider, self.gps);
     }
-    return (self.sensors[name].threshold, self.sensors[name].warning, self.sensors[name].provider, self.sensors[name].set);
+    return (self.sensors[sensorType].threshold, self.sensors[sensorType].warning, self.sensors[sensorType].provider, self.sensors[sensorType].set);
   }
 
+  /** @dev Send an event with the current value of the sensor
+    * @param value The current value
+    * @param purchase The address of the agreement
+    */
   function currentValue(int value, address purchase)
     public
   {
     Data(value, purchase);
   }
 
+  /** @dev Send an event with the current location of the package
+    * @param lat The latitude of the package
+    * @param lng The longitude of the package
+    * @param purchase The address of the agreement
+    */
   function currentLocation(int lat, int lng, address purchase)
     public
   {

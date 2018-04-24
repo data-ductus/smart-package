@@ -43,9 +43,9 @@
   <app-confirm [account]="account" [contractAddress]="contractAddress" [token]="token" [state]="purchaseInfo.state"
                [buyer]="purchaseInfo.buyer" [agreementDeliver]="agreementDeliver"></app-confirm>
   <app-returned [contractAddress]="contractAddress" [account]="account" [agreementReturn]="agreementReturn"
-                [state]="purchaseInfo.state"></app-returned>
-  <app-review [agreementReturn]="agreementReturn" [account]="account | lowercase" [contractAddress]="contractAddress"
-              [state]="purchaseInfo.state"></app-review>
+                [state]="purchaseInfo.state" [seller]="purchaseInfo.seller"></app-returned>
+  <app-review [agreementReturn]="agreementReturn" [account]="account" [contractAddress]="contractAddress"
+              [state]="purchaseInfo.state" [agreementData]="agreementData"></app-review>
   <div *ngIf="purchaseInfo.state != 8 && purchaseInfo.state != 9 && purchaseInfo.state != 10" class="input-group button-margin">
     <input class="form-control" type="text" placeholder="Clerk payment" id="clerkPayment" [(ngModel)]="clerkPayment">
     <span class="input-group-btn">

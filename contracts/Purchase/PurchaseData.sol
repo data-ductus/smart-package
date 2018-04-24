@@ -45,6 +45,17 @@ contract PurchaseData {
   ///---Setters---///
   ///////////////////
 
+  /** @dev Create a new agreement
+    * @param purchase The address of the agreement
+    * @param _price The price of the goods
+    * @param _seller The seller
+    * @param maxTemp Maximum temperature (-999 = not set)
+    * @param minTemp Minimum temperature (-999 = not set)
+    * @param acceleration Maximum acceleration (-999 = not set)
+    * @param humidity Maximum humidity (-999 = not set)
+    * @param pressure Maximum pressure (-999 = not set)
+    * @param gps True if gps included
+    */
   function newPurchase
   (
     address purchase,
@@ -65,6 +76,10 @@ contract PurchaseData {
     require(SensorLibrary.setSensors(terms[purchase], maxTemp, minTemp, acceleration, humidity, pressure, gps));
   }
 
+  /** @dev Update the state of an agreement
+    * @param purchase The address of the agreement
+    * @param _state The new state
+    */
   function setState(address purchase, State _state)
     public
     onlyPurchaseContract()
@@ -72,10 +87,18 @@ contract PurchaseData {
     state[purchase] = _state;
   }
 
+  /** @dev Fire an event to request data
+    * @param purchase The address of the agreement
+    * @param sensorType The sensor that is being sent the request
+    */
   function requestData(address purchase, string sensorType) public {
     Request(terms[purchase].sensors[sensorType].provider);
   }
 
+  /** @dev Fire an event to request data
+    * @param purchase The address of the agreement
+    * @param sensorType The sensor that is being sent the request
+    */
   function sensorData(address purchase, string sensorType, address sender, int value)
     public
     onlyPurchaseContract()
@@ -83,6 +106,10 @@ contract PurchaseData {
     SensorLibrary.sensorData(terms[purchase], sensorType, sender, value);
   }
 
+  /** @dev Set the buyer for an agreement
+    * @param purchase The address of the agreement
+    * @param _buyer The index of the buyer's proposal
+    */
   function setBuyer(address purchase, uint _buyer)
     public
     onlyPurchaseContract()
@@ -91,6 +118,11 @@ contract PurchaseData {
     SensorLibrary.combineTerms(terms[purchase], proposals[purchase][_buyer]);
   }
 
+  /** @dev Set the buyer for an agreement
+    * @param purchase The address of the agreement
+    * @param _deliveryCompany The address of the delivery company
+    * @param returnAddress The location the goods are being transported from
+    */
   function setDeliveryCompany(address purchase, address _deliveryCompany, string _returnAddress)
     public
     onlyPurchaseContract()
@@ -99,6 +131,10 @@ contract PurchaseData {
     returnAddress[purchase] = _returnAddress;
   }
 
+  /** @dev Delete a proposal
+    * @param purchase The address of the agreement
+    * @param _buyer The index of the proposal
+    */
   function deleteBuyer(address purchase, uint _buyer)
     public
     onlyPurchaseContract()
@@ -106,6 +142,16 @@ contract PurchaseData {
     potentialBuyers[purchase][_buyer] = purchase;
   }
 
+  /** @dev Propose additional terms
+    * @param purchase The address of the agreement
+    * @param deliveryAddress The location where the goods should be delivered
+    * @param maxTemp Maximum temperature (-999 = not set)
+    * @param minTemp Minimum temperature (-999 = not set)
+    * @param acceleration Maximum acceleration (-999 = not set)
+    * @param humidity Maximum humidity (-999 = not set)
+    * @param pressure Maximum pressure (-999 = not set)
+    * @param gps True if gps included
+    */
   function addPotentialBuyer
   (
     address purchase,
@@ -128,6 +174,10 @@ contract PurchaseData {
     Proposed(msg.sender);
   }
 
+  /** @dev Update price for an agreement
+    * @param purchase The address of the agreement
+    * @param _price The new price
+    */
   function setPrice(address purchase, uint _price)
     public
     onlyPurchaseContract()
@@ -136,8 +186,14 @@ contract PurchaseData {
     price[purchase] = _price;
   }
 
+  /** @dev Sets the address of the sensor
+    * @param purchase The address of the agreement
+    * @param sensorType The sensor to set the address for
+    * @param _provider The address of the sensor
+    */
   function setProvider(address purchase, string sensorType, address _provider)
     public
+    onlyPurchaseContract()
   {
    terms[purchase].sensors[sensorType].provider = _provider;
   }
@@ -146,26 +202,47 @@ contract PurchaseData {
   ///---Getters---///
   ///////////////////
 
-  function getSensor(address purchase, string name)
+  /** @dev Get the information about a sensor
+    * @param purchase The address of the agreement
+    * @param sensorType The sensor to get the information about
+    * @return threshold The threshold of the sensor
+    * @return warning True if the threshold has been violated
+    * @return provider The address of the sensor
+    * @return set True if the sensor is included
+    */
+  function getSensor(address purchase, string sensorType)
     public
     constant
     returns(int threshold, bool warning, address provider, bool set)
   {
-    return(SensorLibrary.getSensor(terms[purchase], name));
+    return(SensorLibrary.getSensor(terms[purchase], sensorType));
   }
 
-  function getProposedTerms(address purchase, string name, uint _buyer)
+  /** @dev Get the information about a proposed sensor
+    * @param purchase The address of the agreement
+    * @param sensorType The sensor to get the information about
+    * @param _buyer The index of the requested proposal
+    * @return threshold The threshold of the sensor
+    * @return warning True if the threshold has been violated
+    * @return provider The address of the sensor
+    * @return set True if the sensor is included
+    */
+  function getProposedTerms(address purchase, string sensorType, uint _buyer)
     public
     constant
     returns(int threshold, bool warning, address provider, bool set)
   {
-    return(SensorLibrary.getSensor(proposals[purchase][_buyer], name));
+    return(SensorLibrary.getSensor(proposals[purchase][_buyer], sensorType));
   }
 
+  /** @dev Get the list of proposals
+    * @param purchase The address of the agreement
+    * @return proposals The list of proposals
+    */
   function getPotentialBuyers(address purchase)
     public
     constant
-    returns(address[])
+    returns(address[] proposals)
   {
     return potentialBuyers[purchase];
   }

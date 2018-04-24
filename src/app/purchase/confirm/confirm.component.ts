@@ -25,6 +25,7 @@ export class ConfirmComponent implements OnInit {
     this.getToken();
     this.getArrivalTime();
     setInterval(() => this.updateTime(), 100);
+    setInterval(() => this.getArrivalTime(), 100);
   }
 
   async getToken() {

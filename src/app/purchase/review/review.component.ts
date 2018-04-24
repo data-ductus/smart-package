@@ -11,13 +11,19 @@ export class ReviewComponent implements OnInit {
   @Input() contractAddress;
   @Input() account;
   @Input() agreementReturn;
+  @Input() agreementData;
   @Input() state;
   @Input() seller;
-  isClerk = false;
+  logistics;
 
   constructor(private web3Service: Web3Service) { }
 
   ngOnInit() {
+    this.getLogistics();
+  }
+
+  async getLogistics() {
+    this.logistics = await this.agreementData.methods.deliveryCompany(this.contractAddress).call();
   }
 
   async compensate() {

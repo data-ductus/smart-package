@@ -1,6 +1,6 @@
-<div *ngIf="state == 7">
+<div *ngIf="state == 6">
   <button class="btn btn-success button-margin" (click)="successReturn()"
-          [disabled]="time * 1000 + 20000 - now.valueOf() > 0">Satisfied</button>
+          [disabled]="(time*1+20) * 1000 - now.valueOf() > 0">Satisfied</button>
   <button class="btn btn-danger button-margin" *ngIf="account == seller" (click)="goodsDamaged()"
-          [disabled]="time * 1000 + 20000 - now.valueOf() < 0">Goods damaged</button>
+          [disabled]="(time*1+20) * 1000 - now.valueOf() < 0">Goods damaged</button>
 </div>
