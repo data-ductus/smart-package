@@ -41,6 +41,10 @@ export class AgreementComponent implements OnInit {
     this.getPurchase();
   }
 
+  /**
+   * Start the polling of the information from the contracts needed for this component
+   * @returns {Promise<void>}
+   */
   async getPurchase() {
     await this.watchPurchase();
     this.price = this.purchaseInfo.price;
@@ -49,15 +53,22 @@ export class AgreementComponent implements OnInit {
     setInterval(() => this.getProposals(), 100);
   }
 
+  /**
+   * Get the data about the sensors
+   * @returns {Promise<void>}
+   */
   async getSensors() {
     this.maxT = await this.agreementData.methods.getSensor(this.contractAddress, 'maxTemp').call();
     this.minT = await this.agreementData.methods.getSensor(this.contractAddress, 'minTemp').call();
     this.acc = await this.agreementData.methods.getSensor(this.contractAddress, 'acceleration').call();
     this.hum = await this.agreementData.methods.getSensor(this.contractAddress, 'humidity').call();
     this.press = await this.agreementData.methods.getSensor(this.contractAddress, 'pressure').call();
-    const deployedToken = await this.token.deployed();
   }
 
+  /**
+   * Update the price
+   * @returns {Promise<void>}
+   */
   async setPrice() {
     try {
       await this.agreementDeliver.methods.setPrice(this.contractAddress, this.price).send({from: this.account});
@@ -66,6 +77,10 @@ export class AgreementComponent implements OnInit {
     }
   }
 
+  /**
+   * Abort the agreement
+   * @returns {Promise<void>}
+   */
   async abort() {
     try {
       const a = await this.agreementDeliver.methods.abort(this.contractAddress).send({from: this.account});
@@ -75,6 +90,10 @@ export class AgreementComponent implements OnInit {
     }
   }
 
+  /**
+   * Get price, seller, buyer and state of the agreement
+   * @returns {Promise<void>}
+   */
   async watchPurchase() {
     this.purchaseInfo.price = await this.agreementData.methods.price(this.contractAddress).call();
     this.purchaseInfo.seller = await this.agreementData.methods.seller(this.contractAddress).call();
@@ -82,6 +101,10 @@ export class AgreementComponent implements OnInit {
     this.purchaseInfo.state = await this.agreementData.methods.state(this.contractAddress).call();
   }
 
+  /**
+   * Get the proposals for the agreement
+   * @returns {Promise<void>}
+   */
   async getProposals() {
     const a = [];
     let n = 0;
@@ -110,6 +133,10 @@ export class AgreementComponent implements OnInit {
     }
   }
 
+  /**
+   * Lock the contract by calling a clerk
+   * @returns {Promise<void>}
+   */
   async callClerk() {
     try {
       const deployedToken = await this.token.deployed();

@@ -33,7 +33,6 @@ export class PurchaseComponent implements OnInit {
     account: ''
   };
 
-  status = '';
 
   constructor(private web3Service: Web3Service) {
     console.log('Constructor: ' + web3Service);
@@ -51,6 +50,9 @@ export class PurchaseComponent implements OnInit {
     this.getDapp();
   }
 
+  /**
+   * Check who's currently logged in.
+   */
   watchAccount() {
     this.web3Service.accountsObservable.subscribe((accounts) => {
       this.accounts = accounts;
@@ -59,6 +61,10 @@ export class PurchaseComponent implements OnInit {
     });
   }
 
+  /**
+   * Refresh the amount of tokens a user has.
+   * @returns {Promise<void>}
+   */
   async refreshBalance() {
     console.log('Refreshing balance');
 
@@ -69,19 +75,22 @@ export class PurchaseComponent implements OnInit {
       this.model.balance = knvBalance;
     } catch (e) {
       console.log(e);
-      this.setStatus('Error getting balance; see log.');
     }
   }
 
-  setStatus(status) {
-    this.status = status;
-  }
-
+  /**
+   * Get token sale contract.
+   * @returns {Promise<void>}
+   */
   async getSale() {
     const saleAbstraction = await this.web3Service.artifactsToContract(sale_artifact);
     this.sale = await saleAbstraction.deployed();
   }
 
+  /**
+   * Get the contracts used by the components on the site.
+   * @returns {Promise<void>}
+   */
   async getDapp() {
     const dappAbstraction = await this.web3Service.artifactsToContract(dapp_artifact);
     const agreementDataAbstraction = await this.web3Service.artifactsToContract(purchase_data_artifact);
@@ -99,6 +108,14 @@ export class PurchaseComponent implements OnInit {
     setInterval(() => this.getAgreements(), 1000);
   }
 
+  /**
+   * Helper function for getting contracts.
+   * @param agrData Agreement data contract
+   * @param agrDeliver Agreement deliver contract
+   * @param agrReturn Agreement return contract
+   * @param cl Clerk contract
+   * @returns {Promise<void>}
+   */
   async getContracts(agrData, agrDeliver, agrReturn, cl) {
     try {
       this.agreementData = await this.web3Service.getContract(agrData.abi, agrData.address);
@@ -110,10 +127,18 @@ export class PurchaseComponent implements OnInit {
     }
   }
 
+  /**
+   * Get all created agreements.
+   * @returns {Promise<void>}
+   */
   async getAgreements() {
     this.contracts = await this.dapp.methods.getAllContracts().call({from: this.model.account});
   }
 
+  /**
+   * Buy tokens by spending ether.
+   * @returns {Promise<void>}
+   */
   async buyTokens() {
     await this.sale.buyTokens.sendTransaction(this.model.account, {from: this.model.account, value: this.ether});
   }

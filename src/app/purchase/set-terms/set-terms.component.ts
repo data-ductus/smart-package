@@ -43,6 +43,10 @@ export class SetTermsComponent implements OnInit {
   ngOnInit() {
   }
 
+  /**
+   * Create a new agreement.
+   * @returns {Promise<void>}
+   */
   async createMinimalPurchase() {
     try {
       const maxT = this.agreementService.sensorThreshold(this.maxTemp.threshold, this.maxTemp.set);
@@ -56,6 +60,10 @@ export class SetTermsComponent implements OnInit {
     }
   }
 
+  /**
+   * Add a proposal to an agreement.
+   * @returns {Promise<void>}
+   */
   async propose() {
     try {
       const deployedToken = await this.token.deployed();

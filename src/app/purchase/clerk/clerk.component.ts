@@ -29,19 +29,35 @@ export class ClerkComponent implements OnInit {
     setInterval(() => this.getClerk(), 1000);
   }
 
+  /**
+   * Get the number of tokens trapped in the contract.
+   * @returns {Promise<void>}
+   */
   async getContractBalance() {
     const deployedToken = await this.token.deployed();
     this.balance = await deployedToken.balanceOf.call(this.contractAddress);
   }
 
+  /**
+   * Get the number of tokens that will be given as a reward to the clerk.
+   * @returns {Promise<void>}
+   */
   async getClerkPayment() {
     this.clerkPayment = await this.agreementReturn.methods.clerkPayment(this.contractAddress).call();
   }
 
+  /**
+   * Check if the current user is a clerk
+   * @returns {Promise<void>}
+   */
   async getClerk() {
     this.isClerk = await this.clerk.methods.isClerk(this.account).call();
   }
 
+  /**
+   * Propose a solution to the problem
+   * @returns {Promise<void>}
+   */
   async solve() {
     try {
       this.agreementReturn.methods.solve(this.contractAddress, this.amountSeller, this.amountBuyer, this.amountLogistics)
@@ -51,6 +67,10 @@ export class ClerkComponent implements OnInit {
     }
   }
 
+  /**
+   * Propose a return to previous state of the agreement
+   * @returns {Promise<void>}
+   */
   async returnToPrevState() {
     try {
       this.agreementReturn.methods.returnToPreviousState(this.contractAddress).send({from: this.account});
@@ -59,6 +79,10 @@ export class ClerkComponent implements OnInit {
     }
   }
 
+  /**
+   * Increase the clerk reward
+   * @returns {Promise<void>}
+   */
   async increaseClerkPayment() {
     try {
       const deployedToken = await this.token.deployed();

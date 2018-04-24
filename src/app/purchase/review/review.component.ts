@@ -22,10 +22,18 @@ export class ReviewComponent implements OnInit {
     this.getLogistics();
   }
 
+  /**
+   * Get the logistics company.
+   * @returns {Promise<void>}
+   */
   async getLogistics() {
     this.logistics = await this.agreementData.methods.deliveryCompany(this.contractAddress).call();
   }
 
+  /**
+   * Compensate the seller for damaged goods and finalize the agreement.
+   * @returns {Promise<void>}
+   */
   async compensate() {
     await this.agreementReturn.methods.compensate(this.contractAddress).send({from: this.account});
   }

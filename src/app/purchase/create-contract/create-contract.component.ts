@@ -18,12 +18,4 @@ export class CreateContractComponent implements OnInit {
   ngOnInit() {
   }
 
-  async addClerk() {
-    try {
-      await this.dapp.addClerk.sendTransaction(this.address, {from: this.account});
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
 }

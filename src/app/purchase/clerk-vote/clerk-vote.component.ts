@@ -27,6 +27,10 @@ export class ClerkVoteComponent implements OnInit {
     setInterval(() => this.checkVotes(), 100);
   }
 
+  /**
+   * Get the list of clerks
+   * @returns {Promise<void>}
+   */
   async getClerks() {
     if (this.clerk) {
       this.clerks = await this.clerk.methods.getClerks().call();
@@ -34,6 +38,10 @@ export class ClerkVoteComponent implements OnInit {
     }
   }
 
+  /**
+   * Get the list of candidates
+   * @returns {Promise<void>}
+   */
   async getCandidates() {
     if (this.clerk) {
       let cand = false;
@@ -48,6 +56,10 @@ export class ClerkVoteComponent implements OnInit {
     }
   }
 
+  /**
+   * Adds the current user to the candidate list for clerks
+   * @returns {Promise<void>}
+   */
   async becomeCandidate() {
     try {
       await this.clerk.methods.becomeCandidate().send({from: this.account});
@@ -56,6 +68,11 @@ export class ClerkVoteComponent implements OnInit {
     }
   }
 
+  /**
+   * Vote for a candidate
+   * @param candidate The address of the clerk to vote for
+   * @returns {Promise<void>}
+   */
   async vote(candidate) {
     try {
       if (this.isClerk) {
@@ -68,6 +85,10 @@ export class ClerkVoteComponent implements OnInit {
     }
   }
 
+  /**
+   * Check if the current user can become clerk
+   * @returns {Promise<void>}
+   */
   async checkVotes() {
     try {
       this.eligible = await this.clerk.methods.checkVotes().call({from: this.account});
@@ -76,6 +97,10 @@ export class ClerkVoteComponent implements OnInit {
     }
   }
 
+  /**
+   * The current user becomes clerk
+   * @returns {Promise<void>}
+   */
   async becomeClerk() {
     try {
       await this.clerk.methods.becomeClerk().send({from: this.account});

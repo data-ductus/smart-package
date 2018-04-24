@@ -30,6 +30,10 @@ export class AppealComponent implements OnInit {
     setInterval(() => this.updateTime(), 100);
   }
 
+  /**
+   * Get the decision made by the clerk
+   * @returns {Promise<void>}
+   */
   async getClerkDecision() {
     const deployedToken = await this.token.deployed();
     this.balance = await deployedToken.balanceOf(this.contractAddress);
@@ -41,6 +45,10 @@ export class AppealComponent implements OnInit {
     this.returnToPreviousState = await this.agreementReturn.methods.returnToPrevState(this.contractAddress).call();
   }
 
+  /**
+   * Describes the decision made by the clerk (distribute tokens or return to previous state)
+   * @returns {string}
+   */
   message() {
     let m = 'Return to previous state';
     if (!this.returnToPreviousState) {
@@ -49,10 +57,17 @@ export class AppealComponent implements OnInit {
     return m;
   }
 
+  /**
+   * Update current time. Used to see if it is still possible to appeal against the clerk's decision
+   */
   updateTime() {
     this.now = Date.now();
   }
 
+  /**
+   * Finilize the clerk's decision. Available after a certain time.
+   * @returns {Promise<void>}
+   */
   async finalize() {
     try {
       //const gas = await this.agreementReturn.methods.finalizeClerkDecision(this.contractAddress).estimateGas({from: this.account});
@@ -63,6 +78,10 @@ export class AppealComponent implements OnInit {
     }
   }
 
+  /**
+   * Appeal against the clerk's decision. Only available during a limited time.
+   * @returns {Promise<void>}
+   */
   async reject() {
     try {
       this.agreementReturn.methods.rejectClerkDecision(this.contractAddress).send({from: this.account});
