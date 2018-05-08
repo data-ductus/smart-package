@@ -57,7 +57,7 @@ contract Purchase {
   }
 
   /** @dev Set the address of the contract handling the agreement data. Can only be called once.
-    * @param _purchaData The address of the data contract.
+    * @param _purchaseData The address of the data contract.
     */
   function setPurchaseData(address _purchaseData)
     public
@@ -165,7 +165,7 @@ contract Purchase {
 
   /** @dev Accept a proposal
     * @param purchase The address of the agreement
-    * @param buyer The index of the proposal to accept
+    * @param _buyer The index of the proposal to accept
     */
   function accept(address purchase, uint _buyer)
     public

@@ -54,7 +54,7 @@ contract PurchaseData {
     * @param acceleration Maximum acceleration (-999 = not set)
     * @param humidity Maximum humidity (-999 = not set)
     * @param pressure Maximum pressure (-999 = not set)
-    * @param gps True if gps included
+    * @param gps True if gps is included
     */
   function newPurchase
   (
@@ -121,7 +121,7 @@ contract PurchaseData {
   /** @dev Set the buyer for an agreement
     * @param purchase The address of the agreement
     * @param _deliveryCompany The address of the delivery company
-    * @param returnAddress The location the goods are being transported from
+    * @param _returnAddress The location the goods are being transported from
     */
   function setDeliveryCompany(address purchase, address _deliveryCompany, string _returnAddress)
     public
@@ -144,7 +144,7 @@ contract PurchaseData {
 
   /** @dev Propose additional terms
     * @param purchase The address of the agreement
-    * @param deliveryAddress The location where the goods should be delivered
+    * @param _deliveryAddress The location where the goods should be delivered
     * @param maxTemp Maximum temperature (-999 = not set)
     * @param minTemp Minimum temperature (-999 = not set)
     * @param acceleration Maximum acceleration (-999 = not set)
@@ -242,7 +242,7 @@ contract PurchaseData {
   function getPotentialBuyers(address purchase)
     public
     constant
-    returns(address[] proposals)
+    returns(address[] _proposals)
   {
     return potentialBuyers[purchase];
   }

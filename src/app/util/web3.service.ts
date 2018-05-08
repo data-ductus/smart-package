@@ -39,7 +39,6 @@ export class Web3Service {
     const contractAbstraction = contract(artifacts);
     contractAbstraction.setProvider(this.web3.currentProvider);
     return contractAbstraction;
-
   }
 
   public async getContract(abi, address) {
@@ -47,6 +46,10 @@ export class Web3Service {
     c.options.address = address;
     console.log('c ', c);
     return c;
+  }
+
+  public getBatch() {
+    return new this.web3.BatchRequest();
   }
 
   private refreshAccounts() {

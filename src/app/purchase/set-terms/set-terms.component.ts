@@ -1,5 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {AgreementService} from '../../services/agreement.service';
+import {Web3Service} from '../../util/web3.service';
 
 @Component({
   selector: 'app-set-terms',
@@ -38,7 +39,7 @@ export class SetTermsComponent implements OnInit {
   };
   deliveryAddress: string;
 
-  constructor(private agreementService: AgreementService) { }
+  constructor(private agreementService: AgreementService, private web3Service: Web3Service) { }
 
   ngOnInit() {
   }
@@ -72,9 +73,11 @@ export class SetTermsComponent implements OnInit {
       const acc = this.agreementService.sensorThreshold(this.acceleration.threshold, this.acceleration.set);
       const hum = this.agreementService.sensorThreshold(this.humidity.threshold, this.humidity.set);
       const press = this.agreementService.sensorThreshold(this.pressure.threshold, this.pressure.set);
-      await deployedToken.approve.sendTransaction(this.contractAddress, this.price, {from: this.account});
-      await this.agreementDeliver.methods.propose(this.contractAddress, this.deliveryAddress, maxT, minT, acc, hum, press, false)
-        .send({from: this.account});
+      const batch = this.web3Service.getBatch();
+      batch.add(deployedToken.approve.sendTransaction(this.contractAddress, this.price, {from: this.account}));
+      batch.add(await this.agreementDeliver.methods.propose(this.contractAddress, this.deliveryAddress, maxT, minT, acc, hum, press, false)
+        .send({from: this.account}));
+      await batch.execute();
     } catch (e) {
       console.log(e);
     }

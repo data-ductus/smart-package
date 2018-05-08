@@ -71,7 +71,7 @@ contract Purchase2 {
   }
 
   /** @dev Set the address of the contract handling the agreement data. Can only be called once.
-    * @param _purchaData The address of the data contract.
+    * @param _purchaseData The address of the data contract.
     */
   function setPurchaseData(address _purchaseData)
     public
