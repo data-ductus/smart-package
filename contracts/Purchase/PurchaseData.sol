@@ -6,6 +6,7 @@ import "./Purchase.sol";
 import "./Purchase2.sol";
 
 contract PurchaseData {
+
   enum State { Created, Locked, Transit, Confirm, Dissatisfied, Return, Returned, Review, Clerk, Appeal, Inactive }
 
   mapping(address => uint) public price;
@@ -37,7 +38,7 @@ contract PurchaseData {
   function PurchaseData(address _contract1, address _contract2) public {
     purchaseContracts.push(_contract1);
     purchaseContracts.push(_contract2);
-    require(Purchase(_contract1).setPurchaseData(this));
+    //require(Purchase(_contract1).setPurchaseData(this));
     require(Purchase2(_contract2).setPurchaseData(this));
   }
 
@@ -91,7 +92,7 @@ contract PurchaseData {
     * @param purchase The address of the agreement
     * @param sensorType The sensor that is being sent the request
     */
-  function requestData(address purchase, string sensorType) public {
+  function requestData(address purchase, uint sensorType) public {
     Request(terms[purchase].sensors[sensorType].provider);
   }
 
@@ -99,7 +100,7 @@ contract PurchaseData {
     * @param purchase The address of the agreement
     * @param sensorType The sensor that is being sent the request
     */
-  function sensorData(address purchase, string sensorType, address sender, int value)
+  function sensorData(address purchase, uint sensorType, address sender, int value)
     public
     onlyPurchaseContract()
   {
@@ -191,60 +192,11 @@ contract PurchaseData {
     * @param sensorType The sensor to set the address for
     * @param _provider The address of the sensor
     */
-  function setProvider(address purchase, string sensorType, address _provider)
+  function setProvider(address purchase, uint sensorType, address _provider)
     public
     onlyPurchaseContract()
   {
    terms[purchase].sensors[sensorType].provider = _provider;
-  }
-
-  ///////////////////
-  ///---Getters---///
-  ///////////////////
-
-  /** @dev Get the information about a sensor
-    * @param purchase The address of the agreement
-    * @param sensorType The sensor to get the information about
-    * @return threshold The threshold of the sensor
-    * @return warning True if the threshold has been violated
-    * @return provider The address of the sensor
-    * @return set True if the sensor is included
-    */
-  function getSensor(address purchase, string sensorType)
-    public
-    constant
-    returns(int threshold, bool warning, address provider, bool set)
-  {
-    return(SensorLibrary.getSensor(terms[purchase], sensorType));
-  }
-
-  /** @dev Get the information about a proposed sensor
-    * @param purchase The address of the agreement
-    * @param sensorType The sensor to get the information about
-    * @param _buyer The index of the requested proposal
-    * @return threshold The threshold of the sensor
-    * @return warning True if the threshold has been violated
-    * @return provider The address of the sensor
-    * @return set True if the sensor is included
-    */
-  function getProposedTerms(address purchase, string sensorType, uint _buyer)
-    public
-    constant
-    returns(int threshold, bool warning, address provider, bool set)
-  {
-    return(SensorLibrary.getSensor(proposals[purchase][_buyer], sensorType));
-  }
-
-  /** @dev Get the list of proposals
-    * @param purchase The address of the agreement
-    * @return proposals The list of proposals
-    */
-  function getPotentialBuyers(address purchase)
-    public
-    constant
-    returns(address[] _proposals)
-  {
-    return potentialBuyers[purchase];
   }
 
 }

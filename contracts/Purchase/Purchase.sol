@@ -3,70 +3,63 @@ pragma solidity ^0.4.0;
 
 import "../Token/Token.sol";
 import "./SensorLibrary.sol";
-import "./PurchaseData.sol";
 import "./MinimalPurchase.sol";
+import "./AgreementDeliver.sol";
+import "./Purchase2.sol";
 
 contract Purchase {
 
-  uint constant day = 20;
+  enum State { Created, Locked, Transit, Confirm, Dissatisfied, Return, Returned, Review, Clerk, Appeal, Inactive }
 
   Token t;
-  PurchaseData p;
-  bool purchaseDataSet;
-  mapping(address => uint) public arrivalTime;
+  //PurchaseData p;
+  address[] purchaseContracts;
+
+  mapping(address => uint) public price;
+  mapping(address => State) public state;
+  mapping(address => address) public seller;
+  mapping(address => address) public buyer;
+  mapping(address => mapping(address => string)) public deliveryAddress;
+  mapping(address => SensorLibrary.Sensors) internal terms;
+  mapping(address => address[]) public potentialBuyers;
+  mapping(address => mapping(uint => SensorLibrary.Sensors)) proposals;
+
+  event Proposed(address from);
+  event Declined(address from);
+  event Accepted(address from);
+  event Request(address indexed provider);
 
   modifier condition(bool _condition) {
     require(_condition);
     _;
   }
 
-  modifier onlyBuyer(address purchase) {
-    require(p.buyer(purchase) == msg.sender);
-    _;
-  }
-
   modifier onlySeller(address purchase) {
-    require(p.seller(purchase) == msg.sender);
-    _;
-  }
-
-  modifier onlyDeliveryCompany(address purchase) {
-    require(p.deliveryCompany(purchase) == msg.sender);
+    require(seller[purchase] == msg.sender);
     _;
   }
 
   modifier notSeller(address purchase) {
-    require(!(p.seller(purchase) == msg.sender));
+    require(!(seller[purchase] == msg.sender));
     _;
   }
 
-  modifier inState(address purchase, PurchaseData.State _state) {
-    require(p.state(purchase) == _state);
+  modifier inState(address purchase, State _state) {
+    require(state[purchase] == _state);
     _;
   }
 
-  event Proposed(address from);
-  event Declined(address from);
-  event Accepted(address from);
-  event Delivered(address from);
-  event Satisfied(address from);
-  event Dissatisfied(address from);
+  modifier onlyPurchaseContract() {
+    require(msg.sender == purchaseContracts[0] || msg.sender == purchaseContracts[1]);
+    _;
+  }
 
-  function Purchase(address _token) public {
+  function Purchase(address _token, address agreementDeliver, address agreementReturn) public {
     t = Token(_token);
-  }
-
-  /** @dev Set the address of the contract handling the agreement data. Can only be called once.
-    * @param _purchaseData The address of the data contract.
-    */
-  function setPurchaseData(address _purchaseData)
-    public
-    condition(!purchaseDataSet)
-    returns(bool)
-  {
-    purchaseDataSet = true;
-    p = PurchaseData(_purchaseData);
-    return true;
+    purchaseContracts.push(agreementDeliver);
+    purchaseContracts.push(agreementReturn);
+    require(AgreementDeliver(agreementDeliver).setPurchase());
+    require(Purchase2(agreementReturn).setPurchase());
   }
 
   /** @dev Create a new agreement
@@ -92,8 +85,12 @@ contract Purchase {
     int pressure,
     bool gps
   )
+  //add check for dapp sender
+    condition(true)
   {
-    p.newPurchase(purchase, _price, _seller, maxTemp, minTemp, acceleration, humidity, pressure, gps);
+    price[purchase] = _price;
+    seller[purchase] = _seller;
+    require(SensorLibrary.setSensors(terms[purchase], maxTemp, minTemp, acceleration, humidity, pressure, gps));
   }
 
   ///////////////////
@@ -107,25 +104,15 @@ contract Purchase {
   function setPrice(address purchase, uint _price)
     public
     onlySeller(purchase)
-    condition(p.state(purchase) == PurchaseData.State.Created)
+    condition(state[purchase] == State.Created)
   {
-    p.setPrice(purchase, _price);
-  }
-
-  /** @dev Abort the agreement
-    * @param purchase The address of the agreement
-    */
-  function abort(address purchase)
-    public
-    onlySeller(purchase)
-    inState(purchase, PurchaseData.State.Created)
-  {
-    p.setState(purchase, PurchaseData.State.Inactive);
+    delete potentialBuyers[purchase];
+    price[purchase] = _price;
   }
 
   /** @dev Propose additional terms
     * @param purchase The address of the agreement
-    * @param deliveryAddress The location where the goods should be delivered
+    * @param _deliveryAddress The location where the goods should be delivered
     * @param maxTemp Maximum temperature (-999 = not set)
     * @param minTemp Minimum temperature (-999 = not set)
     * @param acceleration Maximum acceleration (-999 = not set)
@@ -136,7 +123,7 @@ contract Purchase {
   function propose
   (
     address purchase,
-    string deliveryAddress,
+    string _deliveryAddress,
     int maxTemp,
     int minTemp,
     int acceleration,
@@ -146,21 +133,25 @@ contract Purchase {
   )
     public
     notSeller(purchase)
-    inState(purchase, PurchaseData.State.Created)
+    inState(purchase, State.Created)
   {
-    p.addPotentialBuyer(purchase, msg.sender, deliveryAddress, maxTemp, minTemp, acceleration, humidity, pressure, gps);
+    uint i =  potentialBuyers[purchase].length;
+    potentialBuyers[purchase].push(msg.sender);
+    deliveryAddress[purchase][msg.sender] = _deliveryAddress;
+    require(SensorLibrary.setSensors(proposals[purchase][i], maxTemp, minTemp, acceleration, humidity, pressure, gps));
+    Proposed(msg.sender);
   }
 
   /** @dev Decline a proposal
     * @param purchase The address of the agreement
-    * @param buyer The index of the proposal to decline
+    * @param _buyer The index of the proposal to decline
     */
-  function decline(address purchase, uint buyer)
+  function decline(address purchase, uint _buyer)
     public
     onlySeller(purchase)
-    inState(purchase, PurchaseData.State.Created)
+    inState(purchase, State.Created)
   {
-    p.deleteBuyer(purchase, buyer);
+    delete potentialBuyers[purchase][_buyer];
   }
 
   /** @dev Accept a proposal
@@ -170,11 +161,13 @@ contract Purchase {
   function accept(address purchase, uint _buyer)
     public
     onlySeller(purchase)
-    inState(purchase, PurchaseData.State.Created)
+    inState(purchase, State.Created)
   {
-    p.setBuyer(purchase, _buyer);
-    MinimalPurchase(purchase).transferFrom(p.buyer(purchase), p.price(purchase));
-    p.setState(purchase, PurchaseData.State.Locked);
+
+    state[purchase] = State.Locked;
+    buyer[purchase] = potentialBuyers[purchase][_buyer];
+    SensorLibrary.combineTerms(terms[purchase], proposals[purchase][_buyer]);
+    MinimalPurchase(purchase).transferFrom(buyer[purchase], price[purchase]);
     Accepted(msg.sender);
   }
 
@@ -186,24 +179,11 @@ contract Purchase {
     * @param purchase The address of the agreement
     * @param sensorType The sensor to set the address for
     */
-  function setProvider(address purchase, string sensorType)
-    public
-    condition(p.state(purchase) == PurchaseData.State.Locked || p.state(purchase) == PurchaseData.State.Dissatisfied)
+  function setProvider(address purchase, uint sensorType)
+  public
+  condition(state[purchase] == State.Locked || state[purchase] == State.Dissatisfied)
   {
-    p.setProvider(purchase, sensorType, msg.sender);
-  }
-
-  /** @dev Starts the transportation
-    * @param purchase The address of the agreement
-    * @param returnAddress The location the goods are being transported from
-    */
-  function transport(address purchase, string returnAddress)
-    public
-    inState(purchase, PurchaseData.State.Locked)
-  {
-    p.setState(purchase, PurchaseData.State.Transit);
-    p.setDeliveryCompany(purchase, msg.sender, returnAddress);
-    MinimalPurchase(purchase).transferFrom(msg.sender, p.price(purchase));
+    terms[purchase].sensors[sensorType].provider = msg.sender;
   }
 
   ///////////////////
@@ -215,67 +195,82 @@ contract Purchase {
     * @param sensorType The sensor that is sending the data
     * @param value The value of the data
     */
-  function sensorData(address purchase, string sensorType, int value)
-    public
-    condition(p.state(purchase) == PurchaseData.State.Transit || p.state(purchase) == PurchaseData.State.Return)
+  function sensorData(address purchase, uint sensorType, int value)
+  public
+  condition(state[purchase] == State.Transit || state[purchase] == State.Return)
   {
-    p.sensorData(purchase, sensorType, msg.sender, value);
+    SensorLibrary.sensorData(terms[purchase], sensorType, msg.sender, value);
   }
 
   /** @dev User requests data from a sensor
     * @param purchase The address of the agreement
     * @param sensorType The sensor that is being sent the request
     */
-  function requestData(address purchase, string sensorType)
-    public
-    condition(p.state(purchase) == PurchaseData.State.Transit || p.state(purchase) == PurchaseData.State.Return)
+  function requestData(address purchase, uint sensorType)
+  public
+  condition(state[purchase] == State.Transit || state[purchase] == State.Return)
   {
-    p.requestData(purchase, sensorType);
-  }
-
-  /** @dev Deliver the goods
-    * @param purchase The address of the agreement
-    */
-  function deliver(address purchase)
-    public
-    inState(purchase, PurchaseData.State.Transit)
-    onlyDeliveryCompany(purchase)
-  {
-    arrivalTime[purchase] = now;
-    p.setState(purchase, PurchaseData.State.Confirm);
-    Delivered(msg.sender);
+    Request(terms[purchase].sensors[sensorType].provider);
   }
 
   ///////////////////
-  ///---Confirm---///
+  ///---Setters---///
   ///////////////////
 
-  /** @dev Successful agreement. Can be called by anyone after a certain time.
-    * @param purchase The address of the agreement
-    */
-  function success(address purchase)
+  function setState(address purchase, State _state)
     public
-    condition(now > arrivalTime[purchase] + day)
-    inState(purchase, PurchaseData.State.Confirm)
+    onlyPurchaseContract()
   {
-    p.setState(purchase, PurchaseData.State.Inactive);
-    uint _price = p.price(purchase);
-    MinimalPurchase(purchase).approve(p.seller(purchase), _price);
-    MinimalPurchase(purchase).approve(p.deliveryCompany(purchase), _price);
-    Satisfied(msg.sender);
+    state[purchase] = _state;
   }
 
-  /** @dev Can be called by the buyer to return the goods.
-    * @param purchase The address of the agreement
-    */
-  function dissatisfied(address purchase)
+  ///////////////////
+  ///---Getters---///
+  ///////////////////
+
+  /** @dev Get the information about a sensor
+  * @param purchase The address of the agreement
+  * @param sensorType The sensor to get the information about
+  * @return threshold The threshold of the sensor
+  * @return warning True if the threshold has been violated
+  * @return provider The address of the sensor
+  * @return set True if the sensor is included
+  */
+  function getSensor(address purchase, uint sensorType)
     public
-    onlyBuyer(purchase)
-    inState(purchase, PurchaseData.State.Confirm)
-    condition(now <= arrivalTime[purchase] + day)
+    constant
+    returns(int threshold, bool warning, address provider, bool set)
   {
-    p.setState(purchase, PurchaseData.State.Dissatisfied);
-    Dissatisfied(msg.sender);
+    return(SensorLibrary.getSensor(terms[purchase], sensorType));
+  }
+
+  /** @dev Get the information about a proposed sensor
+    * @param purchase The address of the agreement
+    * @param sensorType The sensor to get the information about
+    * @param _buyer The index of the requested proposal
+    * @return threshold The threshold of the sensor
+    * @return warning True if the threshold has been violated
+    * @return provider The address of the sensor
+    * @return set True if the sensor is included
+    */
+  function getProposedTerms(address purchase, uint sensorType, uint _buyer)
+    public
+    constant
+    returns(int threshold, bool warning, address provider, bool set)
+  {
+    return(SensorLibrary.getSensor(proposals[purchase][_buyer], sensorType));
+  }
+
+  /** @dev Get the list of proposals
+    * @param purchase The address of the agreement
+    * @return proposals The list of proposals
+    */
+  function getPotentialBuyers(address purchase)
+    public
+    constant
+    returns(address[] _proposals)
+  {
+    return potentialBuyers[purchase];
   }
 }
 

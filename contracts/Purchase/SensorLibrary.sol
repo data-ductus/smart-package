@@ -11,7 +11,7 @@ library SensorLibrary {
     bool set;
   }
   struct Sensors {
-    mapping(string => Sensor) sensors;
+    mapping(uint => Sensor) sensors;
     address gpsProvider;
     bool gps;
   }
@@ -38,29 +38,29 @@ library SensorLibrary {
     returns(bool)
   {
     if(keccak256(maxTemp) != keccak256(notSet)) {
-      self.sensors["maxTemp"].threshold = maxTemp;
-      self.sensors["maxTemp"].set = true;
+      self.sensors[0].threshold = maxTemp;
+      self.sensors[0].set = true;
     }
     if(keccak256(minTemp) != keccak256(notSet)) {
-      self.sensors["minTemp"].threshold = minTemp;
-      self.sensors["minTemp"].set = true;
+      self.sensors[1].threshold = minTemp;
+      self.sensors[1].set = true;
     }
     if(keccak256(acceleration) != keccak256(notSet)) {
-      self.sensors["acceleration"].threshold = acceleration;
-      self.sensors["acceleration"].set = true;
+      self.sensors[2].threshold = acceleration;
+      self.sensors[2].set = true;
     }
     if(keccak256(humidity) != keccak256(notSet)) {
-      self.sensors["humidity"].threshold = humidity;
-      self.sensors["humidity"].set = true;
+      self.sensors[3].threshold = humidity;
+      self.sensors[3].set = true;
     }
     if(keccak256(pressure) != keccak256(notSet)) {
-      self.sensors["pressure"].threshold = pressure;
-      self.sensors["pressure"].set = true;
+      self.sensors[4].threshold = pressure;
+      self.sensors[4].set = true;
     }
     if(gps) {
       self.gps = true;
     }
-    Threshold(self.sensors["maxTemp"].threshold, self.sensors["minTemp"].threshold, self.sensors["acceleration"].threshold);
+    //Threshold(self.sensors["maxTemp"].threshold, self.sensors["minTemp"].threshold, self.sensors["acceleration"].threshold);
     return true;
   }
 
@@ -72,20 +72,20 @@ library SensorLibrary {
     public
     returns(bool)
   {
-    if(additionalTerms.sensors["maxTemp"].set) {
-      self.sensors["maxTemp"] = additionalTerms.sensors["maxTemp"];
+    if(additionalTerms.sensors[0].set) {
+      self.sensors[0] = additionalTerms.sensors[0];
     }
-    if(additionalTerms.sensors["minTemp"].set) {
-      self.sensors["minTemp"] = additionalTerms.sensors["minTemp"];
+    if(additionalTerms.sensors[1].set) {
+      self.sensors[1] = additionalTerms.sensors[1];
     }
-    if(additionalTerms.sensors["acceleration"].set) {
-      self.sensors["acceleration"] = additionalTerms.sensors["acceleration"];
+    if(additionalTerms.sensors[2].set) {
+      self.sensors[2] = additionalTerms.sensors[2];
     }
-    if(additionalTerms.sensors["humidity"].set) {
-      self.sensors["humidity"] = additionalTerms.sensors["humidity"];
+    if(additionalTerms.sensors[3].set) {
+      self.sensors[3] = additionalTerms.sensors[3];
     }
-    if(additionalTerms.sensors["pressure"].set) {
-      self.sensors["pressure"] = additionalTerms.sensors["pressure"];
+    if(additionalTerms.sensors[4].set) {
+      self.sensors[4] = additionalTerms.sensors[4];
     }
     if(additionalTerms.gps) {
       self.gps = true;
@@ -99,10 +99,10 @@ library SensorLibrary {
     * @param id The address of the sensor that sent the data
     * @param value The value sent from the sensor
     */
-  function sensorData(Sensors storage self, string sensorType, address id, int value)
+  function sensorData(Sensors storage self, uint sensorType, address id, int value)
     public
     condition(self.sensors[sensorType].provider == id &&
-    (value < self.sensors[sensorType].threshold) == (keccak256(sensorType) == keccak256('minTemp')))
+    (value < self.sensors[sensorType].threshold) == (keccak256(sensorType) == keccak256(1)))
   {
     self.sensors[sensorType].warning = true;
   }
@@ -111,12 +111,12 @@ library SensorLibrary {
     * @param self The instance of the struct where the information is stored
     * @param sensorType The sensor to get the information about
     */
-  function getSensor(Sensors storage self, string sensorType)
+  function getSensor(Sensors storage self, uint sensorType)
     public
     constant
     returns(int threshold, bool warning, address provider, bool set)
   {
-    if (keccak256(sensorType) == keccak256('gps')) {
+    if (keccak256(sensorType) == keccak256(100)) {
       return (0, false, self.gpsProvider, self.gps);
     }
     return (self.sensors[sensorType].threshold, self.sensors[sensorType].warning, self.sensors[sensorType].provider, self.sensors[sensorType].set);

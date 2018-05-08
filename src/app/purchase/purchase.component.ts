@@ -93,7 +93,7 @@ export class PurchaseComponent implements OnInit {
    */
   async getDapp() {
     const dappAbstraction = await this.web3Service.artifactsToContract(dapp_artifact);
-    const agreementDataAbstraction = await this.web3Service.artifactsToContract(purchase_data_artifact);
+    const agreementDataAbstraction = await this.web3Service.artifactsToContract(purchase_artifact);
     const agreementDeliverAbstraction = await this.web3Service.artifactsToContract(purchase_artifact);
     const agreementReturnAbstraction = await this.web3Service.artifactsToContract(purchase2_artifact);
     const clerkAbstraction = await this.web3Service.artifactsToContract(clerk_artifact);
