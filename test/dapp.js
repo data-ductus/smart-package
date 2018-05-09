@@ -1,5 +1,5 @@
 let Dapp = artifacts.require("./DApp.sol");
-let PurchaseData = artifacts.require("./PurchaseData.sol");
+let AgreementData = artifacts.require("./AgreementData.sol");
 
 contract('dapp', function (accounts) {
   it("should create a purchase contract", function () {
@@ -30,23 +30,23 @@ contract('dapp', function (accounts) {
 });
 
 contract('dapp-2', function (accounts) {
-  let data;
+  let agreementData;
   let c;
   let dapp;
 
   before(async function () {
     dapp = await Dapp.deployed();
-    data = await PurchaseData.deployed();
+    agreementData = await AgreementData.deployed();
     await dapp.createMinimalPurchase(100, -999, -999, -999, -999, -999, false);
     c = await dapp.getAllContracts();
   });
   it("should have the correct price", async function () {
     let cost = 100;
-    const price = await data.price.call(c[0]);
+    const price = await agreementData.price.call(c[0]);
     assert.equal(price.toNumber(), cost, "It does not cost 100");
   });
   it("should have the correct seller", async function () {
-    const _seller = await data.seller.call(c[0]);
+    const _seller = await agreementData.seller.call(c[0]);
     assert.equal(accounts[0], _seller, "The creator is not the seller");
   });
 });

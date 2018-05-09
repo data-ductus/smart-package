@@ -114,11 +114,11 @@ export class AgreementComponent implements OnInit {
       update = true;
     }
     for (let i = 0; i < p.length; i++) {
-      const maxT = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'maxTemp', i).call();
-      const minT = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'minTemp', i).call();
-      const acc = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'acceleration', i).call();
-      const hum = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'humidity', i).call();
-      const press = await this.agreementData.methods.getProposedTerms(this.contractAddress, 'pressure', i).call();
+      const maxT = await this.agreementData.methods.getProposedTerms(this.contractAddress, 0, i).call();
+      const minT = await this.agreementData.methods.getProposedTerms(this.contractAddress, 1, i).call();
+      const acc = await this.agreementData.methods.getProposedTerms(this.contractAddress, 2, i).call();
+      const hum = await this.agreementData.methods.getProposedTerms(this.contractAddress, 3, i).call();
+      const press = await this.agreementData.methods.getProposedTerms(this.contractAddress, 4, i).call();
       a.push({address: p[i], maxT: maxT, minT: minT, acc: acc, hum: hum, press: press});
       if (p[i] !== this.contractAddress) {
         n++;

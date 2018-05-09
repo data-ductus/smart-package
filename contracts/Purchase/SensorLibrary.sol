@@ -3,6 +3,8 @@ pragma solidity ^0.4.0;
 library SensorLibrary {
 
   int constant notSet = int(-999);
+  int constant minTemp = int(1);
+  int constant gps = int(100);
 
   struct Sensor {
     int threshold;
@@ -102,7 +104,7 @@ library SensorLibrary {
   function sensorData(Sensors storage self, uint sensorType, address id, int value)
     public
     condition(self.sensors[sensorType].provider == id &&
-    (value < self.sensors[sensorType].threshold) == (keccak256(sensorType) == keccak256(1)))
+    (value < self.sensors[sensorType].threshold) == (keccak256(sensorType) == keccak256(minTemp)))
   {
     self.sensors[sensorType].warning = true;
   }
@@ -116,7 +118,7 @@ library SensorLibrary {
     constant
     returns(int threshold, bool warning, address provider, bool set)
   {
-    if (keccak256(sensorType) == keccak256(100)) {
+    if (keccak256(sensorType) == keccak256(gps)) {
       return (0, false, self.gpsProvider, self.gps);
     }
     return (self.sensors[sensorType].threshold, self.sensors[sensorType].warning, self.sensors[sensorType].provider, self.sensors[sensorType].set);

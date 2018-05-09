@@ -1,21 +1,23 @@
 pragma solidity ^0.4.0;
 
-import "./Purchase/Purchase.sol";
-import "./Purchase/Purchase2.sol";
+import "./Purchase/AgreementData.sol";
+import "./Purchase/AgreementReturn.sol";
 import "./Purchase/MinimalPurchase.sol";
 import "./Token/Token.sol";
-import "../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract DApp is Ownable {
+contract DApp {
   address[] public allContracts;
-  address public purchase;
-  address public purchase2;
+  address public agreementData;
+  address public agreementDeliver;
+  address public agreementReturn;
   address public token;
 
-  function DApp(address _purchase1, address _purchase2, address _token) public {
-    purchase = _purchase1;
-    purchase2 = _purchase2;
+  function DApp(address _agreementData, address _agreementDeliver, address _agreementReturn, address _token) public {
+    agreementData = _agreementData;
+    agreementDeliver = _agreementDeliver;
+    agreementReturn = _agreementReturn;
     token = _token;
+    require(AgreementData(_agreementData).setDapp());
   }
 
   function createMinimalPurchase(
@@ -30,7 +32,7 @@ contract DApp is Ownable {
     public
   {
     address c = new MinimalPurchase(this, token);
-    Purchase(purchase).newPurchase(c, price, msg.sender, maxTemp, minTemp, acceleration, humidity, pressure, gps);
+    AgreementData(agreementData).newPurchase(c, price, msg.sender, maxTemp, minTemp, acceleration, humidity, pressure, gps);
     allContracts.push(c);
   }
 
@@ -42,11 +44,11 @@ contract DApp is Ownable {
     return allContracts;
   }
 
-  function isPurchaseContract(address a)
+  function isAgreementContract(address a)
     public
     constant
     returns(bool)
   {
-    return (a == purchase || a == purchase2);
+    return (a == agreementData || a == agreementDeliver || a == agreementReturn);
   }
 }

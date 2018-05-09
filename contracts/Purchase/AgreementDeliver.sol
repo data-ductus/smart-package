@@ -1,24 +1,24 @@
 pragma solidity ^0.4.0;
 
-import "./Purchase.sol";
+import "./AgreementData.sol";
 import "./MinimalPurchase.sol";
 
 contract AgreementDeliver {
 
-  Purchase p;
-  bool purchaseDataSet;
+  AgreementData p;
+  bool agreementDataSet;
 
   mapping(address => address) public deliveryCompany;
   mapping(address => string) public returnAddress;
   mapping(address => uint) public arrivalTime;
-  uint constant public day = 20;
+  uint constant public day = 2;
 
   modifier condition(bool _condition) {
     require(_condition);
     _;
   }
 
-  modifier inState(address purchase, Purchase.State _state) {
+  modifier inState(address purchase, AgreementData.State _state) {
     require(p.state(purchase) == _state);
     _;
   }
@@ -45,13 +45,13 @@ contract AgreementDeliver {
   function AgreementDeliver(){
   }
 
-  function setPurchase()
+  function setAgreementData()
     public
-    condition(!purchaseDataSet)
+    condition(!agreementDataSet)
     returns(bool)
   {
-    purchaseDataSet = true;
-    p = Purchase(msg.sender);
+    agreementDataSet = true;
+    p = AgreementData(msg.sender);
     return true;
   }
 
@@ -65,9 +65,9 @@ contract AgreementDeliver {
   function abort(address purchase)
     public
     onlySeller(purchase)
-    inState(purchase, Purchase.State.Created)
+    inState(purchase, AgreementData.State.Created)
   {
-    p.setState(purchase, Purchase.State.Inactive);
+    p.setState(purchase, AgreementData.State.Inactive);
   }
 
   //////////////////
@@ -80,9 +80,9 @@ contract AgreementDeliver {
     */
   function transport(address purchase, string _returnAddress)
     public
-    inState(purchase, Purchase.State.Locked)
+    inState(purchase, AgreementData.State.Locked)
   {
-    p.setState(purchase, Purchase.State.Transit);
+    p.setState(purchase, AgreementData.State.Transit);
     deliveryCompany[purchase] = msg.sender;
     returnAddress[purchase] = _returnAddress;
     MinimalPurchase(purchase).transferFrom(msg.sender, p.price(purchase));
@@ -97,10 +97,10 @@ contract AgreementDeliver {
     */
   function deliver(address purchase)
     public
-    inState(purchase, Purchase.State.Transit)
+    inState(purchase, AgreementData.State.Transit)
     onlyDeliveryCompany(purchase)
   {
-    p.setState(purchase, Purchase.State.Confirm);
+    p.setState(purchase, AgreementData.State.Confirm);
     arrivalTime[purchase] = now;
     Delivered(msg.sender);
   }
@@ -115,9 +115,9 @@ contract AgreementDeliver {
   function success(address purchase)
     public
     condition(now > arrivalTime[purchase] + day)
-    inState(purchase, Purchase.State.Confirm)
+    inState(purchase, AgreementData.State.Confirm)
   {
-    p.setState(purchase, Purchase.State.Inactive);
+    p.setState(purchase, AgreementData.State.Inactive);
     uint _price = p.price(purchase);
     MinimalPurchase(purchase).approve(p.seller(purchase), _price);
     MinimalPurchase(purchase).approve(deliveryCompany[purchase], _price);
@@ -130,10 +130,10 @@ contract AgreementDeliver {
   function dissatisfied(address purchase)
     public
     onlyBuyer(purchase)
-    inState(purchase, Purchase.State.Confirm)
+    inState(purchase, AgreementData.State.Confirm)
     condition(now <= arrivalTime[purchase] + day)
   {
-    p.setState(purchase, Purchase.State.Dissatisfied);
+    p.setState(purchase, AgreementData.State.Dissatisfied);
     Dissatisfied(msg.sender);
   }
 }

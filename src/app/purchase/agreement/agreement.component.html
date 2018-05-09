@@ -30,7 +30,7 @@
     </button>
     <div *ngIf="toggleProposals">
       <div *ngFor="let p of proposals; let i = index">
-        <app-accept *ngIf="proposals[i].address !== contractAddress" [account]="account" [agreementDeliver]="agreementDeliver" [id]="i"
+        <app-accept *ngIf="proposals[i].address !== contractAddress" [account]="account" [agreementData]="agreementData" [id]="i"
                     [terms]="p" [contractAddress]="contractAddress"></app-accept>
       </div>
       <hr>
@@ -38,7 +38,7 @@
   </div>
   <div *ngIf="account!=purchaseInfo.seller && purchaseInfo.state==0">
     <app-set-terms [create]="false" [account]="account" [token]="token" [dapp]="dapp"
-                   [agreementDeliver]="agreementDeliver" [contractAddress]="contractAddress" [price]="purchaseInfo.price"></app-set-terms>
+                   [agreementData]="agreementData" [contractAddress]="contractAddress" [price]="purchaseInfo.price"></app-set-terms>
   </div>
   <app-confirm [account]="account" [contractAddress]="contractAddress" [token]="token" [state]="purchaseInfo.state"
                [buyer]="purchaseInfo.buyer" [agreementDeliver]="agreementDeliver"></app-confirm>

@@ -2,8 +2,8 @@ pragma solidity ^0.4.0;
 
 import "../Token/Token.sol";
 import "./SensorLibrary.sol";
-import "./Purchase.sol";
-import "./Purchase2.sol";
+import "./AgreementData.sol";
+import "./AgreementReturn.sol";
 
 contract PurchaseData {
 
@@ -39,7 +39,7 @@ contract PurchaseData {
     purchaseContracts.push(_contract1);
     purchaseContracts.push(_contract2);
     //require(Purchase(_contract1).setPurchaseData(this));
-    require(Purchase2(_contract2).setPurchaseData(this));
+    //require(Purchase2(_contract2).setPurchaseData(this));
   }
 
   ///////////////////
@@ -70,7 +70,7 @@ contract PurchaseData {
     bool gps
   )
     public
-    onlyPurchaseContract()
+    //onlyPurchaseContract()
   {
     price[purchase] = _price;
     seller[purchase] = _seller;

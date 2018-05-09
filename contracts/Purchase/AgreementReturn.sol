@@ -2,23 +2,23 @@ pragma solidity ^0.4.0;
 
 import "../Token/Token.sol";
 import "./SensorLibrary.sol";
-import "./Purchase.sol";
+import "./AgreementData.sol";
 import "./AgreementDeliver.sol";
 import "./MinimalPurchase.sol";
 import "../Voting/Clerk.sol";
 
-contract Purchase2 {
+contract AgreementReturn {
 
-  uint constant day = 20;
+  uint constant day = 2;
 
   Token t;
   Clerk c;
-  Purchase p;
+  AgreementData p;
   AgreementDeliver a;
-  bool purchaseDataSet;
+  bool agreementDataSet;
 
   mapping(address => uint) public clerkPayment;
-  mapping(address => Purchase.State) previousState;
+  mapping(address => AgreementData.State) previousState;
   mapping(address => uint) public arrivalTime;
   mapping(address => uint) public sellerTokens;
   mapping(address => uint) public buyerTokens;
@@ -51,7 +51,7 @@ contract Purchase2 {
     _;
   }
 
-  modifier inState(address purchase, Purchase.State _state) {
+  modifier inState(address purchase, AgreementData.State _state) {
     require(p.state(purchase) == _state);
     _;
   }
@@ -68,7 +68,7 @@ contract Purchase2 {
   event Satisfied(address from);
   event Dissatisfied(address from);
 
-  function Purchase2(address _token, address _clerk, address _agreementDeliver) public {
+  function AgreementReturn(address _token, address _clerk, address _agreementDeliver) public {
     t = Token(_token);
     c = Clerk(_clerk);
     a = AgreementDeliver(_agreementDeliver);
@@ -76,13 +76,13 @@ contract Purchase2 {
 
   /** @dev Set the address of the contract handling the agreement data. Can only be called once.
     */
-  function setPurchase()
+  function setAgreementData()
     public
-    condition(!purchaseDataSet)
+    condition(!agreementDataSet)
     returns(bool)
   {
-    purchaseDataSet = true;
-    p = Purchase(msg.sender);
+    agreementDataSet = true;
+    p = AgreementData(msg.sender);
     return true;
   }
 
@@ -95,10 +95,10 @@ contract Purchase2 {
     */
   function transportReturn(address purchase)
     public
-    inState(purchase, Purchase.State.Dissatisfied)
+    inState(purchase, AgreementData.State.Dissatisfied)
     onlyDeliveryCompany(purchase)
   {
-    p.setState(purchase, Purchase.State.Return);
+    p.setState(purchase, AgreementData.State.Return);
   }
 
   //////////////////
@@ -110,10 +110,10 @@ contract Purchase2 {
     */
   function deliverReturn(address purchase)
     public
-    inState(purchase, Purchase.State.Return)
+    inState(purchase, AgreementData.State.Return)
     onlyDeliveryCompany(purchase)
   {
-    p.setState(purchase, Purchase.State.Returned);
+    p.setState(purchase, AgreementData.State.Returned);
     arrivalTime[purchase] = now;
   }
 
@@ -126,10 +126,10 @@ contract Purchase2 {
     */
   function successReturn(address purchase)
     public
-    inState(purchase, Purchase.State.Returned)
+    inState(purchase, AgreementData.State.Returned)
     condition(now > arrivalTime[purchase] + day)
   {
-    p.setState(purchase, Purchase.State.Inactive);
+    p.setState(purchase, AgreementData.State.Inactive);
     MinimalPurchase(purchase).approve(p.buyer(purchase), p.price(purchase));
     MinimalPurchase(purchase).approve(a.deliveryCompany(purchase), p.price(purchase));
   }
@@ -140,10 +140,10 @@ contract Purchase2 {
   function goodsDamaged(address purchase)
     public
     onlySeller(purchase)
-    inState(purchase, Purchase.State.Returned)
+    inState(purchase, AgreementData.State.Returned)
     condition(now <= arrivalTime[purchase] + day)
   {
-    p.setState(purchase, Purchase.State.Review);
+    p.setState(purchase, AgreementData.State.Review);
   }
 
   //////////////////
@@ -156,9 +156,9 @@ contract Purchase2 {
   function compensate(address purchase)
     public
     onlyDeliveryCompany(purchase)
-    inState(purchase, Purchase.State.Review)
+    inState(purchase, AgreementData.State.Review)
   {
-    p.setState(purchase, Purchase.State.Inactive);
+    p.setState(purchase, AgreementData.State.Inactive);
     MinimalPurchase(purchase).approve(p.buyer(purchase), p.price(purchase));
     MinimalPurchase(purchase).approve(p.seller(purchase), p.price(purchase));
   }
@@ -176,10 +176,10 @@ contract Purchase2 {
   function solve(address purchase, uint _seller, uint _buyer, uint _delivery)
     public
     onlyClerk()
-    inState(purchase, Purchase.State.Clerk)
+    inState(purchase, AgreementData.State.Clerk)
     condition(_seller+_buyer+_delivery+clerkPayment[purchase] == t.balanceOf(purchase))
   {
-    p.setState(purchase, Purchase.State.Appeal);
+    p.setState(purchase, AgreementData.State.Appeal);
     currentClerk[purchase] = msg.sender;
     arrivalTime[purchase] = now;
 
@@ -194,9 +194,9 @@ contract Purchase2 {
   function returnToPreviousState(address purchase)
     public
     onlyClerk()
-    inState(purchase, Purchase.State.Clerk)
+    inState(purchase, AgreementData.State.Clerk)
   {
-    p.setState(purchase, Purchase.State.Appeal);
+    p.setState(purchase, AgreementData.State.Appeal);
     currentClerk[purchase] = msg.sender;
     arrivalTime[purchase] = now;
     returnToPrevState[purchase] = true;
@@ -208,7 +208,7 @@ contract Purchase2 {
     */
   function increaseClerkPayment(address purchase, uint amount)
     public
-    inState(purchase, Purchase.State.Clerk)
+    inState(purchase, AgreementData.State.Clerk)
   {
     clerkPayment[purchase] += amount;
     MinimalPurchase(purchase).transferFrom(msg.sender, amount);
@@ -223,13 +223,13 @@ contract Purchase2 {
     */
   function rejectClerkDecision(address purchase)
     public
-    inState(purchase, Purchase.State.Appeal)
+    inState(purchase, AgreementData.State.Appeal)
     condition(now <= arrivalTime[purchase] + day)
     condition(msg.sender == p.seller(purchase)
       || msg.sender == p.buyer(purchase)
       || msg.sender == a.deliveryCompany(purchase))
   {
-    p.setState(purchase, Purchase.State.Clerk);
+    p.setState(purchase, AgreementData.State.Clerk);
 
     delete sellerTokens[purchase];
     delete buyerTokens[purchase];
@@ -242,13 +242,13 @@ contract Purchase2 {
     */
   function finalizeClerkDecision(address purchase)
     public
-    inState(purchase, Purchase.State.Appeal)
+    inState(purchase, AgreementData.State.Appeal)
     condition(now > arrivalTime[purchase] + day)
   {
     if (returnToPrevState[purchase]) {
       p.setState(purchase, previousState[purchase]);
     } else {
-      p.setState(purchase, Purchase.State.Inactive);
+      p.setState(purchase, AgreementData.State.Inactive);
 
       MinimalPurchase(purchase).approve(p.seller(purchase), sellerTokens[purchase]);
       MinimalPurchase(purchase).approve(a.deliveryCompany(purchase), logisticsTokens[purchase]);
@@ -270,14 +270,14 @@ contract Purchase2 {
     */
   function clerk(address purchase, uint payment)
     public
-    condition(p.state(purchase) != Purchase.State.Clerk)
+    condition(p.state(purchase) != AgreementData.State.Clerk)
     condition(msg.sender == p.seller(purchase)
       || msg.sender == p.buyer(purchase)
       || msg.sender == a.deliveryCompany(purchase))
   {
-    Purchase.State s = p.state(purchase);
+    AgreementData.State s = p.state(purchase);
 
-    p.setState(purchase, Purchase.State.Clerk);
+    p.setState(purchase, AgreementData.State.Clerk);
     previousState[purchase] = s;
 
     clerkPayment[purchase] += payment;

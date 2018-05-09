@@ -14,7 +14,7 @@ export class SetTermsComponent implements OnInit {
   @Input() token;
   @Input() account;
   @Input() contractAddress;
-  @Input() agreementDeliver;
+  @Input() agreementData;
   @Input() price: number;
 
   maxTemp = {
@@ -75,7 +75,7 @@ export class SetTermsComponent implements OnInit {
       const press = this.agreementService.sensorThreshold(this.pressure.threshold, this.pressure.set);
       const batch = this.web3Service.getBatch();
       batch.add(deployedToken.approve.sendTransaction(this.contractAddress, this.price, {from: this.account}));
-      batch.add(await this.agreementDeliver.methods.propose(this.contractAddress, this.deliveryAddress, maxT, minT, acc, hum, press, false)
+      batch.add(await this.agreementData.methods.propose(this.contractAddress, this.deliveryAddress, maxT, minT, acc, hum, press, false)
         .send({from: this.account}));
       await batch.execute();
     } catch (e) {

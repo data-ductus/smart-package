@@ -20,13 +20,13 @@ contract MinimalPurchase {
 
   function approve(address to, uint amount)
     public
-    condition(dapp.isPurchaseContract(msg.sender))
+    condition(dapp.isAgreementContract(msg.sender))
   {
     require(t.approve(to, amount));
   }
   function transferFrom(address from, uint amount)
     public
-    condition(dapp.isPurchaseContract(msg.sender))
+    condition(dapp.isAgreementContract(msg.sender))
   {
     require(t.transferFrom(from, this, amount));
   }
