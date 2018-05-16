@@ -203,6 +203,13 @@ contract AgreementData {
     terms[purchase].sensors[sensorType].provider = msg.sender;
   }
 
+  function setGPSProvider(address purchase)
+    public
+    condition(state[purchase] == State.Locked || state[purchase] == State.Dissatisfied)
+  {
+    terms[purchase].gpsProvider = msg.sender;
+  }
+
   ///////////////////
   ///---Transit---///
   ///////////////////

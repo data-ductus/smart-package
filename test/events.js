@@ -24,6 +24,7 @@ contract('request-events', function (accounts) {
   const tempProvider = accounts[3];
   const accProvider = accounts[4];
   const humProvider = accounts[5];
+  const gpsProvider = accounts[6];
 
   const buyToken = async function() {
     let value = 10000;
@@ -50,6 +51,7 @@ contract('request-events', function (accounts) {
     await agreementData.setProvider(c[0], 0, {from: tempProvider});
     await agreementData.setProvider(c[0], 2, {from: accProvider});
     await agreementData.setProvider(c[0], 3, {from: humProvider});
+    await agreementData.setProvider(c[0], 100, {from: gpsProvider});
     await token.approve(c[0], price, {from: delivery});
     await agreementDeliver.transport(c[0], 'Skellefteå', {from: delivery});
   });
@@ -87,5 +89,19 @@ contract('request-events', function (accounts) {
       event.stopWatching();
     });
     await library.currentValue(humidity, c[0]);
+  });
+  it("should send a location event when receiving a request", async function () {
+    const event = library.Location({purchase: c[0]});
+
+    event.watch(function (error, result) {
+      if(!error) {
+        assert.equal(result.args['lat'].toNumber(), 1, "The lat in the event should be 1");
+        assert.equal(result.args['long'].toNumber(), 2, "The lng in the event should be 2");
+      } else {
+        console.log(error)
+      }
+      event.stopWatching();
+    });
+    await library.currentLocation(1, 2, c[0]);
   })
 });

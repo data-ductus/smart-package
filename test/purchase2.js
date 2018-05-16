@@ -64,6 +64,7 @@ contract('purchase-success', function(accounts) {
   const accProvider = accounts[3];
   const humProvider = accounts[4];
   const pressProvider = accounts[5];
+  const gpsProvider = accounts[6];
   const price = 100;
 
   before(async function () {
@@ -98,7 +99,7 @@ contract('purchase-success', function(accounts) {
     assert.equal(accSensor[3], false, "The acceleration threshold was not set correctly");
     assert.equal(humSensor[0].toNumber(), humidity, "The humidity threshold was not set correctly");
     assert.equal(pressSensor[0].toNumber(), pressure, "The pressure threshold was not set correctly");
-    assert.equal(proposals.length, 2, "There should be one proposal");
+    assert.equal(proposals.length, 2, "There should be two proposals");
     assert.equal(proposals[0], buyer, "The first potential buyer should have the correct address");
   });
 
@@ -119,6 +120,7 @@ contract('purchase-success', function(accounts) {
     const accSensor = await agreementData.getSensor.call(c[0], 2);
     const humSensor = await agreementData.getSensor.call(c[0], 3);
     const pressSensor = await agreementData.getSensor.call(c[0], 4);
+    const gps = await agreementData.getSensor.call(c[0], 100);
     const state = await agreementData.state(c[0]);
     const _buyer = await agreementData.buyer(c[0]);
     const deliveryAddress = await agreementData.deliveryAddress(c[0], _buyer);
@@ -128,6 +130,7 @@ contract('purchase-success', function(accounts) {
     assert.equal(accSensor[0].toNumber(), acceleration, "The acceleration threshold was not set correctly");
     assert.equal(humSensor[0].toNumber(), humidity, "The humidity threshold was not set correctly");
     assert.equal(pressSensor[0].toNumber(), pressure, "The pressure threshold was not set correctly");
+    assert(gps[3], "The gps was not set correctly");
     assert.equal(tokens_after_buyer.toNumber(), tokens_before_buyer-price, "The tokens were not removed correctly from the buyer's account");
     assert.equal(tokens_after_contract.toNumber(), tokens_before_contract+price, "The tokens were not added correctly to the contract's account");
     assert.equal(state, 1, "The state is not locked (1)");
@@ -142,18 +145,21 @@ contract('purchase-success', function(accounts) {
     await agreementData.setProvider(c[0], 2, {from: accProvider});
     await agreementData.setProvider(c[0], 3, {from: humProvider});
     await agreementData.setProvider(c[0], 4, {from: pressProvider});
+    await agreementData.setGPSProvider(c[0], {from: gpsProvider});
 
     const maxSensor = await agreementData.getSensor.call(c[0], 0);
     const minSensor = await agreementData.getSensor.call(c[0], 1);
     const accSensor = await agreementData.getSensor.call(c[0], 2);
     const humSensor = await agreementData.getSensor.call(c[0], 3);
     const pressSensor = await agreementData.getSensor.call(c[0], 4);
+    const gps = await agreementData.getSensor.call(c[0], 100);
 
     assert.equal(maxSensor[2], tempProvider, "The provider for maximum temperature was not set correctly");
     assert.equal(minSensor[2], tempProvider, "The provider for minimum temperature was not set correctly");
     assert.equal(accSensor[2], accProvider, "The provider for maximum acceleration was not set correctly");
     assert.equal(humSensor[2], humProvider, "The provider for maximum humidity was not set correctly");
     assert.equal(pressSensor[2], pressProvider, "The provider for maximum pressure was not set correctly");
+    assert.equal(gps[2], gpsProvider, "The provider for gps was not set correctly");
   });
 
   it("should change state to transit", async function() {
@@ -285,7 +291,7 @@ contract("purchase-decline", function(accounts) {
     const buyers = await agreementData.getPotentialBuyers(c[0]);
     assert.equal(buyers[0], 0x0, "The first proposal should be deleted")
   });
-  it("should allow a potential to delete one of their proposals", async function () {
+  it("should allow a potential buyer to delete one of their proposals", async function () {
     await agreementData.propose(c[0], 'Skellefteå', -999, -999, -999, -999, -999, false, {from: buyer});
     await agreementData.decline(c[0], 1, {from: buyer});
 
