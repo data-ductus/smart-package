@@ -192,6 +192,14 @@ contract("purchase-revert-wrong-sender", function (accounts) {
     await dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
   });
+  it("should revert set state if not agreement contract", async function() {
+    await agreementData.setState(c[0], 4, {from: buyer})
+      .then(function(r) {
+        assert(false, "Set state should revert");
+      }, function (e) {
+        assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Set state should revert");
+      });
+  });
   it("should revert set price if not seller", async function() {
     await agreementData.setPrice(c[0], 10, {from: buyer})
       .then(function(r) {
