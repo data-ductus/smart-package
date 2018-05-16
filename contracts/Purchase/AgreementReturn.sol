@@ -31,11 +31,6 @@ contract AgreementReturn {
     _;
   }
 
-  modifier onlyBuyer(address purchase) {
-    require(p.buyer(purchase) == msg.sender);
-    _;
-  }
-
   modifier onlySeller(address purchase) {
     require(p.seller(purchase) == msg.sender);
     _;
@@ -43,11 +38,6 @@ contract AgreementReturn {
 
   modifier onlyDeliveryCompany(address purchase) {
     require(a.deliveryCompany(purchase) == msg.sender);
-    _;
-  }
-
-  modifier notSeller(address purchase) {
-    require(!(p.seller(purchase) == msg.sender));
     _;
   }
 

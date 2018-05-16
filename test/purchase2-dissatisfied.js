@@ -14,7 +14,6 @@ contract('purchase-dissatisfied', function (accounts) {
   let token;
   let c;
   let dapp;
-  let clerk;
   const maxTemp = 30;
   const buyer = accounts[0];
   const seller = accounts[1];
@@ -87,7 +86,28 @@ contract('purchase-dissatisfied', function (accounts) {
     await agreementReturn.clerk(c[0], 0, {from: delivery});
     const _state = await agreementData.state(c[0]);
 
-    assert.equal(_state, 8, "The state is not review (8)");
+    assert.equal(_state, 8, "The state is not clerk (8)");
+  });
+  it("should set state to appeal and propose a return to previous state", async function () {
+    await agreementReturn.returnToPreviousState(c[0], {from: clerkAccount});
+    const _state = await agreementData.state(c[0]);
+    const _return = await agreementReturn.returnToPrevState(c[0]);
+
+    assert(_return, "The clerk has not proposed a return to the previous state");
+    assert.equal(_state, 9, "The state is not appeal (9)");
+  });
+  it("should reject a clerk solution", async function () {
+    await agreementReturn.rejectClerkDecision(c[0], {from: seller});
+    const _state = await agreementData.state(c[0]);
+
+    assert.equal(_state, 8, "The state is not clerk (8)");
+  });
+  it("should increse clerk reward", async function () {
+    await token.approve(c[0], 10, {from: seller});
+    await agreementReturn.increaseClerkPayment(c[0], 10, {from: seller});
+    const clerkPayment = await agreementReturn.clerkPayment(c[0]);
+
+    assert.equal(clerkPayment, 10, "The clerk reward is not 10");
   });
   it("should split the money and set state to appeal", async function () {
     await agreementReturn.solve(c[0], price, price, 0, {from: clerkAccount});
@@ -109,11 +129,13 @@ contract('purchase-dissatisfied', function (accounts) {
     const allowance_seller = await token.allowance.call(c[0], seller);
     const allowance_buyer = await token.allowance.call(c[0], buyer);
     const allowance_delivery = await token.allowance.call(c[0], delivery);
+    const allowance_clerk = await token.allowance.call(c[0], clerkAccount);
     const _state = await agreementData.state(c[0]);
 
     assert.equal(allowance_seller.toNumber(), price, "The seller is not allowed 100 tokens");
     assert.equal(allowance_buyer.toNumber(), price, "The seller is not allowed 100 tokens");
     assert.equal(allowance_delivery.toNumber(), 0, "The delivery company is not allowed 0 tokens");
+    assert.equal(allowance_clerk.toNumber(), 10, "The clerk is not allowed 10 tokens");
     assert.equal(_state, 10, "The state is not inactive (10)")
   })
 });
