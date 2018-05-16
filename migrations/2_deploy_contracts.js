@@ -8,8 +8,6 @@ const MinimalPurchase = artifacts.require("./Purchase/MinimalPurchase");
 const DApp = artifacts.require("./DApp.sol");
 const Voting = artifacts.require("./Voting/Clerk.sol");
 
-const test2 = artifacts.require("./test2variabler.sol");
-
 module.exports = function(deployer) {
   deployer.then(async () => {
     await deployer.deploy(Token);
