@@ -23,7 +23,7 @@ contract('purchase', function (accounts) {
     agreementData = await AgreementData.deployed();
     agreementDeliver = await AgreementDeliver.deployed();
     token = await Token.deployed();
-    await dapp.createMinimalPurchase(100, -999, -999, -999, -999, -999, false);
+    await dapp.createMinimalPurchase(100, '',  -999, -999, -999, -999, -999, false);
     c = await dapp.getAllContracts.call();
   });
   it("should have the correct initial info", async function () {
@@ -76,7 +76,7 @@ contract('purchase-success', function(accounts) {
     agreementDeliver = await AgreementDeliver.deployed();
     token = await Token.deployed();
     const dapp = await Dapp.deployed();
-    await dapp.createMinimalPurchase(price, maxTemp, -999, acceleration, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(price, '', maxTemp, -999, acceleration, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts.call();
     await token.approve(c[0], price, {from: buyer});
     await token.transfer(delivery, 1000, {from: buyer});
@@ -274,18 +274,25 @@ contract("purchase-decline", function(accounts) {
     await sale.buyTokens(accounts[2], {from: accounts[2], value: value});
     agreementData = await AgreementData.deployed();
     const dapp = await Dapp.deployed();
-    await dapp.createMinimalPurchase(price, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(price, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts.call();
     token = await Token.deployed();
     await agreementData.propose(c[0], 'Skellefteå', -999, -999, -999, -999, -999, false, {from: buyer});
   });
-
-  it("should decline correctly", async function () {
+  it("should allow a seller to decline a proposal", async function () {
     await agreementData.decline(c[0], 0, {from: seller});
 
     const buyers = await agreementData.getPotentialBuyers(c[0]);
-    assert.equal(buyers[0], 0x0, "The first buyer should be deleted")
-  })
+    assert.equal(buyers[0], 0x0, "The first proposal should be deleted")
+  });
+  it("should allow a potential to delete one of their proposals", async function () {
+    await agreementData.propose(c[0], 'Skellefteå', -999, -999, -999, -999, -999, false, {from: buyer});
+    await agreementData.decline(c[0], 1, {from: buyer});
+
+    const buyers = await agreementData.getPotentialBuyers(c[0]);
+    assert.equal(buyers[1], 0x0, "The second proposal should be deleted")
+  });
+
 });
 
 function timeout(ms) {

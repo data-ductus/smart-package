@@ -5,8 +5,8 @@ import {Web3Service} from '../util/web3.service';
 import dapp_artifact from '../../../build/contracts/dapp.json';
 import sale_artifact from '../../../build/contracts/sale.json';
 import agreement_deliver_artifact from '../../../build/contracts/agreementDeliver.json';
-import purchase_artifact from '../../../build/contracts/purchase.json';
-import purchase2_artifact from '../../../build/contracts/purchase2.json';
+import agreement_data_artifact from '../../../build/contracts/agreementData.json';
+import agreement_return_artifact from '../../../build/contracts/agreementReturn.json';
 import clerk_artifact from '../../../build/contracts/clerk.json';
 
 @Component({
@@ -93,9 +93,9 @@ export class PurchaseComponent implements OnInit {
    */
   async getDapp() {
     const dappAbstraction = await this.web3Service.artifactsToContract(dapp_artifact);
-    const agreementDataAbstraction = await this.web3Service.artifactsToContract(purchase_artifact);
+    const agreementDataAbstraction = await this.web3Service.artifactsToContract(agreement_data_artifact);
     const agreementDeliverAbstraction = await this.web3Service.artifactsToContract(agreement_deliver_artifact);
-    const agreementReturnAbstraction = await this.web3Service.artifactsToContract(purchase2_artifact);
+    const agreementReturnAbstraction = await this.web3Service.artifactsToContract(agreement_return_artifact);
     const clerkAbstraction = await this.web3Service.artifactsToContract(clerk_artifact);
     const deployedDapp = await dappAbstraction.deployed();
     this.dapp = await this.web3Service.getContract(deployedDapp.abi, deployedDapp.address);

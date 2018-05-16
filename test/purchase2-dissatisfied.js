@@ -42,7 +42,7 @@ contract('purchase-dissatisfied', function (accounts) {
     agreementDeliver = await AgreementDeliver.deployed();
     agreementReturn = await AgreementReturn.deployed();
     token = await Token.deployed();
-    await dapp.createMinimalPurchase(100, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(100, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await token.approve(c[0], price, {from: buyer});
     await token.transfer(delivery, 1000, {from: buyer});
@@ -147,7 +147,7 @@ contract('purchase-dissatisfied-2', function (accounts) {
     agreementReturn = await AgreementReturn.deployed();
     agreementDeliver = await AgreementDeliver.deployed();
     token = await Token.deployed();
-    await dapp.createMinimalPurchase(100, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(100, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await token.approve(c[0], price, {from: buyer});
     await token.transfer(delivery, 1000, {from: buyer});
@@ -204,7 +204,7 @@ contract('purchase-dissatisfied-3', function (accounts) {
     agreementReturn = await AgreementReturn.deployed();
     agreementDeliver = await AgreementDeliver.deployed();
     token = await Token.deployed();
-    await dapp.createMinimalPurchase(100, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(100, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await token.approve(c[0], price, {from: buyer});
     await token.transfer(delivery, 1000, {from: buyer});

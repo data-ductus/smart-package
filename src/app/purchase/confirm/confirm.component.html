@@ -3,7 +3,6 @@
               [disabled]="(time*1+20) * 1000 - now.valueOf() > 0">Satisfied</button>
   <button class="button-margin btn btn-danger" *ngIf="buyer == account" id="dissatisfied" (click)="dissatisfied()"
           [disabled]="(time*1+20) * 1000 - now.valueOf() < 0">Dissatisfied</button>
-  {{(time*1+20) * 1000 - now.valueOf()}} {{(time*1+20) * 1000 | date:'long'}} {{now.valueOf() | date:'long'}} {{time | date:'long'}}
 </div>
 <button class="btn btn-success button-margin" id="withdraw" (click)="withdraw()">
   Withdraw tokens <label class="badge badge-light badge-pill">{{allowance}}</label>

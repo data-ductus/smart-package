@@ -14,7 +14,6 @@ import { AgreementComponent } from './purchase/agreement/agreement.component';
 import { AcceptComponent } from './purchase/accept/accept.component';
 import { SimulationComponent } from './purchase/simulation/simulation.component';
 import { ConfirmComponent } from './purchase/confirm/confirm.component';
-import { TransportComponent } from './transport/transport.component';
 
 import { AgmCoreModule } from '@agm/core';
 import { AgmDirectionModule } from 'agm-direction';
@@ -22,7 +21,6 @@ import { AgmDirectionModule } from 'agm-direction';
 import { ReturnedComponent } from './purchase/returned/returned.component';
 import { ReviewComponent } from './purchase/review/review.component';
 
-import { TransportService } from './transport/transport.service';
 import { AgreementService} from './services/agreement.service';
 
 import { AngularFontAwesomeModule} from 'angular-font-awesome';
@@ -34,7 +32,6 @@ import { ClerkComponent } from './purchase/clerk/clerk.component';
 import { AppealComponent } from './purchase/appeal/appeal.component';
 
 const appRoutes: Routes = [
-  { path: 'transport', component: TransportComponent },
   { path: '', component: PurchaseComponent }
 ];
 
@@ -47,7 +44,6 @@ const appRoutes: Routes = [
     AcceptComponent,
     SimulationComponent,
     ConfirmComponent,
-    TransportComponent,
     ReturnedComponent,
     ReviewComponent,
     DisplaySensorsComponent,
@@ -70,7 +66,7 @@ const appRoutes: Routes = [
     NgbModule.forRoot(),
     RouterModule.forRoot(appRoutes)
   ],
-  providers: [Web3Service, TransportService, AgreementService],
+  providers: [Web3Service, AgreementService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

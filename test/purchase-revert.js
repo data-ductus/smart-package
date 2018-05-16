@@ -32,7 +32,7 @@ contract('purchase-revert-wrong-state', function (accounts) {
     agreementDeliver = await AgreementDeliver.deployed();
     agreementReturn = await AgreementReturn.deployed();
     await setClerk();
-    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
   });
   it("should revert set provider if not in locked", async function() {
@@ -146,7 +146,7 @@ contract('purchase-revert-wrong-state-2', function (accounts) {
     dapp = await Dapp.deployed();
     agreementData = await AgreementData.deployed();
     agreementDeliver = await AgreementDeliver.deployed();
-    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await agreementData.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer});
     await agreementData.accept(c[0], 0, {from: seller})
@@ -189,7 +189,7 @@ contract("purchase-revert-wrong-sender", function (accounts) {
     dapp = await Dapp.deployed();
     agreementData = await AgreementData.deployed();
     agreementDeliver = await AgreementDeliver.deployed();
-    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
   });
   it("should revert set price if not seller", async function() {
@@ -228,12 +228,12 @@ contract("purchase-revert-wrong-sender-2", function (accounts) {
   before(async function () {
     dapp = await Dapp.deployed();
     agreementData = await AgreementData.deployed();
-    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await agreementData.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer});
   });
   it("should revert decline if not seller", async function() {
-    await agreementData.decline(c[0], 0, {from: buyer})
+    await agreementData.decline(c[0], 0, {from: accounts[2]})
       .then(function(r) {
         assert(false, "Decline should revert");
       }, function (e) {
@@ -263,7 +263,7 @@ contract("purchase-revert-wrong-sender-3", function (accounts) {
     dapp = await Dapp.deployed();
     agreementData = await AgreementData.deployed();
     agreementDeliver = await AgreementDeliver.deployed();
-    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await agreementData.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer});
     await agreementData.accept(c[0], 0, {from: seller});
@@ -303,7 +303,7 @@ contract("purchase-revert-wrong-sender-4", function (accounts) {
     agreementData = await AgreementData.deployed();
     agreementDeliver = await AgreementDeliver.deployed();
     agreementReturn = await AgreementReturn.deployed();
-    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await agreementData.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer});
     await agreementData.accept(c[0], 0, {from: seller});
@@ -345,7 +345,7 @@ contract("purchase-revert-wrong-sender-5", function (accounts) {
     agreementData = await AgreementData.deployed();
     agreementDeliver = await AgreementDeliver.deployed();
     agreementReturn = await AgreementReturn.deployed();
-    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await agreementData.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer});
     await agreementData.accept(c[0], 0, {from: seller});
@@ -398,7 +398,7 @@ contract("purchase-revert-wrong-sender-6", function (accounts) {
     agreementData = await AgreementData.deployed();
     agreementDeliver = await AgreementDeliver.deployed();
     agreementReturn = await AgreementReturn.deployed();
-    await dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: seller});
+    await dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false, {from: seller});
     c = await dapp.getAllContracts();
     await agreementData.propose(c[0], 'Skellefteå', maxTemp, 0, 0, 0, 0, false, {from: buyer});
     await agreementData.accept(c[0], 0, {from: seller});

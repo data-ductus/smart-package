@@ -11,7 +11,7 @@ export class ReviewComponent implements OnInit {
   @Input() contractAddress;
   @Input() account;
   @Input() agreementReturn;
-  @Input() agreementData;
+  @Input() agreementDeliver;
   @Input() state;
   @Input() seller;
   logistics;
@@ -19,7 +19,7 @@ export class ReviewComponent implements OnInit {
   constructor(private web3Service: Web3Service) { }
 
   ngOnInit() {
-    this.getLogistics();
+    setInterval(() => this.getLogistics(), 100);
   }
 
   /**
@@ -27,7 +27,7 @@ export class ReviewComponent implements OnInit {
    * @returns {Promise<void>}
    */
   async getLogistics() {
-    this.logistics = await this.agreementData.methods.deliveryCompany(this.contractAddress).call();
+    this.logistics = await this.agreementDeliver.methods.deliveryCompany(this.contractAddress).call();
   }
 
   /**

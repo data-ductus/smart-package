@@ -22,6 +22,7 @@ contract DApp {
 
   function createMinimalPurchase(
     uint price,
+    string description,
     int maxTemp,
     int minTemp,
     int acceleration,
@@ -32,7 +33,7 @@ contract DApp {
     public
   {
     address c = new MinimalPurchase(this, token);
-    AgreementData(agreementData).newPurchase(c, price, msg.sender, maxTemp, minTemp, acceleration, humidity, pressure, gps);
+    AgreementData(agreementData).newPurchase(c, price, description, msg.sender, maxTemp, minTemp, acceleration, humidity, pressure, gps);
     allContracts.push(c);
   }
 

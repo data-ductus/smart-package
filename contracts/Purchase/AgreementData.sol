@@ -18,6 +18,7 @@ contract AgreementData {
   bool dappSet;
 
   mapping(address => uint) public price;
+  mapping(address => string) public description;
   mapping(address => State) public state;
   mapping(address => address) public seller;
   mapping(address => address) public buyer;
@@ -89,6 +90,7 @@ contract AgreementData {
   (
     address purchase,
     uint _price,
+    string _description,
     address _seller,
     int maxTemp,
     int minTemp,
@@ -101,6 +103,7 @@ contract AgreementData {
     condition(msg.sender == dapp)
   {
     price[purchase] = _price;
+    description[purchase] = _description;
     seller[purchase] = _seller;
     require(SensorLibrary.setSensors(terms[purchase], maxTemp, minTemp, acceleration, humidity, pressure, gps));
   }
@@ -160,7 +163,7 @@ contract AgreementData {
     */
   function decline(address purchase, uint _buyer)
     public
-    onlySeller(purchase)
+    condition(msg.sender == seller[purchase] || msg.sender == potentialBuyers[purchase][_buyer])
     inState(purchase, State.Created)
   {
     delete potentialBuyers[purchase][_buyer];
@@ -174,6 +177,7 @@ contract AgreementData {
     public
     onlySeller(purchase)
     inState(purchase, State.Created)
+    condition(potentialBuyers[purchase][_buyer] != 0x0)
   {
     state[purchase] = State.Locked;
     buyer[purchase] = potentialBuyers[purchase][_buyer];

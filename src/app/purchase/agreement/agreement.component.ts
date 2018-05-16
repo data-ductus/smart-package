@@ -23,6 +23,15 @@ export class AgreementComponent implements OnInit {
     price: 0,
     state: 0,
   };
+
+  sensor_id = {
+    maxTemp: 0,
+    minTemp: 1,
+    acceleration: 2,
+    humidity: 3,
+    pressure: 4,
+  };
+
   proposals: any[];
   maxT = ['Not included'];
   minT = ['Not included'];
@@ -58,11 +67,11 @@ export class AgreementComponent implements OnInit {
    * @returns {Promise<void>}
    */
   async getSensors() {
-    this.maxT = await this.agreementData.methods.getSensor(this.contractAddress, 'maxTemp').call();
-    this.minT = await this.agreementData.methods.getSensor(this.contractAddress, 'minTemp').call();
-    this.acc = await this.agreementData.methods.getSensor(this.contractAddress, 'acceleration').call();
-    this.hum = await this.agreementData.methods.getSensor(this.contractAddress, 'humidity').call();
-    this.press = await this.agreementData.methods.getSensor(this.contractAddress, 'pressure').call();
+    this.maxT = await this.agreementData.methods.getSensor(this.contractAddress, this.sensor_id.maxTemp).call();
+    this.minT = await this.agreementData.methods.getSensor(this.contractAddress, this.sensor_id.minTemp).call();
+    this.acc = await this.agreementData.methods.getSensor(this.contractAddress, this.sensor_id.acceleration).call();
+    this.hum = await this.agreementData.methods.getSensor(this.contractAddress, this.sensor_id.humidity).call();
+    this.press = await this.agreementData.methods.getSensor(this.contractAddress, this.sensor_id.pressure).call();
   }
 
   /**
@@ -71,7 +80,7 @@ export class AgreementComponent implements OnInit {
    */
   async setPrice() {
     try {
-      await this.agreementDeliver.methods.setPrice(this.contractAddress, this.price).send({from: this.account});
+      await this.agreementData.methods.setPrice(this.contractAddress, this.price).send({from: this.account});
     } catch (e) {
       console.log(e);
     }

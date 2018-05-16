@@ -7,7 +7,7 @@ contract('dapp', function (accounts) {
 
     return Dapp.deployed().then(function (instance) {
       dapp = instance;
-      return dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false);
+      return dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false);
     }).then(function () {
       return dapp.getAllContracts();
     }).then(function (contracts) {
@@ -20,7 +20,7 @@ contract('dapp', function (accounts) {
 
     return Dapp.deployed().then(function (instance) {
       dapp = instance;
-      return dapp.createMinimalPurchase(0, -999, -999, -999, -999, -999, false, {from: accounts[1]});
+      return dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false, {from: accounts[1]});
     }).then(function () {
       return dapp.getAllContracts();
     }).then(function (contracts) {
@@ -37,7 +37,7 @@ contract('dapp-2', function (accounts) {
   before(async function () {
     dapp = await Dapp.deployed();
     agreementData = await AgreementData.deployed();
-    await dapp.createMinimalPurchase(100, -999, -999, -999, -999, -999, false);
+    await dapp.createMinimalPurchase(100, 'Phone', -999, -999, -999, -999, -999, false);
     c = await dapp.getAllContracts();
   });
   it("should have the correct price", async function () {
@@ -48,5 +48,9 @@ contract('dapp-2', function (accounts) {
   it("should have the correct seller", async function () {
     const _seller = await agreementData.seller.call(c[0]);
     assert.equal(accounts[0], _seller, "The creator is not the seller");
+  });
+  it("should have the correct description", async function () {
+    const _desc = await agreementData.description.call(c[0]);
+    assert.equal('Phone', _desc, "The description is not correct");
   });
 });

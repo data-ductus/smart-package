@@ -41,7 +41,7 @@ contract('request-events', function (accounts) {
     agreementDeliver = await AgreementDeliver.deployed();
     agreementReturn = await AgreementReturn.deployed();
     token = await Token.deployed();
-    await dapp.createMinimalPurchase(100, -999, -999, acceleration, humidity, -999, true, {from: seller});
+    await dapp.createMinimalPurchase(100, '', -999, -999, acceleration, humidity, -999, true, {from: seller});
     c = await dapp.getAllContracts();
     await token.approve(c[0], price, {from: buyer});
     await token.transfer(delivery, 1000, {from: buyer});
