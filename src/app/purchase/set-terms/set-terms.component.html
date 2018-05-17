@@ -1,4 +1,5 @@
 <input *ngIf="create" class="form-control col-12" type="text" placeholder="Price" id="price"[(ngModel)]="price">
+<input *ngIf="create" class="form-control col-12" type="text" placeholder="Description" id="desc"[(ngModel)]="description">
 <input *ngIf="!create" class="form-control col-12" type="text" placeholder="Delivery address" id="delAddress"[(ngModel)]="deliveryAddress">
 <div class="input-group">
       <span class="input-group-addon">
@@ -33,5 +34,5 @@
   <input class="form-control" type="text" placeholder="Pressure" id="pressure"[(ngModel)]="pressure.threshold">
   <span class="input-group-addon" id="press">Pa</span>
 </div>
-<button *ngIf="create" class="btn btn-dark button-margin" id="create" (click)="createMinimalPurchase()">Create purchase</button>
+<button *ngIf="create" class="btn btn-dark button-margin" id="create" (click)="createMinimalPurchase()">Create agreement</button>
 <button *ngIf="!create" class="btn btn-dark button-margin" id="propose" (click)="propose()">Propose additional terms</button>

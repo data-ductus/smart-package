@@ -1,7 +1,7 @@
 pragma solidity ^0.4.0;
 
-import "../../node_modules/zeppelin-solidity/contracts/ownership/Ownable.sol";
-import "../../node_modules/zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 
 contract Token is Ownable, MintableToken {
   string public constant symbol = "T";

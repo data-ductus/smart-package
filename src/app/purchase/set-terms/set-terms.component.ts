@@ -17,6 +17,7 @@ export class SetTermsComponent implements OnInit {
   @Input() agreementData;
   @Input() price: number;
 
+  description: '';
   maxTemp = {
     threshold: '',
     set: false
@@ -55,7 +56,7 @@ export class SetTermsComponent implements OnInit {
       const acc = this.agreementService.sensorThreshold(this.acceleration.threshold, this.acceleration.set);
       const hum = this.agreementService.sensorThreshold(this.humidity.threshold, this.humidity.set);
       const press = this.agreementService.sensorThreshold(this.pressure.threshold, this.pressure.set);
-      await this.dapp.methods.createMinimalPurchase(this.price, maxT, minT, acc, hum, press, false).send({from: this.account});
+      await this.dapp.methods.createMinimalPurchase(this.price, this.description, maxT, minT, acc, hum, press, false).send({from: this.account});
     } catch (e) {
       console.log(e);
     }

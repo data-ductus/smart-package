@@ -22,6 +22,7 @@ export class AgreementComponent implements OnInit {
     buyer: '',
     price: 0,
     state: 0,
+    description: ''
   };
 
   sensor_id = {
@@ -108,6 +109,7 @@ export class AgreementComponent implements OnInit {
     this.purchaseInfo.seller = await this.agreementData.methods.seller(this.contractAddress).call();
     this.purchaseInfo.buyer = await this.agreementData.methods.buyer(this.contractAddress).call();
     this.purchaseInfo.state = await this.agreementData.methods.state(this.contractAddress).call();
+    this.purchaseInfo.description = await this.agreementData.methods.description(this.contractAddress).call();
   }
 
   /**
