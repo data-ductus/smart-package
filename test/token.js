@@ -144,17 +144,17 @@ contract('Token-2', function(accounts) {
 
     let token2 = await Token.new({from: accounts[0]});
     await token.transfer(token2.address, amount, {from: accounts[0]});
-    return token.balanceOf(accounts[0]).then(function(balance) {
+    return token.balanceOf.call(accounts[0]).then(function(balance) {
       balance_before_owner = balance.toNumber();
-      return token.balanceOf(token2.address);
+      return token.balanceOf.call(token2.address);
     }).then(function (balance) {
       balance_before_contract = balance.toNumber();
       return token2.transferAnyERC20Token(token.address, amount, {from: accounts[0]});
     }).then(function () {
-      return token.balanceOf(accounts[0]);
+      return token.balanceOf.call(accounts[0]);
     }).then(function (balance) {
       balance_after_owner = balance.toNumber();
-      return token.balanceOf(token2.address);
+      return token.balanceOf.call(token2.address);
     }).then(function (balance) {
       balance_after_contract = balance.toNumber();
 
