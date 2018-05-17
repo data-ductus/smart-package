@@ -144,7 +144,7 @@ contract('Token', function(accounts) {
     let balance_after_owner = await token.balanceOf(accounts[0]);
     let balance_after_contract = await token.balanceOf(token2.address);
 
-    assert.equal(balance_before_owner.toNumber(), balance_after_owner.toNumber() - 10, "Amount wasn't correctly sent to the owner");
-    assert.equal(balance_before_contract.toNumber(), balance_after_contract.toNumber() + 10, "Amount wasn't correctly sent from the contract");
+    assert.equal(Number(balance_before_owner), Number(balance_after_owner) - 10, "Amount wasn't correctly sent to the owner");
+    assert.equal(Number(balance_before_contract), Number(balance_after_contract) + 10, "Amount wasn't correctly sent from the contract");
   })
 });
