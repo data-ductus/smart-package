@@ -22,6 +22,7 @@ contract('create-dapp-revert', function (accounts) {
 });
 
 contract('create-agreement-data-revert', function (accounts) {
+  let dapp;
   let agreementData;
   let agreementDeliver;
   let agreementReturn;

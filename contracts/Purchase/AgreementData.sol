@@ -105,7 +105,7 @@ contract AgreementData {
     price[purchase] = _price;
     description[purchase] = _description;
     seller[purchase] = _seller;
-    require(SensorLibrary.setSensors(terms[purchase], maxTemp, minTemp, acceleration, humidity, pressure, gps));
+    SensorLibrary.setSensors(terms[purchase], maxTemp, minTemp, acceleration, humidity, pressure, gps);
   }
 
   ///////////////////
@@ -153,7 +153,7 @@ contract AgreementData {
     uint i =  potentialBuyers[purchase].length;
     potentialBuyers[purchase].push(msg.sender);
     deliveryAddress[purchase][msg.sender] = _deliveryAddress;
-    require(SensorLibrary.setSensors(proposals[purchase][i], maxTemp, minTemp, acceleration, humidity, pressure, gps));
+    SensorLibrary.setSensors(proposals[purchase][i], maxTemp, minTemp, acceleration, humidity, pressure, gps);
     Proposed(msg.sender);
   }
 
