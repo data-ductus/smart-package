@@ -86,7 +86,7 @@ contract('clerk-voting', function (accounts) {
 
     assert.equal(clerks_after.length, clerks_before.length+1, "The new clerk was not added");
   });
-  it("should not allow voting for the same clerk twice", async function () {
+  it("should not allow voting for the same candidate twice", async function () {
     await voting.vote(accounts[4], {from: accounts[4]});
     await voting.vote(accounts[4], {from: accounts[4]})
       .then(function(r) {
@@ -94,5 +94,22 @@ contract('clerk-voting', function (accounts) {
       }, function (e) {
         assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Vote should revert");
       });
+  });
+  it("should not allow clerk voting if not clerk", async function () {
+    await voting.clerkVote(accounts[4], {from: accounts[4]})
+      .then(function(r) {
+        assert(false, "Clerk vote should revert");
+      }, function (e) {
+        assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Clerk vote should revert");
+      });
   })
+  it("should not allow voting as a clerk for the same candidate twice", async function () {
+    await voting.clerkVote(accounts[4], {from: accounts[0]});
+    await voting.clerkVote(accounts[4], {from: accounts[0]})
+      .then(function(r) {
+        assert(false, "Clerk vote should revert");
+      }, function (e) {
+        assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Clerk vote should revert");
+      });
+  });
 });

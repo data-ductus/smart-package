@@ -116,3 +116,35 @@ contract('Token', function(accounts) {
     })
   })
 });
+
+contract('Token', function(accounts) {
+  let sale;
+  let token;
+  before(async function () {
+    let value = 100;
+    sale = await Sale.deployed();
+    token = await Token.deployed();
+    await sale.buyTokens(accounts[0], {from: accounts[0], value: value});
+    await sale.buyTokens(accounts[1], {from: accounts[1], value: value});
+  });
+  it("should revert when being sent ether", async function () {
+    await token.sendTransaction({value: 33, gas: 300000})
+      .then(function(r) {
+        assert(false, "The transaction should revert");
+      }, function (e) {
+        assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "The transaction should revert");
+      });
+  });
+  it("should be able to transfer any ERC20 tokens", async function () {
+    let token2 = await Token.new({from: accounts[0]});
+    await token.transfer(token2.address, 10, {from: accounts[0]});
+    let balance_before_owner = await token.balanceOf(accounts[0]);
+    let balance_before_contract = await token.balanceOf(token2.address);
+    await token2.transferAnyERC20Token(token.address, 10, {from: accounts[0]});
+    let balance_after_owner = await token.balanceOf(accounts[0]);
+    let balance_after_contract = await token.balanceOf(token2.address);
+
+    assert.equal(balance_before_owner.toNumber(), balance_after_owner.toNumber() - 10, "Amount wasn't correctly sent to the owner");
+    assert.equal(balance_before_contract.toNumber(), balance_after_contract.toNumber() + 10, "Amount wasn't correctly sent from the contract");
+  })
+});

@@ -44,7 +44,12 @@ contract('minimal-purchase-revert', function (accounts) {
       });
   });
   it("should revert when it can't transfer tokens", async function () {
-    await mPur.transferFrom(0x0, 1, {from: accounts[1]})
+    let deliver2 = await AgreementDeliver.new();
+    let return2 = await AgreementReturn.new(0x0, 0x0, deliver2.address);
+    let data2 = await AgreementData.new(0x0, deliver2.address, return2.address);
+    let dapp2 = await Dapp.new(data2.address, accounts[1], return2.address, 0x0);
+    let mPur2 = await MinimalPurchase.new(dapp2.address, 0x0);
+    await mPur2.transferFrom(0x0, 1, {from: accounts[1]})
       .then(function(r) {
         assert(false, "Transfer from should revert");
       }, function (e) {

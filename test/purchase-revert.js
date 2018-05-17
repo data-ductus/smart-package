@@ -438,6 +438,35 @@ contract("purchase-revert-wrong-sender-6", function (accounts) {
   });
 });
 
+contract("purchase-revert-wrong-sender-3", function (accounts) {
+  let agreementData;
+  let agreementDeliver;
+  let dapp;
+  const buyer = accounts[0];
+  const seller = accounts[1];
+  const delivery = accounts[2];
+  let c;
+
+  before(async function () {
+    dapp = await Dapp.deployed();
+    agreementData = await AgreementData.deployed();
+    agreementDeliver = await AgreementDeliver.deployed();
+    await dapp.createMinimalPurchase(0, '', -999, -999, -999, -999, -999, false, {from: seller});
+    c = await dapp.getAllContracts();
+    await agreementData.propose(c[0], 'Skellefteå', 0, 0, 0, 0, 0, false, {from: buyer});
+    await agreementData.accept(c[0], 0, {from: seller});
+    await agreementDeliver.transport(c[0], 'Stockholm', {from: delivery});
+  });
+  it("should revert deliver if not logistics", async function() {
+    await agreementDeliver.deliver(c[0], {from: seller})
+      .then(function(r) {
+        assert(false, "Deliver should revert");
+      }, function (e) {
+        assert.match(e, /VM Exception[a-zA-Z0-9 ]+: revert/, "Deliver should revert");
+      });
+  });
+});
+
 function timeout(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
