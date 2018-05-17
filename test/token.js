@@ -117,9 +117,10 @@ contract('Token', function(accounts) {
   })
 });
 
-contract('Token', function(accounts) {
+contract('Token-2', function(accounts) {
   let sale;
   let token;
+  const amount = 10;
   before(async function () {
     let value = 100;
     sale = await Sale.deployed();
@@ -136,15 +137,29 @@ contract('Token', function(accounts) {
       });
   });
   it("should be able to transfer any ERC20 tokens", async function () {
-    let token2 = await Token.new({from: accounts[0]});
-    await token.transfer(token2.address, 10, {from: accounts[0]});
-    let balance_before_owner = await token.balanceOf(accounts[0]);
-    let balance_before_contract = await token.balanceOf(token2.address);
-    await token2.transferAnyERC20Token(token.address, 10, {from: accounts[0]});
-    let balance_after_owner = await token.balanceOf(accounts[0]);
-    let balance_after_contract = await token.balanceOf(token2.address);
+    let balance_before_owner;
+    let balance_before_contract;
+    let balance_after_owner;
+    let balance_after_contract;
 
-    assert.equal(Number(balance_before_owner), Number(balance_after_owner) - 10, "Amount wasn't correctly sent to the owner");
-    assert.equal(Number(balance_before_contract), Number(balance_after_contract) + 10, "Amount wasn't correctly sent from the contract");
+    let token2 = await Token.new({from: accounts[0]});
+    await token.transfer(token2.address, amount, {from: accounts[0]});
+    return token.balanceOf(accounts[0]).then(function(balance) {
+      balance_before_owner = balance.toNumber();
+      return token.balanceOf(token2.address);
+    }).then(function (balance) {
+      balance_before_contract = balance.toNumber();
+      return token2.transferAnyERC20Token(token.address, amount, {from: accounts[0]});
+    }).then(function () {
+      return token.balanceOf(accounts[0]);
+    }).then(function (balance) {
+      balance_after_owner = balance.toNumber();
+      return token.balanceOf(token2.address);
+    }).then(function (balance) {
+      balance_after_contract = balance.toNumber();
+
+      assert.equal(balance_before_owner, balance_after_owner - amount, "Amount wasn't correctly sent to the owner");
+      assert.equal(balance_before_contract, balance_after_contract + amount, "Amount wasn't correctly sent from the contract");
+    });
   })
 });
