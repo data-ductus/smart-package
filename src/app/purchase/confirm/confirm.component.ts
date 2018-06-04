@@ -30,7 +30,7 @@ export class ConfirmComponent implements OnInit {
 
   async getToken() {
     this.deployedToken = await this.token.deployed();
-    this.getAllowance();
+    setInterval(() => this.getAllowance(), 100);
   }
 
   /**

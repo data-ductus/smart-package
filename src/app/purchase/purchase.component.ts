@@ -42,6 +42,7 @@ export class PurchaseComponent implements OnInit {
     console.log('OnInit: ' + this.web3Service);
     console.log(this);
     this.watchAccount();
+    setInterval(() => this.refreshBalance(), 1000);
     this.web3Service.artifactsToContract(token_artifact)
       .then((tokenAbstraction) => {
         this.token = tokenAbstraction;
@@ -99,7 +100,6 @@ export class PurchaseComponent implements OnInit {
     const clerkAbstraction = await this.web3Service.artifactsToContract(clerk_artifact);
     const deployedDapp = await dappAbstraction.deployed();
     this.dapp = await this.web3Service.getContract(deployedDapp.abi, deployedDapp.address);
-    console.log('dapp ', this.dapp);
     const agrData = await agreementDataAbstraction.deployed();
     const agrDeliver = await agreementDeliverAbstraction.deployed();
     const agrReturn = await agreementReturnAbstraction.deployed();
@@ -132,7 +132,8 @@ export class PurchaseComponent implements OnInit {
    * @returns {Promise<void>}
    */
   async getAgreements() {
-    this.contracts = await this.dapp.methods.getAllContracts().call({from: this.model.account});
+    const contracts = await this.dapp.methods.getAllContracts().call({from: this.model.account});
+    this.contracts = contracts.reverse();
   }
 
   /**

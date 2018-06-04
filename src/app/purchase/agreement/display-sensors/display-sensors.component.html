@@ -1,44 +1,53 @@
 <div class="row">
-  <div class="col-4" ngbTooltip="Temperature" placement="top">
+  <div class="col-4">
+    <div class="row">
+      <p class="text-center font-weight-bold nice-text">Temperature</p>
+    </div>
     <div class="row">
       <div class="col-1">
         <fa name="thermometer-half" size="lg"></fa>
       </div>
       <div *ngIf="minT[3] && maxT[3]">
         <p class="col-11 nice-text">{{minT[0]}}&deg;C - {{maxT[0]}}&deg;C
-          <fa *ngIf="maxT['warning'] || minT['warning']" name="exclamation-triangle"></fa></p>
+          <fa ngbTooltip="Temperature violation" *ngIf="maxT['warning'] || minT['warning']" name="exclamation-triangle"></fa></p>
       </div>
       <div *ngIf="!minT[3] && maxT[3]">
-        <p class="col-11 nice-text"> < {{maxT[0]}}&deg;C <fa *ngIf="maxT['warning']" name="exclamation-triangle"></fa></p>
+        <p class="col-11 nice-text"> < {{maxT[0]}}&deg;C <fa ngbTooltip="Temperature violation" *ngIf="maxT['warning']" name="exclamation-triangle"></fa></p>
       </div>
       <div *ngIf="!maxT[3] && minT[3]">
-        <p class="col-11 nice-text"> > {{minT[0]}}&deg;C <fa *ngIf="minT['warning']" name="exclamation-triangle"></fa></p>
+        <p class="col-11 nice-text"> > {{minT[0]}}&deg;C <fa ngbTooltip="Temperature violation" *ngIf="minT['warning']" name="exclamation-triangle"></fa></p>
       </div>
       <div *ngIf="!minT[3] && !maxT[3]">
         <p class="col-11 nice-text"> Not included</p>
       </div>
     </div>
   </div>
-  <div class="col-4" ngbTooltip="Acceleration" placement="top">
+  <div class="col-4">
+    <div class="row">
+      <p class="text-center font-weight-bold nice-text">Acceleration</p>
+    </div>
     <div class="row">
       <div class="col-1">
         <fa name="tachometer" size="lg"></fa>
       </div>
       <div *ngIf="acc[3]">
-        <p class="col-11 nice-text">{{acc[0]}}g <fa *ngIf="acc['warning']" name="exclamation-triangle"></fa></p>
+        <p class="col-11 nice-text">{{acc[0]}}g <fa ngbTooltip="Acceleration violation" *ngIf="acc['warning']" name="exclamation-triangle"></fa></p>
       </div>
       <div *ngIf="!acc[3]">
         <p class="col-11 nice-text">Not included</p>
       </div>
     </div>
   </div>
-  <div class="col-4" ngbTooltip="Humidity" placement="top">
+  <div class="col-4">
+    <div class="row">
+      <p class="text-center font-weight-bold nice-text">Humidity</p>
+    </div>
     <div class="row">
       <div class="col-1">
         <fa name="tachometer" size="lg"></fa>
       </div>
       <div *ngIf="hum[3]">
-        <p class="col-11 nice-text">{{hum[0]}}% <fa *ngIf="hum['warning']" name="exclamation-triangle"></fa></p>
+        <p class="col-11 nice-text">{{hum[0]}}% <fa ngbTooltip="Humidity violation" *ngIf="hum['warning']" name="exclamation-triangle"></fa></p>
       </div>
       <div *ngIf="!hum[3]">
         <p class="col-11 nice-text">Not included</p>
@@ -47,20 +56,26 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-4" ngbTooltip="Pressure" placement="top">
+  <div class="col-4">
+    <div class="row">
+      <p class="text-center font-weight-bold nice-text">Pressure</p>
+    </div>
     <div class="row">
       <div class="col-1">
         <fa name="tachometer" size="lg"></fa>
       </div>
       <div *ngIf="press[3]">
-        <p class="col-11 nice-text">{{press[0]}} Pa <fa *ngIf="press['warning']" name="exclamation-triangle"></fa></p>
+        <p class="col-11 nice-text">{{press[0]}} Pa <fa ngbTooltip="Pressure violation" *ngIf="press['warning']" name="exclamation-triangle"></fa></p>
       </div>
       <div *ngIf="!press[3]">
         <p class="col-11 nice-text">Not included</p>
       </div>
     </div>
   </div>
-  <div class="col-4" ngbTooltip="GPS" placement="top">
+  <div class="col-4">
+    <div class="row">
+      <p class="text-center font-weight-bold nice-text">GPS</p>
+    </div>
     <div class="row">
       <div class="col-1">
         <fa name="globe" size="lg"></fa>

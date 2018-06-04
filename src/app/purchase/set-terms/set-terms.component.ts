@@ -17,7 +17,7 @@ export class SetTermsComponent implements OnInit {
   @Input() agreementData;
   @Input() price: number;
 
-  description: '';
+  description = '';
   maxTemp = {
     threshold: '',
     set: false
